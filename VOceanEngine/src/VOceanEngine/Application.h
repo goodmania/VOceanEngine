@@ -9,7 +9,7 @@ namespace voe {
 		Application();
 		virtual ~Application();
 
-		void run();
+		void Run();
 	};
 
 	Application* CreateApplication();
