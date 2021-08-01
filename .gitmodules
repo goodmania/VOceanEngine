@@ -1,0 +1,3 @@
+[submodule "VOceanEngine/vender/spdlog"]
+	path = VOceanEngine/vender/spdlog
+	url = https://github.com/gabime/spdlog

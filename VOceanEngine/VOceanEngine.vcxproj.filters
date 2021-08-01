@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\VOceanEngine\core.h">
+    <ClInclude Include="src\VOceanEngine\Core.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\VOceanEngine\Application.h">
@@ -27,9 +27,15 @@
     <ClInclude Include="src\VOceanEngine\EntryPoint.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="src\VOceanEngine\Log.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\VOceanEngine\Application.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VOceanEngine\Log.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
