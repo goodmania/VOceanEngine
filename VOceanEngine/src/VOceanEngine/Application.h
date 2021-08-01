@@ -1,5 +1,6 @@
 #pragma once
-#include "core.h"
+#include "VOceanEngine/core.h"
+#include "Events/Event.h"
 
 namespace voe {
 
