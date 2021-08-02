@@ -10,6 +10,11 @@ workspace "VOceanEngine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+-- Include directories relative to root folder (solution directory)
+IncludeDir = {}
+IncludeDir["GLFW"] = "VOceanEngine/vender/GLFW/include"
+include "VOceanEngine/vender/GLFW"
+
 project "VOceanEngine"
 	location "VOceanEngine"
 	kind "SharedLib"
@@ -18,16 +23,26 @@ project "VOceanEngine"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "PreCompileHeader.h"
+	pchsource "VOceanEngine/src/PreCompileHeader.cpp"
+
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/src/**.cpp"
 	}
 
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{prj.name}/vender/spdlog/include"
+		"%{prj.name}/vender/spdlog/include",
+		"%{IncludeDir.GLFW}"
+	}
+
+	links
+	{
+		"GLFW",
+		"opengl32.lib"
 	}
 
 	filter "system:windows"
@@ -38,7 +53,7 @@ project "VOceanEngine"
 		defines
 		{
 			"VOE_PLATFORM_WINDOWS",
-			"VOE_BUILD_DLL",
+			"VOE_BUILD_DLL"
 		}
 
 		postbuildcommands
@@ -69,7 +84,7 @@ project "Sandbox"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/src/**.cpp"
 	}
 
 	includedirs
@@ -90,7 +105,7 @@ project "Sandbox"
 
 		defines
 		{
-			"VOE_PLATFORM_WINDOWS",
+			"VOE_PLATFORM_WINDOWS"
 		}
 
 	filter "configurations:Debug"
