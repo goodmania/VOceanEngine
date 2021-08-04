@@ -32,19 +32,13 @@ namespace voe {
 
 		VOE_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
-		if (s_GLFWWindowCount == 0)
-		{
-			int success = glfwInit();
-			VOE_CORE_ASSERT(success, "Could not initialize GLFW!");
-			glfwSetErrorCallback(GLFWErrorCallback);
-		};
-
+		glfwInit();
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-		++s_GLFWWindowCount;
 
 		glfwMakeContextCurrent(m_Window);
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-		// SetVSync(true);
 
 		// Set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -140,12 +134,7 @@ namespace voe {
 	void WindowsWindow::Shutdown()
 	{
 		glfwDestroyWindow(m_Window);
-		--s_GLFWWindowCount;
-
-		if (s_GLFWWindowCount == 0)
-		{
-			glfwTerminate();
-		}
+		glfwTerminate();
 	}
 
 	void WindowsWindow::OnUpdate()

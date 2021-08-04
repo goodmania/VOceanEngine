@@ -4,3 +4,6 @@
 [submodule "glfw"]
 	path = glfw
 	url = https://github.com/TheCherno/glfw
+[submodule "VOceanEngine/vender/imgui"]
+	path = VOceanEngine/vender/imgui
+	url = https://github.com/TheCherno/imgui

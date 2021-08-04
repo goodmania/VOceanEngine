@@ -13,7 +13,10 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
 IncludeDir["GLFW"] = "VOceanEngine/vender/GLFW/include"
+IncludeDir["ImGui"] = "VOceanEngine/vender/imgui"
+
 include "VOceanEngine/vender/GLFW"
+include "VOceanEngine/vender/imgui"
 
 project "VOceanEngine"
 	location "VOceanEngine"
@@ -36,13 +39,22 @@ project "VOceanEngine"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vender/spdlog/include",
-		"%{IncludeDir.GLFW}"
+		"%{prj.name}/vender/VulkanSDK/Include",
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.ImGui}"
+	}
+
+	libdirs 
+	{
+		"%{prj.name}/vender/VulkanSDK/Lib",
 	}
 
 	links
 	{
 		"GLFW",
-		"opengl32.lib"
+		"ImGui",
+		"opengl32.lib",
+		"vulkan-1.lib"
 	}
 
 	filter "system:windows"
@@ -63,14 +75,17 @@ project "VOceanEngine"
 
 	filter "configurations:Debug"
 		defines "VOE_DEBUG"
+		buildoptions "/MDd"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "VOE_RELEASE"
+		buildoptions "/MD"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "VOE_DIST"
+		buildoptions "/MD"
 		optimize "On"
 
 project "Sandbox"
@@ -90,6 +105,7 @@ project "Sandbox"
 	includedirs
 	{
 		"VOceanEngine/vender/spdlog/include",
+		"VOceanEngine/vender/VulkanSDK/Include",
 		"VOceanEngine/src"
 	}
 
@@ -110,12 +126,15 @@ project "Sandbox"
 
 	filter "configurations:Debug"
 		defines "VOE_DEBUG"
+		buildoptions "/MDd"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "VOE_RELEASE"
+		buildoptions "/MD"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "VOE_DIST"
+		buildoptions "/MD"
 		optimize "On"
