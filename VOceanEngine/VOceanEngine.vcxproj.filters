@@ -4,15 +4,24 @@
     <Filter Include="Platform">
       <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Platform\Vulkan">
+      <UniqueIdentifier>{6AE1DE2D-D66C-4CF2-DF7D-CFE64B88A8F2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="VOceanEngine">
       <UniqueIdentifier>{974E9BB8-83B1-2A5D-2C37-63131879F6DF}</UniqueIdentifier>
     </Filter>
     <Filter Include="VOceanEngine\Events">
       <UniqueIdentifier>{9BCA61D1-072C-3FDF-9099-8591FCF9759E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VOceanEngine\Imgui">
+      <UniqueIdentifier>{21A1009A-0D85-C1EF-76E5-BB4262E8AB71}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Platform\WindowsWindow.h">
+    <ClInclude Include="src\Platform\Vulkan\imgui_impl_vulkan.h">
+      <Filter>Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>Platform</Filter>
     </ClInclude>
     <ClInclude Include="src\PreCompileHeader.h" />
@@ -38,6 +47,15 @@
     <ClInclude Include="src\VOceanEngine\Events\MouseEvent.h">
       <Filter>VOceanEngine\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\VOceanEngine\Imgui\ImguiLayer.h">
+      <Filter>VOceanEngine\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VOceanEngine\Layer.h">
+      <Filter>VOceanEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VOceanEngine\LayerStack.h">
+      <Filter>VOceanEngine</Filter>
+    </ClInclude>
     <ClInclude Include="src\VOceanEngine\Log.h">
       <Filter>VOceanEngine</Filter>
     </ClInclude>
@@ -50,18 +68,35 @@
     <ClInclude Include="src\VOceanEngine\keyCodes.h">
       <Filter>VOceanEngine</Filter>
     </ClInclude>
+    <ClInclude Include="src\VOceanEngine\Input.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Platform\WindowsWindow.cpp">
+    <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
+      <Filter>Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\PreCompileHeader.cpp" />
     <ClCompile Include="src\VOceanEngine\Application.cpp">
       <Filter>VOceanEngine</Filter>
     </ClCompile>
+    <ClCompile Include="src\VOceanEngine\Imgui\ImguiLayer.cpp">
+      <Filter>VOceanEngine\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VOceanEngine\Layer.cpp">
+      <Filter>VOceanEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VOceanEngine\LayerStack.cpp">
+      <Filter>VOceanEngine</Filter>
+    </ClCompile>
     <ClCompile Include="src\VOceanEngine\Log.cpp">
       <Filter>VOceanEngine</Filter>
     </ClCompile>
-    <ClCompile Include="src\VOceanEngine\Window.cpp" />
+    <ClCompile Include="src\VOceanEngine\Window.cpp">
+      <Filter>VOceanEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
   </ItemGroup>
 </Project>
