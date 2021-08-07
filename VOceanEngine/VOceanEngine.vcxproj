@@ -155,13 +155,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\VulkanCore\PhDevice.h" />
-    <ClInclude Include="src\VulkanCore\Instance.h" />
     <ClInclude Include="src\Platform\Vulkan\SetupVulkanForImGui.h" />
     <ClInclude Include="src\Platform\Vulkan\imgui_impl_vulkan.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\PreCompileHeader.h" />
+    <ClInclude Include="src\Renderer\VulkanBase.h" />
     <ClInclude Include="src\VOceanEngine.h" />
     <ClInclude Include="src\VOceanEngine\Application.h" />
     <ClInclude Include="src\VOceanEngine\Core.h" />
@@ -178,6 +177,10 @@
     <ClInclude Include="src\VOceanEngine\MouseCodes.h" />
     <ClInclude Include="src\VOceanEngine\Window.h" />
     <ClInclude Include="src\VOceanEngine\keyCodes.h" />
+    <ClInclude Include="src\VulkanCore\Device.h" />
+    <ClInclude Include="src\VulkanCore\Instance.h" />
+    <ClInclude Include="src\VulkanCore\PhDevice.h" />
+    <ClInclude Include="src\VulkanCore\Surface.h" />
     <ClInclude Include="src\VulkanCore\Tools.h" />
     <ClInclude Include="vender\glm\glm\common.hpp" />
     <ClInclude Include="vender\glm\glm\detail\_features.hpp" />
@@ -594,24 +597,25 @@
     <ClInclude Include="vender\glm\glm\vec3.hpp" />
     <ClInclude Include="vender\glm\glm\vec4.hpp" />
     <ClInclude Include="vender\glm\glm\vector_relational.hpp" />
-    <ClInclude Include="src\Renderer\VulkanBase.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\VulkanCore\PhDevice.cpp" />
-    <ClCompile Include="src\VulkanCore\Instance.cpp" />
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\PreCompileHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Renderer\VulkanBase.cpp" />
     <ClCompile Include="src\VOceanEngine\Application.cpp" />
     <ClCompile Include="src\VOceanEngine\Imgui\ImguiLayer.cpp" />
     <ClCompile Include="src\VOceanEngine\Layer.cpp" />
     <ClCompile Include="src\VOceanEngine\LayerStack.cpp" />
     <ClCompile Include="src\VOceanEngine\Log.cpp" />
     <ClCompile Include="src\VOceanEngine\Window.cpp" />
-    <ClCompile Include="src\Renderer\VulkanBase.cpp" />
+    <ClCompile Include="src\VulkanCore\Device.cpp" />
+    <ClCompile Include="src\VulkanCore\Instance.cpp" />
+    <ClCompile Include="src\VulkanCore\PhDevice.cpp" />
+    <ClCompile Include="src\VulkanCore\Surface.cpp" />
     <ClCompile Include="src\VulkanCore\Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
