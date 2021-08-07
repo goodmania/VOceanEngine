@@ -2,7 +2,7 @@
 #include "Window.h"
 
 #ifdef VOE_PLATFORM_WINDOWS
-#include "Platform/WindowsWindow.h"
+#include "Platform/Windows/WindowsWindow.h"
 #endif
 
 namespace voe

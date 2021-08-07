@@ -7,3 +7,6 @@
 [submodule "VOceanEngine/vender/imgui"]
 	path = VOceanEngine/vender/imgui
 	url = https://github.com/TheCherno/imgui
+[submodule "VOceanEngine/vender/glm"]
+	path = VOceanEngine/vender/glm
+	url = https://github.com/g-truc/glm
