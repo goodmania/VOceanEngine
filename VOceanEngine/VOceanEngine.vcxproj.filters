@@ -13,6 +13,9 @@
     <Filter Include="src\Platform\Windows">
       <UniqueIdentifier>{5B054582-4794-CE4B-F0B2-E246DC20DFF1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Renderer">
+      <UniqueIdentifier>{73D1DFBF-5F34-6F64-08BA-A71AF4FB3AE7}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\VOceanEngine">
       <UniqueIdentifier>{0EF5BBCB-FAED-DA1D-2320-C0A20F78BA29}</UniqueIdentifier>
     </Filter>
@@ -21,6 +24,9 @@
     </Filter>
     <Filter Include="src\VOceanEngine\Imgui">
       <UniqueIdentifier>{D804D890-C4FE-00E3-AD6B-97F39904674F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\VulkanCore">
+      <UniqueIdentifier>{36A7AFC7-2275-A3CD-0B09-14F4F7757F32}</UniqueIdentifier>
     </Filter>
     <Filter Include="vender">
       <UniqueIdentifier>{69728122-5514-ACF8-3ECF-BF4C2A103349}</UniqueIdentifier>
@@ -59,6 +65,9 @@
     </ClInclude>
     <ClInclude Include="src\PreCompileHeader.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\VulkanBase.h">
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\VOceanEngine.h">
       <Filter>src</Filter>
@@ -107,6 +116,21 @@
     </ClInclude>
     <ClInclude Include="src\VOceanEngine\keyCodes.h">
       <Filter>src\VOceanEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VulkanCore\Device.h">
+      <Filter>src\VulkanCore</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VulkanCore\Instance.h">
+      <Filter>src\VulkanCore</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VulkanCore\PhDevice.h">
+      <Filter>src\VulkanCore</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VulkanCore\Surface.h">
+      <Filter>src\VulkanCore</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VulkanCore\Tools.h">
+      <Filter>src\VulkanCore</Filter>
     </ClInclude>
     <ClInclude Include="vender\glm\glm\common.hpp">
       <Filter>vender\glm\glm</Filter>
@@ -1353,10 +1377,6 @@
     <ClInclude Include="vender\glm\glm\vector_relational.hpp">
       <Filter>vender\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\VulkanBase.h" />
-    <ClInclude Include="src\VulkanCore\Instance.h" />
-    <ClInclude Include="src\VulkanCore\Tools.h" />
-    <ClInclude Include="src\VulkanCore\PhDevice.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
@@ -1370,6 +1390,9 @@
     </ClCompile>
     <ClCompile Include="src\PreCompileHeader.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\VulkanBase.cpp">
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\VOceanEngine\Application.cpp">
       <Filter>src\VOceanEngine</Filter>
@@ -1389,9 +1412,20 @@
     <ClCompile Include="src\VOceanEngine\Window.cpp">
       <Filter>src\VOceanEngine</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\VulkanBase.cpp" />
-    <ClCompile Include="src\VulkanCore\Instance.cpp" />
-    <ClCompile Include="src\VulkanCore\Tools.cpp" />
-    <ClCompile Include="src\VulkanCore\PhDevice.cpp" />
+    <ClCompile Include="src\VulkanCore\Device.cpp">
+      <Filter>src\VulkanCore</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VulkanCore\Instance.cpp">
+      <Filter>src\VulkanCore</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VulkanCore\PhDevice.cpp">
+      <Filter>src\VulkanCore</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VulkanCore\Surface.cpp">
+      <Filter>src\VulkanCore</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VulkanCore\Tools.cpp">
+      <Filter>src\VulkanCore</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
