@@ -14,6 +14,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "VOceanEngine/vender/GLFW/include"
 IncludeDir["ImGui"] = "VOceanEngine/vender/imgui"
+IncludeDir["glm"] = "VOceanEngine/vender/glm"
 
 include "VOceanEngine/vender/GLFW"
 include "VOceanEngine/vender/imgui"
@@ -32,7 +33,9 @@ project "VOceanEngine"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vender/glm/glm/**.hpp",
+		"%{prj.name}/vender/glm/glm/**.inl"
 	}
 
 	includedirs
@@ -41,7 +44,8 @@ project "VOceanEngine"
 		"%{prj.name}/vender/spdlog/include",
 		"%{prj.name}/vender/VulkanSDK/Include",
 		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
 	}
 
 	libdirs 
@@ -106,7 +110,8 @@ project "Sandbox"
 	{
 		"VOceanEngine/vender/spdlog/include",
 		"VOceanEngine/vender/VulkanSDK/Include",
-		"VOceanEngine/src"
+		"VOceanEngine/src",
+		"%{IncludeDir.glm}"
 	}
 
 	links
