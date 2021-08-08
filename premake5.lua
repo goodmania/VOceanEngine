@@ -111,7 +111,14 @@ project "Sandbox"
 		"VOceanEngine/vender/spdlog/include",
 		"VOceanEngine/vender/VulkanSDK/Include",
 		"VOceanEngine/src",
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}"
+	}
+
+	libdirs 
+	{
+		"%{prj.name}/vender/VulkanSDK/Lib",
 	}
 
 	links

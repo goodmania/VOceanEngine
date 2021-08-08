@@ -7,7 +7,7 @@ namespace voe {
 	
 	PhDevice::PhDevice(const Instance* instance, const Surface* surface) : m_Instance(instance), m_Surface(surface)
 	{
-		uint32_t physicalDeviceCount;
+		uint32_t physicalDeviceCount = 0;
 		vkEnumeratePhysicalDevices(instance->GetVkInstance(), &physicalDeviceCount, nullptr);
 
 		if (physicalDeviceCount == 0)
@@ -17,6 +17,7 @@ namespace voe {
 		vkEnumeratePhysicalDevices(instance->GetVkInstance(), &physicalDeviceCount, physicalDevices.data());
 
 		m_PhysicalDevice = ChoosePhysicalDevice(physicalDevices);
+
 		if (!m_PhysicalDevice)
 			throw std::runtime_error("Vulkan runtime error, failed to find a suitable GPU");
 
@@ -26,7 +27,7 @@ namespace voe {
 		m_MsaaSamples = GetMaxUsableSampleCount();
 
 #if defined(VOE_DEBUG)
-		VOE_CORE_INFO("Selected Physical Device: ", m_Properties.deviceID, " ", std::quoted(m_Properties.deviceName), '\n');
+		VOE_CORE_INFO("\n Physical Device: {}  \n DeviceID: {}", m_Properties.deviceName, m_Properties.deviceID);
 #endif
 	}
 
@@ -36,8 +37,7 @@ namespace voe {
 		{
 			if (IsDeviceSuitable(device))
 			{
-				m_PhysicalDevice = device;
-				break;
+				return device;
 			}
 		}
 

@@ -6,7 +6,7 @@
 
 namespace voe
 {
-	Surface::Surface(const Instance* instance, const WindowsWindow* window)
+	Surface::Surface(const Instance* instance, const Window* window)
 		: m_Instance(instance), m_Window(window)
 	{
 		auto glfwWindow = static_cast<GLFWwindow*>(window->GetNativeWindow());
