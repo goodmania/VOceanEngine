@@ -156,4 +156,12 @@ namespace voe {
 	{
 		return m_Data.VSync;
 	}
+
+	void WindowsWindow::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
+	{
+		if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to craete window surface");
+		}
+	}
 }

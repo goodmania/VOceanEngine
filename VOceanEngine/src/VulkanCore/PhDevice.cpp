@@ -1,18 +1,20 @@
 #include "PreCompileHeader.h"
 #include "PhDevice.h"
 
+#include "VulkanCore/Surface.h"
+
 namespace voe {
 	
-	PhDevice::PhDevice(const Instance* instance) : m_Instance(instance)
+	PhDevice::PhDevice(const Instance* instance, const Surface* surface) : m_Instance(instance), m_Surface(surface)
 	{
 		uint32_t physicalDeviceCount;
-		vkEnumeratePhysicalDevices(GetNativeInstance(), &physicalDeviceCount, nullptr);
+		vkEnumeratePhysicalDevices(instance->GetVkInstance(), &physicalDeviceCount, nullptr);
 
 		if (physicalDeviceCount == 0)
 			throw std::runtime_error("failed to find GPUs with Vulkan support!");
 
 		std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
-		vkEnumeratePhysicalDevices(GetNativeInstance(), &physicalDeviceCount, physicalDevices.data());
+		vkEnumeratePhysicalDevices(instance->GetVkInstance(), &physicalDeviceCount, physicalDevices.data());
 
 		m_PhysicalDevice = ChoosePhysicalDevice(physicalDevices);
 		if (!m_PhysicalDevice)
@@ -45,24 +47,115 @@ namespace voe {
 		}
 	}
 
-	uint32_t PhDevice::IsDeviceSuitable(const VkPhysicalDevice& device)
+	bool PhDevice::IsDeviceSuitable(const VkPhysicalDevice& device)
 	{
-		QueueFamilyIndices indices = findQueueFamilies(device);
+		QueueFamilyIndices indices = FindQueueFamilies(device);
 
-		bool extensionsSupported = checkDeviceExtensionSupport(device);
+		bool extensionsSupported = CheckDeviceExtensionSupport(device);
 
 		bool swapChainAdequate = false;
 
 		if (extensionsSupported)
 		{
-			SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
-			swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+			SwapchainSupportDetails swapchainSupport = QuerySwapchainSupport(device);
+			swapChainAdequate = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
 		}
 
 		VkPhysicalDeviceFeatures supportedFeatures;
 		vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-		return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+		return indices.IsComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+	}
+
+	QueueFamilyIndices PhDevice::FindQueueFamilies(const VkPhysicalDevice& device)
+	{
+		QueueFamilyIndices indices;
+		uint32_t queueFamilyCount = 0;
+
+		// the number of queue families is returned in pQueueFamilyCount.
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+
+		// retrieve details about the queue families and queues supported by a device
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+		int i = 0;
+		for (const auto& queueFamily : queueFamilies)
+		{
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			{
+				indices.graphicsFamily = i;
+				indices.graphicsFamilyHasValue = true;
+			}
+
+			VkBool32 presentSupport = false;
+
+			// determine whether a queue family of a physical device supports presentation to a given surface(glfw surface)
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface->GetVkSurface(), &presentSupport);
+
+			if (queueFamily.queueCount > 0 && presentSupport)
+			{
+				indices.presentFamily = i;
+				indices.presentFamilyHasValue = true;
+			}
+
+			if (indices.IsComplete())
+			{
+				break;
+			}
+			i++;
+		}
+		return indices;
+	}
+
+	bool PhDevice::CheckDeviceExtensionSupport(const VkPhysicalDevice& device)
+	{
+		uint32_t extensionCount = 0;
+
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+		std::vector<VkExtensionProperties> properties(extensionCount);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, properties.data());
+
+		std::set<std::string> requiredExtensions(DeviceExtensions.begin(), DeviceExtensions.end());
+
+		for (const auto& extension : properties)
+		{
+			requiredExtensions.erase(extension.extensionName);
+		}
+		return requiredExtensions.empty();
+	}
+
+	SwapchainSupportDetails PhDevice::QuerySwapchainSupport(VkPhysicalDevice device)
+	{
+		SwapchainSupportDetails details;
+
+		// query the basic capabilities of a surface,
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface->GetVkSurface(), &details.capabilities);
+
+		// query the supported swapchain format-color space pairs for a surface
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface->GetVkSurface(), &formatCount, nullptr);
+
+		if (formatCount != 0) 
+		{
+			details.formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface->GetVkSurface(), &formatCount, details.formats.data());
+		}
+
+		//query the supported presentation modes for a surface
+		uint32_t presentModeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface->GetVkSurface(), &presentModeCount, nullptr);
+
+		if (presentModeCount != 0)
+		{
+			details.presentModes.resize(presentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(
+				device,
+				m_Surface->GetVkSurface(),
+				&presentModeCount,
+				details.presentModes.data());
+		}
+		return details;
 	}
 
 	VkSampleCountFlagBits PhDevice::GetMaxUsableSampleCount() const 
@@ -79,64 +172,6 @@ namespace voe {
 			if (counts & sampleFlag)
 				return sampleFlag;
 		}
-
 		return VK_SAMPLE_COUNT_1_BIT;
-	}
-
-	void PhDevice::LogVulkanDevice(
-		const VkPhysicalDeviceProperties& physicalDeviceProperties,
-		const std::vector<VkExtensionProperties>& extensionProperties) 
-	{
-		std::stringstream ss;
-		switch (static_cast<int32_t>(physicalDeviceProperties.deviceType)) 
-		{
-		case 1:
-			ss << "Integrated";
-			break;
-		case 2:
-			ss << "Discrete";
-			break;
-		case 3:
-			ss << "Virtual";
-			break;
-		case 4:
-			ss << "CPU";
-			break;
-		default:
-			ss << "Other " << physicalDeviceProperties.deviceType;
-		}
-
-		ss << " Physical Device: " << physicalDeviceProperties.deviceID;
-		switch (physicalDeviceProperties.vendorID) 
-		{
-		case 0x8086:
-			ss << " \"Intel\"";
-			break;
-		case 0x10DE:
-			ss << " \"Nvidia\"";
-			break;
-		case 0x1002:
-			ss << " \"AMD\"";
-			break;
-		default:
-			ss << " \"" << physicalDeviceProperties.vendorID << '\"';
-		}
-
-		ss << " " << std::quoted(physicalDeviceProperties.deviceName) << '\n';
-
-		uint32_t supportedVersion[3] = 
-		{
-			VK_VERSION_MAJOR(physicalDeviceProperties.apiVersion),
-			VK_VERSION_MINOR(physicalDeviceProperties.apiVersion),
-			VK_VERSION_PATCH(physicalDeviceProperties.apiVersion)
-		};
-		ss << "API Version: " << supportedVersion[0] << "." << supportedVersion[1] << "." << supportedVersion[2] << '\n';
-
-		ss << "Extensions: ";
-		for (const auto& extension : extensionProperties)
-			ss << extension.extensionName << ", ";
-
-		ss << "\n\n";
-		VOE_CORE_INFO(ss.str());
 	}
 }
