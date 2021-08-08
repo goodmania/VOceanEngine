@@ -4,7 +4,13 @@
 
 namespace voe{
 
-	
+	class VulkanRenderer
+	{
+		void InitVulkanCore();
+
+
+	};
+
 
 }
 

@@ -17,13 +17,14 @@ namespace voe {
 
 		unsigned int GetWidth() const override { return m_Data.Width; }
 		unsigned int GetHeight() const override { return m_Data.Height; }
+		virtual void* GetNativeWindow() const { return m_Window; }
+
+		void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
 		// Window attributes
 		void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
-
-		virtual void* GetNativeWindow() const { return m_Window; }
 
 	private:
 		virtual void Init(const WindowProps& props);

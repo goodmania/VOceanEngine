@@ -4,31 +4,53 @@
 
 namespace voe {
 
+	class Surface;
+
 	static const std::vector<VkSampleCountFlagBits> STAGE_FLAG_BITS = {
 	VK_SAMPLE_COUNT_64_BIT, VK_SAMPLE_COUNT_32_BIT, VK_SAMPLE_COUNT_16_BIT,
 	VK_SAMPLE_COUNT_8_BIT,	VK_SAMPLE_COUNT_4_BIT,	VK_SAMPLE_COUNT_2_BIT
 	};
 
+	struct QueueFamilyIndices
+	{
+		uint32_t graphicsFamily;
+		uint32_t presentFamily;
+		bool graphicsFamilyHasValue = false;
+		bool presentFamilyHasValue = false;
+		bool IsComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
+	};
+	struct SwapchainSupportDetails
+	{
+		VkSurfaceCapabilitiesKHR capabilities;
+		std::vector<VkSurfaceFormatKHR> formats;
+		std::vector<VkPresentModeKHR> presentModes;
+	};
+
 	class VOE_API PhDevice 
 	{
 	public:
-		explicit PhDevice(const Instance* instance);
 
-		const VkPhysicalDevice& GetPhysicalDevice() const { return m_PhysicalDevice; }
+		const std::vector<const char*> DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+		PhDevice(const Instance* instance, const Surface* surface);
+
+		const VkPhysicalDevice& GetVkPhysicalDevice() const { return m_PhysicalDevice; }
 		const VkPhysicalDeviceProperties& GetProperties() const { return m_Properties; }
 		const VkPhysicalDeviceFeatures& GetFeatures() const { return m_EnabledFeatures; }
 		const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const { return m_MemoryProperties; }
 		const VkSampleCountFlagBits& GetMsaaSamples() const { return m_MsaaSamples; }
 
+		QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& device);
+
 	private:
 		VkPhysicalDevice ChoosePhysicalDevice(const std::vector<VkPhysicalDevice>& devices);
-		static uint32_t IsDeviceSuitable(const VkPhysicalDevice& device);
+		bool IsDeviceSuitable(const VkPhysicalDevice& device);
+		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device);
+		SwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice device);
 		VkSampleCountFlagBits GetMaxUsableSampleCount() const;
 
-		static void LogVulkanDevice(const VkPhysicalDeviceProperties& physicalDeviceProperties, const std::vector<VkExtensionProperties>& extensionProperties);
-
 		const Instance* m_Instance;
-		VkInstance GetNativeInstance() const { return m_Instance->GetVoeInstance(); }
+		const Surface* m_Surface;
 
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 		VkPhysicalDeviceProperties m_Properties;

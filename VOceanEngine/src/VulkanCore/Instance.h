@@ -7,7 +7,7 @@ namespace voe {
 	class VOE_API Instance
 	{
 	public:
-		const std::vector<const char*> ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+		const std::vector < const char* > Instance::ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
 		friend VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -23,7 +23,7 @@ namespace voe {
 		Instance(Instance&&) = delete;
 		Instance& operator=(Instance&&) = delete;
 
-		const VkInstance GetVoeInstance() const { return m_Instance; }
+		const VkInstance GetVkInstance() const { return m_Instance; }
 
 	private:
 		void CreateInstance();
