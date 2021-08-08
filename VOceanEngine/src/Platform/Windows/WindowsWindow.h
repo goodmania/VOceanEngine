@@ -30,9 +30,6 @@ namespace voe {
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
 
-	private:
-		GLFWwindow* m_Window;
-
 		struct WindowData
 		{
 			std::string Title;
@@ -41,7 +38,7 @@ namespace voe {
 
 			EventCallbackFn EventCallback;
 		};
-
-		WindowData m_Data;
+		WindowData  m_Data;
+		GLFWwindow* m_Window;
 	};
 }

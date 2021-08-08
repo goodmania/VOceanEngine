@@ -6,6 +6,7 @@
 #include "VOceanEngine/Events/AppEvent.h"
 
 #include "Window.h"
+#include "Renderer/VulkanBase.h"
 
 namespace voe {
 
@@ -25,12 +26,13 @@ namespace voe {
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
+		static Application* s_Instance;
 
-		std::unique_ptr<Window> m_Window;
+		std::shared_ptr<Window> m_Window;
 		bool m_Running;
 		LayerStack m_LayerStack;
 
-		static Application* s_Instance;
+		std::unique_ptr<VulkanBase> m_VulkanBase;
 	};
 
 	Application* CreateApplication();

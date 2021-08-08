@@ -41,6 +41,6 @@ namespace voe {
 
 		virtual void* GetNativeWindow() const = 0;
 
-		static std::unique_ptr<Window> Create(const WindowProps& props = WindowProps());
+		static std::shared_ptr<Window> Create(const WindowProps& props = WindowProps());
 	};
 }

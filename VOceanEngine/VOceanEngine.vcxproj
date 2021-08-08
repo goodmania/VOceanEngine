@@ -182,6 +182,7 @@
     <ClInclude Include="src\VulkanCore\PhDevice.h" />
     <ClInclude Include="src\VulkanCore\Surface.h" />
     <ClInclude Include="src\VulkanCore\Tools.h" />
+    <ClInclude Include="src\VulkanCore\VulkanCoreHeader.h" />
     <ClInclude Include="vender\glm\glm\common.hpp" />
     <ClInclude Include="vender\glm\glm\detail\_features.hpp" />
     <ClInclude Include="vender\glm\glm\detail\_fixes.hpp" />

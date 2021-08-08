@@ -7,10 +7,10 @@
 
 namespace voe
 {
-	std::unique_ptr<Window> Window::Create(const WindowProps& props)
+	std::shared_ptr<Window> Window::Create(const WindowProps& props)
 	{
 #ifdef VOE_PLATFORM_WINDOWS
-		return std::make_unique<WindowsWindow>(props);
+		return std::make_shared<WindowsWindow>(props);
 #else
 		return nullptr;
 #endif

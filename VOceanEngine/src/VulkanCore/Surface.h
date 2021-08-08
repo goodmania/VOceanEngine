@@ -10,14 +10,14 @@ namespace voe {
 	class VOE_API Surface 
 	{
 	public:
-		Surface(const Instance* instance, const WindowsWindow* window);
+		Surface(const Instance* instance, const Window* window);
 		~Surface();
 
 		const VkSurfaceKHR& GetVkSurface() const { return m_Surface; }
 
 	private:
 		const Instance* m_Instance;
-		const WindowsWindow* m_Window;
+		const Window* m_Window;
 
 		VkSurfaceKHR m_Surface;
 	};

@@ -132,6 +132,9 @@
     <ClInclude Include="src\VulkanCore\Tools.h">
       <Filter>src\VulkanCore</Filter>
     </ClInclude>
+    <ClInclude Include="src\VulkanCore\VulkanCoreHeader.h">
+      <Filter>src\VulkanCore</Filter>
+    </ClInclude>
     <ClInclude Include="vender\glm\glm\common.hpp">
       <Filter>vender\glm\glm</Filter>
     </ClInclude>
