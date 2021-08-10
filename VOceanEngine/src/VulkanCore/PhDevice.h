@@ -38,9 +38,11 @@ namespace voe {
 		const VkPhysicalDeviceProperties& GetProperties() const { return m_Properties; }
 		const VkPhysicalDeviceFeatures& GetFeatures() const { return m_EnabledFeatures; }
 		const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const { return m_MemoryProperties; }
+		const SwapchainSupportDetails GetSwapchainSupport() { return QuerySwapchainSupport(m_PhysicalDevice); }
 		const VkSampleCountFlagBits& GetMsaaSamples() const { return m_MsaaSamples; }
-
 		QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& device);
+		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	private:
 		VkPhysicalDevice ChoosePhysicalDevice(const std::vector<VkPhysicalDevice>& devices);

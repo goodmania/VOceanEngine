@@ -1,5 +1,5 @@
 #include "PreCompileHeader.h"
-#include "VulkanBase.h"
+#include "Renderer/VulkanBase.h"
 
 #include "VulkanCore/VulkanCoreHeader.h"
 
@@ -17,10 +17,11 @@ namespace voe {
 
 	void VulkanBase::InitVulkanCore()
 	{
-		m_Instance	= std::make_shared<Instance>();
-		m_Surface	= std::make_shared<Surface>(m_Instance.get(), m_Window.get());
-		m_PhDevice	= std::make_shared<PhDevice>(m_Instance.get(), m_Surface.get());
-		m_Device	= std::make_shared<Device>(m_Instance.get(), m_PhDevice.get(), m_Surface.get());
+		m_Instance	= std::make_unique<Instance>();
+		m_Surface	= std::make_unique<Surface>(m_Instance.get(), m_Window.get());
+		m_PhDevice	= std::make_unique<PhDevice>(m_Instance.get(), m_Surface.get());
+		m_Device	= std::make_unique<Device>(m_Instance.get(), m_PhDevice.get(), m_Surface.get());
+		m_Swapchain = std::make_unique<Swapchain>(m_Device.get(), m_PhDevice.get(), m_Surface.get());
 	}
 }
 

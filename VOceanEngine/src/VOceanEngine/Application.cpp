@@ -16,9 +16,9 @@ namespace voe {
 		VOE_CORE_ASSERT(!s_Instance, "Application already exists!")
 		s_Instance = this;
 
-		// 1. create window, 2. init vulkanbase
 		m_Window = std::shared_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+
 		m_VulkanBase = std::make_unique<VulkanBase>(m_Window);
 	}
 

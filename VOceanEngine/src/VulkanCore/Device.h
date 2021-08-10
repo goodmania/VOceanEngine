@@ -10,9 +10,12 @@ namespace voe {
 
 	class VOE_API Device
 	{
+		friend class VulkanBase;
 	public:
 		Device(const Instance* instance, PhDevice* phDevice, const Surface* surface);
 		~Device();
+
+		const VkDevice& GetVkDevice() const { return m_Device; }
 
 		const VkQueue& GetGraphicsQueue() const { return m_GraphicsQueue; }
 		const VkQueue& GetPresentQueue() const	{ return m_PresentQueue; }

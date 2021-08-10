@@ -3,11 +3,12 @@
 #include "Platform/Windows/WindowsWindow.h"
 
 namespace voe{
-
+	
 	class Instance;
 	class PhDevice;
 	class Surface;
 	class Device;
+	class Swapchain;
 
 	class VOE_API VulkanBase
 	{
@@ -20,10 +21,12 @@ namespace voe{
 
 		std::shared_ptr<Window> m_Window;
 
-		std::shared_ptr<Instance>	m_Instance;
-		std::shared_ptr<Surface>	m_Surface;
-		std::shared_ptr<PhDevice>	m_PhDevice;
-		std::shared_ptr<Device>		m_Device;
+		std::unique_ptr<Instance>	m_Instance;
+		std::unique_ptr<Surface>	m_Surface;
+		std::unique_ptr<PhDevice>	m_PhDevice;
+		std::unique_ptr<Device>		m_Device;
+
+		std::unique_ptr<Swapchain>  m_Swapchain;
 	};
 }
 
