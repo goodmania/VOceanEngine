@@ -4,11 +4,11 @@
 
 namespace voe {
 
-	class Device;
 	class PhDevice;
 	class Surface;
+	class Device;
 
-	struct SwapChainBuffer 
+	struct SwapchainBuffer 
 	{
 		VkImage image;
 		VkImageView view;
@@ -24,7 +24,7 @@ namespace voe {
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface);
 		~Swapchain();
 
-		VkResult AcquireNextImage(uint32_t* imageIndex);
+		VkResult AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence);
 
 		const size_t GetSwapchainImageCount() const { return m_SwapchainImages.size(); }
 		const VkExtent2D GetSwapchainExtent() const { return m_SwapchainExtent; }
@@ -34,6 +34,9 @@ namespace voe {
 		void CreateSwapchain();
 		void CreateImageView();
 		void CreateDepthResources();
+		void CreateRenderPass();
+		void CreateFramebuffers();
+		void CreateSyncObjects();
 
 		// choose swapchian format, present mode, and extent
 		VkPresentModeKHR ChooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -44,7 +47,6 @@ namespace voe {
 		VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 		std::shared_ptr<Swapchain> m_OldSwapchain;
 
-		// Vulkancore pointers
 		Device* m_Device;
 		PhDevice* m_PhDevice;
 		Surface* m_Surface;
@@ -68,7 +70,36 @@ namespace voe {
 		VkFormat m_SwapchainImageFormat;
 		VkFormat m_SwapchainDepthFormat;
 		VkExtent2D m_SwapchainExtent;
-		std::vector<SwapChainBuffer> m_Buffers;
+		std::vector<SwapchainBuffer> m_Buffers;
+
+		VkRenderPass m_RenderPass;
+		std::vector<VkFramebuffer> m_FrameBuffers;
+
+		struct DepthStencil
+		{
+			VkImage image;
+			VkDeviceMemory mem;
+			VkImageView view;
+		} m_DepthStencil;
+
+		// for multisampling 
+		struct MultisampleTarget
+		{
+			struct
+			{
+				VkImage image;
+				VkImageView view;
+				VkDeviceMemory memory;
+			} color;
+
+			struct
+			{
+				VkImage image;
+				VkImageView view;
+				VkDeviceMemory memory;
+			} depth;
+
+		} m_MultisampleTarget;
 	};
 }
 

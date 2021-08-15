@@ -155,9 +155,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="FrameBuffer.h" />
-    <ClInclude Include="RenderPass.h" />
-    <ClInclude Include="src\Renderer\CommandBuffers\CommnadPool.h" />
+    <ClInclude Include="src\Renderer\HeightMap\HeightMap.h" />
     <ClInclude Include="src\Platform\Vulkan\SetupVulkanForImGui.h" />
     <ClInclude Include="src\Platform\Vulkan\imgui_impl_vulkan.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
@@ -602,11 +600,10 @@
     <ClInclude Include="vender\glm\glm\vec3.hpp" />
     <ClInclude Include="vender\glm\glm\vec4.hpp" />
     <ClInclude Include="vender\glm\glm\vector_relational.hpp" />
+    <ClInclude Include="src\Renderer\VulkanRenderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FrameBuffer.cpp" />
-    <ClCompile Include="RenderPass.cpp" />
-    <ClCompile Include="src\Renderer\CommandBuffers\CommnadPool.cpp" />
+    <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp" />
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
@@ -626,6 +623,7 @@
     <ClCompile Include="src\VulkanCore\Surface.cpp" />
     <ClCompile Include="src\VulkanCore\Tools.cpp" />
     <ClCompile Include="src\Renderer\Swapchain.cpp" />
+    <ClCompile Include="src\Renderer\VulkanRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="vender\GLFW\GLFW.vcxproj">

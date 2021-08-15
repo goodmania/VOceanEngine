@@ -24,8 +24,11 @@ namespace voe {
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_EnabledFeatures);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
-		m_MsaaSamples = GetMaxUsableSampleCount();
-
+		if (m_Instance->EnableMultiSampling())
+		{
+			m_MsaaSamples = GetMaxUsableSampleCount();
+		}
+	
 #if defined(VOE_DEBUG)
 		VOE_CORE_INFO("\n Physical Device: {}  \n DeviceID: {}", m_Properties.deviceName, m_Properties.deviceID);
 #endif
@@ -97,6 +100,20 @@ namespace voe {
 			{
 				indices.presentFamily = i;
 				indices.presentFamilyHasValue = true;
+			}
+
+			// Check for compute support.
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) 
+			{
+				indices.computeFamily = i;
+				indices.computeFamilyHasValue = true;
+			}
+
+			// Check for transfer support.
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) 
+			{
+				indices.transferFamily = i;
+				indices.transferFamilyHasValue = true;
 			}
 
 			if (indices.IsComplete())
@@ -190,6 +207,37 @@ namespace voe {
 			}
 		}
 		throw std::runtime_error("failed to find suitable memory type!");
+	}
+
+	uint32_t PhDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkBool32& foundMemoryType)
+	{
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memProperties);
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+		{
+			if ((typeFilter & 1) == 1)
+			{
+				if ((memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+				{
+					if (foundMemoryType)
+					{
+						foundMemoryType = true;
+					}
+					return i;
+				}
+			}
+			typeFilter >>= 1;
+		}
+
+		if (foundMemoryType)
+		{
+			foundMemoryType = false;
+			return 0;
+		}
+		else
+		{
+			throw std::runtime_error("Could not find a matching memory type");
+		}
 	}
 
 	VkSampleCountFlagBits PhDevice::GetMaxUsableSampleCount() const 

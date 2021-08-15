@@ -31,15 +31,13 @@ namespace voe {
 	{
 		while (m_Running)
 		{
-			glClearColor(1.f, 1.f, 1.f, 0.f);
-			glClear(GL_COLOR_BUFFER_BIT);
-
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
 			m_Window->OnUpdate();
 		}
 	}
+
 	void Application::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);

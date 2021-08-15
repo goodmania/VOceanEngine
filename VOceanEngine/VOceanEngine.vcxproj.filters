@@ -1380,10 +1380,9 @@
     <ClInclude Include="vender\glm\glm\vector_relational.hpp">
       <Filter>vender\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\CommandBuffers\CommnadPool.h" />
     <ClInclude Include="src\Renderer\Swapchain.h" />
-    <ClInclude Include="RenderPass.h" />
-    <ClInclude Include="FrameBuffer.h" />
+    <ClInclude Include="src\Renderer\VulkanRenderer.h" />
+    <ClInclude Include="src\Renderer\HeightMap\HeightMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
@@ -1434,9 +1433,8 @@
     <ClCompile Include="src\VulkanCore\Tools.cpp">
       <Filter>src\VulkanCore</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\CommandBuffers\CommnadPool.cpp" />
     <ClCompile Include="src\Renderer\Swapchain.cpp" />
-    <ClCompile Include="RenderPass.cpp" />
-    <ClCompile Include="FrameBuffer.cpp" />
+    <ClCompile Include="src\Renderer\VulkanRenderer.cpp" />
+    <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp" />
   </ItemGroup>
 </Project>

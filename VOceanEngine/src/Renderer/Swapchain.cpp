@@ -1,7 +1,7 @@
 #include "PreCompileHeader.h"
-#include "Swapchain.h"
-
 #include "VulkanCore/VulkanCoreHeader.h"
+
+#include "Swapchain.h"
 
 namespace voe {
 
@@ -13,6 +13,7 @@ namespace voe {
 	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent)
 	{
 		InitSwapchain();
+		m_OldSwapchain = nullptr;
 	}
 
 	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface)
@@ -27,6 +28,7 @@ namespace voe {
 		{
 			vkDestroyImageView(m_Device->GetVkDevice(), imageView, nullptr);
 		}
+
 		m_SwapchainImgaeViews.clear();
 
 		if (m_Swapchain != nullptr)
@@ -41,6 +43,8 @@ namespace voe {
 			vkDestroyImage(m_Device->GetVkDevice(), m_DepthImages[i], nullptr);
 			vkFreeMemory(m_Device->GetVkDevice(), m_DepthImageMemories[i], nullptr);
 		}
+
+		vkDestroyRenderPass(m_Device->GetVkDevice(), m_RenderPass, nullptr);
 	}
 
 	void Swapchain::InitSwapchain()
@@ -48,6 +52,9 @@ namespace voe {
 		CreateSwapchain();
 		CreateImageView();
 		CreateDepthResources();
+		CreateRenderPass();
+		CreateFramebuffers();
+		CreateSyncObjects();
 	}
 
 	void Swapchain::CreateSwapchain()
@@ -76,13 +83,13 @@ namespace voe {
 		swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		QueueFamilyIndices indices = m_PhDevice->FindQueueFamilies(m_PhDevice->GetVkPhysicalDevice());
-		uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
+		std::array<uint32_t, 2> queueFamilyIndices = { indices.graphicsFamily, indices.presentFamily };
 
 		if (indices.graphicsFamily != indices.presentFamily)
 		{
 			swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-			swapchainCreateInfo.queueFamilyIndexCount = 2;
-			swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+			swapchainCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
+			swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices.data();
 		}
 		else
 		{
@@ -122,6 +129,10 @@ namespace voe {
 		}
 		VOE_CORE_INFO("Present mode: V-Sync");
 		return VK_PRESENT_MODE_FIFO_KHR;
+	}
+
+	void Swapchain::CreateSyncObjects()
+	{
 	}
 
 	VkExtent2D Swapchain::ChooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities)
@@ -244,11 +255,222 @@ namespace voe {
 			VOE_CHECK_RESULT(vkCreateImageView(m_Device->GetVkDevice(), &viewInfo, nullptr, &m_DepthImageViews[i]));
 		}
 	}
-	
-	VkResult Swapchain::AcquireNextImage(uint32_t* imageIndex)
+
+	void Swapchain::CreateRenderPass()
 	{
-		return VkResult();
+		auto sampleCount = m_PhDevice->GetMsaaSamples();
+
+		if (sampleCount != VK_SAMPLE_COUNT_1_BIT)
+		{
+			std::array<VkAttachmentDescription, 4> attachments = {};
+
+			// Multisampled attachment that we render to
+			attachments[0].format = m_SwapchainImageFormat;
+			attachments[0].samples = sampleCount;
+			attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			// This is the frame buffer attachment to where the multisampled image
+			// will be resolved to and which will be presented to the swapchain
+			attachments[1].format = m_SwapchainImageFormat;
+			attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachments[1].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+			// Multisampled depth attachment we render to
+			attachments[2].format = m_SwapchainImageFormat;
+			attachments[2].samples = sampleCount;
+			attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachments[2].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			// Depth resolve attachment
+			attachments[3].format = m_SwapchainDepthFormat;
+			attachments[3].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachments[3].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachments[3].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachments[3].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachments[3].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachments[3].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachments[3].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentReference colorReference = {};
+			colorReference.attachment = 0;
+			colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentReference depthReference = {};
+			depthReference.attachment = 2;
+			depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			// Resolve attachment reference for the color attachment
+			VkAttachmentReference resolveReference = {};
+			resolveReference.attachment = 1;
+			resolveReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpass = {};
+			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpass.colorAttachmentCount = 1;
+			subpass.pColorAttachments = &colorReference;
+			// Pass our resolve attachments to the sub pass
+			subpass.pResolveAttachments = &resolveReference;
+			subpass.pDepthStencilAttachment = &depthReference;
+
+			std::array<VkSubpassDependency, 2> dependencies;
+
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+			dependencies[1].srcSubpass = 0;
+			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+			VkRenderPassCreateInfo renderPassCI = {};
+			renderPassCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassCI.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderPassCI.pAttachments = attachments.data();
+			renderPassCI.subpassCount = 1;
+			renderPassCI.pSubpasses = &subpass;
+			renderPassCI.dependencyCount = 2;
+			renderPassCI.pDependencies = dependencies.data();
+			VOE_CHECK_RESULT(vkCreateRenderPass(m_Device->GetVkDevice(), &renderPassCI, nullptr, &m_RenderPass));
+		}
+		else
+		{
+			std::array<VkAttachmentDescription, 2> attachments = {};
+			// Color attachment
+			attachments[0].format = m_SwapchainImageFormat;
+			attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+			// Depth attachment
+			attachments[1].format = m_SwapchainImageFormat;
+			attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+			attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentReference colorReference = {};
+			colorReference.attachment = 0;
+			colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			VkAttachmentReference depthReference = {};
+			depthReference.attachment = 1;
+			depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescription subpassDescription = {};
+			subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpassDescription.colorAttachmentCount = 1;
+			subpassDescription.pColorAttachments = &colorReference;
+			subpassDescription.pDepthStencilAttachment = &depthReference;
+			subpassDescription.inputAttachmentCount = 0;
+			subpassDescription.pInputAttachments = nullptr;
+			subpassDescription.preserveAttachmentCount = 0;
+			subpassDescription.pPreserveAttachments = nullptr;
+			subpassDescription.pResolveAttachments = nullptr;
+
+			// Subpass dependencies for layout transitions
+			std::array<VkSubpassDependency, 2> dependencies;
+
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+			dependencies[1].srcSubpass = 0;
+			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+			VkRenderPassCreateInfo renderPassCI{};
+			renderPassCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassCI.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderPassCI.pAttachments = attachments.data();
+			renderPassCI.subpassCount = 1;
+			renderPassCI.pSubpasses = &subpassDescription;
+			renderPassCI.dependencyCount = static_cast<uint32_t>(dependencies.size());
+			renderPassCI.pDependencies = dependencies.data();
+
+			VOE_CHECK_RESULT(vkCreateRenderPass(m_Device->GetVkDevice(), &renderPassCI, nullptr, &m_RenderPass));
+		}
 	}
 
+	void Swapchain::CreateFramebuffers()
+	{
+		VkImageView attachments[2];
 
+		// Depth/Stencil attachment is the same for all frame buffers
+		attachments[1] = m_DepthStencil.view;
+
+		VkFramebufferCreateInfo frameBufferCreateInfo;
+		frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		frameBufferCreateInfo.pNext = NULL;
+		frameBufferCreateInfo.renderPass = m_RenderPass;
+		frameBufferCreateInfo.attachmentCount = 2;
+		frameBufferCreateInfo.pAttachments = attachments;
+		frameBufferCreateInfo.width = m_SwapchainExtent.width;
+		frameBufferCreateInfo.height = m_SwapchainExtent.height;
+		frameBufferCreateInfo.layers = 1;
+
+		// Create frame buffers for every swap chain image
+		m_FrameBuffers.resize(m_SwapchainImages.size());
+		for (uint32_t i = 0; i < m_FrameBuffers.size(); i++)
+		{
+			attachments[0] = m_Buffers[i].view;
+			VOE_CHECK_RESULT(vkCreateFramebuffer(m_Device->GetVkDevice(), &frameBufferCreateInfo, nullptr, &m_FrameBuffers[i]));
+		}
+	}
+	
+	VkResult Swapchain::AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence)
+	{
+		if (fence != VK_NULL_HANDLE)
+			VOE_CHECK_RESULT(vkWaitForFences(m_Device->GetVkDevice(), 1, &fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
+
+		auto acquireResult =
+			vkAcquireNextImageKHR(
+				m_Device->GetVkDevice(),
+				m_Swapchain,
+				std::numeric_limits<uint64_t>::max(),
+				presentCompleteSemaphore,
+				VK_NULL_HANDLE,
+				&m_ActiveImageIndex);
+
+		if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR && acquireResult != VK_ERROR_OUT_OF_DATE_KHR)
+			throw std::runtime_error("Failed to acquire swapchain image");
+
+		return acquireResult;
+	}
 }

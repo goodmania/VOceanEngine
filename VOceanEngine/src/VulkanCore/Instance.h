@@ -24,6 +24,7 @@ namespace voe {
 		Instance& operator=(Instance&&) = delete;
 
 		const VkInstance GetVkInstance() const { return m_Instance; }
+		const bool EnableMultiSampling() const{ return m_EnableMultiSampling; }
 
 	private:
 		void CreateInstance();
@@ -40,6 +41,8 @@ namespace voe {
 #endif
 		VkInstance m_Instance = VK_NULL_HANDLE;
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
+
+		bool m_EnableMultiSampling = false;
 	};
 }
 
