@@ -24,8 +24,11 @@ namespace voe {
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_EnabledFeatures);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
-		m_MsaaSamples = GetMaxUsableSampleCount();
-
+		if (m_Instance->EnableMultiSampling())
+		{
+			m_MsaaSamples = GetMaxUsableSampleCount();
+		}
+	
 #if defined(VOE_DEBUG)
 		VOE_CORE_INFO("\n Physical Device: {}  \n DeviceID: {}", m_Properties.deviceName, m_Properties.deviceID);
 #endif
@@ -99,6 +102,20 @@ namespace voe {
 				indices.presentFamilyHasValue = true;
 			}
 
+			// Check for compute support.
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) 
+			{
+				indices.computeFamily = i;
+				indices.computeFamilyHasValue = true;
+			}
+
+			// Check for transfer support.
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) 
+			{
+				indices.transferFamily = i;
+				indices.transferFamilyHasValue = true;
+			}
+
 			if (indices.IsComplete())
 			{
 				break;
@@ -156,6 +173,71 @@ namespace voe {
 				details.presentModes.data());
 		}
 		return details;
+	}
+
+	VkFormat PhDevice::FindSupportedFormat(
+		const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) 
+	{
+		for (VkFormat format : candidates) 
+		{
+			VkFormatProperties props;
+			vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &props);
+
+			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) 
+			{
+				return format;
+			}
+			else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) 
+			{
+				return format;
+			}
+		}
+		throw std::runtime_error("failed to find supported format!");
+	}
+
+	uint32_t PhDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+	{
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memProperties);
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) 
+		{
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) 
+			{
+				return i;
+			}
+		}
+		throw std::runtime_error("failed to find suitable memory type!");
+	}
+
+	uint32_t PhDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkBool32& foundMemoryType)
+	{
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memProperties);
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+		{
+			if ((typeFilter & 1) == 1)
+			{
+				if ((memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+				{
+					if (foundMemoryType)
+					{
+						foundMemoryType = true;
+					}
+					return i;
+				}
+			}
+			typeFilter >>= 1;
+		}
+
+		if (foundMemoryType)
+		{
+			foundMemoryType = false;
+			return 0;
+		}
+		else
+		{
+			throw std::runtime_error("Could not find a matching memory type");
+		}
 	}
 
 	VkSampleCountFlagBits PhDevice::GetMaxUsableSampleCount() const 

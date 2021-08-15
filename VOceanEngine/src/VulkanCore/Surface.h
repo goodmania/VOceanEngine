@@ -2,7 +2,6 @@
 
 #include "Platform/Windows/WindowsWindow.h"
 
-
 namespace voe {
 
 	class Instance;
@@ -14,6 +13,7 @@ namespace voe {
 		~Surface();
 
 		const VkSurfaceKHR& GetVkSurface() const { return m_Surface; }
+		VkSurfaceFormatKHR ChooseSwapchainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
 	private:
 		const Instance* m_Instance;

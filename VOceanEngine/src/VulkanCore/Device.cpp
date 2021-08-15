@@ -3,7 +3,6 @@
 
 #include "VulkanCore/Tools.h"
 #include "VulkanCore/Instance.h"
-#include "VulkanCore/PhDevice.h"
 #include "VulkanCore/Surface.h"
 
 namespace voe {
@@ -14,7 +13,7 @@ namespace voe {
         QueueFamilyIndices indices = phDevice->FindQueueFamilies(phDevice->GetVkPhysicalDevice());
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
+        std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily};
 
         // Within the same device, queues with higher priority may be allotted more processing time
         // than queues with lower priority.
@@ -28,6 +27,36 @@ namespace voe {
             queueCreateInfo.queueCount = 1;
             queueCreateInfo.pQueuePriorities = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
+        }
+
+        if (indices.computeFamilyHasValue && indices.computeFamily != indices.graphicsFamily)
+        {
+            VkDeviceQueueCreateInfo queueCreateInfo = {};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = indices.computeFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
+        else
+        {
+            indices.computeFamily = indices.graphicsFamily;
+        }
+
+        if (indices.transferFamilyHasValue 
+            && indices.transferFamily != indices.graphicsFamily 
+            && indices.transferFamily != indices.computeFamily)
+        {
+            VkDeviceQueueCreateInfo queueCreateInfo = {};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = indices.transferFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
+        else
+        {
+            indices.transferFamily = indices.graphicsFamily;
         }
 
         VkPhysicalDeviceFeatures deviceFeatures = {};
@@ -54,6 +83,11 @@ namespace voe {
 
         vkGetDeviceQueue(m_Device, indices.graphicsFamily, 0, &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, indices.presentFamily,  0, &m_PresentQueue);
+        vkGetDeviceQueue(m_Device, indices.computeFamily,  0, &m_ComputeQueue);
+        vkGetDeviceQueue(m_Device, indices.transferFamily, 0, &m_TransferQueue);
+
+        // for geter function
+        m_Indices = indices;
 	}
 
 	Device::~Device()
