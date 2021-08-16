@@ -15,6 +15,7 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "VOceanEngine/vender/GLFW/include"
 IncludeDir["ImGui"] = "VOceanEngine/vender/imgui"
 IncludeDir["glm"] = "VOceanEngine/vender/glm"
+IncludeDir["tinyobjloader"] = "VOceanEngine/vender/tinyobjloader"
 
 include "VOceanEngine/vender/GLFW"
 include "VOceanEngine/vender/imgui"
@@ -35,7 +36,8 @@ project "VOceanEngine"
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vender/glm/glm/**.hpp",
-		"%{prj.name}/vender/glm/glm/**.inl"
+		"%{prj.name}/vender/glm/glm/**.inl",
+		"%{prj.name}/vender/tinyobjloader/**.h"
 	}
 
 	includedirs
@@ -45,7 +47,8 @@ project "VOceanEngine"
 		"%{prj.name}/vender/VulkanSDK/Include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.tinyobjloader}",
 	}
 
 	libdirs 
@@ -113,7 +116,8 @@ project "Sandbox"
 		"VOceanEngine/src",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.tinyobjloader}"
 	}
 
 	libdirs 

@@ -16,6 +16,9 @@
     <Filter Include="src\Renderer">
       <UniqueIdentifier>{73D1DFBF-5F34-6F64-08BA-A71AF4FB3AE7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Renderer\HeightMap">
+      <UniqueIdentifier>{1910A93C-050A-D28E-EE76-689FDA0F38FB}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\VOceanEngine">
       <UniqueIdentifier>{0EF5BBCB-FAED-DA1D-2320-C0A20F78BA29}</UniqueIdentifier>
     </Filter>
@@ -49,6 +52,27 @@
     <Filter Include="vender\glm\glm\gtx">
       <UniqueIdentifier>{6966251B-554A-E670-BEAA-E0C3AAADD0F2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vender\tinyobjloader">
+      <UniqueIdentifier>{6EF1AFB0-5A80-397A-039F-4D75EF0C4A20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vender\tinyobjloader\examples">
+      <UniqueIdentifier>{DCBA0F2D-48D3-F656-1180-86F07D578BF0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vender\tinyobjloader\examples\obj_sticher">
+      <UniqueIdentifier>{57CBA76C-C3E5-0A0E-0C08-1BA278613215}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vender\tinyobjloader\examples\viewer">
+      <UniqueIdentifier>{DDC34420-C9AA-0618-72FB-6C355EC17F7E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vender\tinyobjloader\examples\voxelize">
+      <UniqueIdentifier>{01A7723D-EDF8-492D-D617-873DC2086316}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vender\tinyobjloader\experimental">
+      <UniqueIdentifier>{4BEF23EE-B75D-796D-0047-346D6CF46E09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vender\tinyobjloader\tests">
+      <UniqueIdentifier>{D0B6B554-BCC6-6125-2580-C64311AF50BE}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Platform\Vulkan\SetupVulkanForImGui.h">
@@ -66,7 +90,16 @@
     <ClInclude Include="src\PreCompileHeader.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\HeightMap\HeightMap.h">
+      <Filter>src\Renderer\HeightMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\Swapchain.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Renderer\VulkanBase.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\VulkanRenderer.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\VOceanEngine.h">
@@ -1380,9 +1413,33 @@
     <ClInclude Include="vender\glm\glm\vector_relational.hpp">
       <Filter>vender\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Swapchain.h" />
-    <ClInclude Include="src\Renderer\VulkanRenderer.h" />
-    <ClInclude Include="src\Renderer\HeightMap\HeightMap.h" />
+    <ClInclude Include="vender\tinyobjloader\examples\obj_sticher\obj_writer.h">
+      <Filter>vender\tinyobjloader\examples\obj_sticher</Filter>
+    </ClInclude>
+    <ClInclude Include="vender\tinyobjloader\examples\viewer\stb_image.h">
+      <Filter>vender\tinyobjloader\examples\viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="vender\tinyobjloader\examples\viewer\trackball.h">
+      <Filter>vender\tinyobjloader\examples\viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="vender\tinyobjloader\examples\voxelize\voxelizer.h">
+      <Filter>vender\tinyobjloader\examples\voxelize</Filter>
+    </ClInclude>
+    <ClInclude Include="vender\tinyobjloader\experimental\tinyobj_loader_opt.h">
+      <Filter>vender\tinyobjloader\experimental</Filter>
+    </ClInclude>
+    <ClInclude Include="vender\tinyobjloader\experimental\trackball.h">
+      <Filter>vender\tinyobjloader\experimental</Filter>
+    </ClInclude>
+    <ClInclude Include="vender\tinyobjloader\tests\acutest.h">
+      <Filter>vender\tinyobjloader\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h">
+      <Filter>vender\tinyobjloader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\Model.h" />
+    <ClInclude Include="src\Renderer\Utils.h" />
+    <ClInclude Include="src\Renderer\GraphicsPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
@@ -1397,7 +1454,16 @@
     <ClCompile Include="src\PreCompileHeader.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp">
+      <Filter>src\Renderer\HeightMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\Swapchain.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Renderer\VulkanBase.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\VulkanRenderer.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\VOceanEngine\Application.cpp">
@@ -1433,8 +1499,7 @@
     <ClCompile Include="src\VulkanCore\Tools.cpp">
       <Filter>src\VulkanCore</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Swapchain.cpp" />
-    <ClCompile Include="src\Renderer\VulkanRenderer.cpp" />
-    <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp" />
+    <ClCompile Include="src\Renderer\Model.cpp" />
+    <ClCompile Include="src\Renderer\GraphicsPipeline.cpp" />
   </ItemGroup>
 </Project>

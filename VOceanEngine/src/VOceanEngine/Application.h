@@ -33,7 +33,6 @@ namespace voe {
 		LayerStack m_LayerStack;
 
 		std::unique_ptr<VulkanBase> m_VulkanBase;
-		std::unique_ptr<Swapchain> m_Swapchain;
 	};
 
 	Application* CreateApplication();

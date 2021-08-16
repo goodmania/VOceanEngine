@@ -10,3 +10,6 @@
 [submodule "VOceanEngine/vender/glm"]
 	path = VOceanEngine/vender/glm
 	url = https://github.com/g-truc/glm
+[submodule "VOceanEngine\\vender\\tinyobjloader"]
+	path = VOceanEngine\\vender\\tinyobjloader
+	url = https://github.com/tinyobjloader/tinyobjloader
