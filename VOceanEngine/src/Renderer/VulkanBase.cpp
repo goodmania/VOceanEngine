@@ -26,6 +26,32 @@ namespace voe {
 		vkDestroyPipelineCache(m_Device->GetVkDevice(), m_PipelineCache, nullptr);
 	}
 
+	VkCommandBuffer VulkanBase::BeginFrame()
+	{
+		VOE_CORE_ASSERT(!m_IsFrameStarted && "Can't call beginFrame while already in progress");
+
+		auto result = m_Swapchain->AcquireNextImage(&currentImageIndex);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			recreateSwapChain();
+			return nullptr;
+		}
+
+		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			throw std::runtime_error("failed to acquire swap chain image!");
+		}
+
+		isFrameStarted = true;
+
+		auto commandBuffer = getCurrentCommandBuffer();
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+			throw std::runtime_error("failed to begin recording command buffer!");
+		}
+		return commandBuffer;
+	}
+
 	void VulkanBase::InitVulkanDevice()
 	{
 		m_Instance	= std::make_unique<Instance>();
@@ -37,7 +63,37 @@ namespace voe {
 	void VulkanBase::CreateSwapchain()
 	{
 		// When create the swapchain, also create the render pass and frame buffer.
-		m_Swapchain = std::make_unique<Swapchain>(m_Device.get(), m_PhDevice.get(), m_Surface.get());
+		m_Swapchain = std::make_unique<Swapchain>(m_Device.get(), m_PhDevice.get(), m_Surface.get(), m_Window->GetExtent());
+	}
+
+	void VulkanBase::RecreateSwapChain()
+	{
+		auto extent = m_Window->GetExtent();
+
+		while (extent.width == 0 || extent.height == 0)
+		{
+			extent = m_Window->GetExtent();
+			glfwWaitEvents();
+		}
+
+		vkDeviceWaitIdle(m_Device->GetVkDevice());
+
+		// init swapChain
+		if (m_Swapchain == nullptr)
+		{
+			CreateSwapchain();
+		}
+		else
+		{
+			std::shared_ptr<Swapchain> oldSwapchain = std::move(m_Swapchain);
+			m_Swapchain = std::make_unique<Swapchain>(
+				m_Device.get(), m_PhDevice.get(), m_Surface.get(), extent, oldSwapchain);
+
+			if (!oldSwapchain->compareSwapFormats(*m_Swapchain.get()))
+			{
+				throw std::runtime_error("Swap chain image(or depth) format has changed!");
+			}
+		}
 	}
 
 	void VulkanBase::CreateCommandBuffers()

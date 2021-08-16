@@ -30,6 +30,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include "VOceanEngine/Log.h"
+#include "VulkanCore/Tools.h"
 
 #ifdef VOE_PLATFORM_WINDOWS
 #include <Windows.h>

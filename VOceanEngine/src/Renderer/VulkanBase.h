@@ -14,12 +14,37 @@ namespace voe{
 	class VOE_API VulkanBase
 	{
 	public:
+		static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
 		VulkanBase(std::shared_ptr<Window> window);
 		~VulkanBase();
+
+		VulkanBase(const VulkanBase&) = delete;
+		VulkanBase& operator=(const VulkanBase&) = delete;
+
+		uint32_t GetFrameIndex() const
+		{
+			VOE_CORE_ASSERT(m_IsFrameStarted && "Cannot get frame index when frame not in progress");
+			return m_CurrentFrame;
+		}
+
+		VkCommandBuffer GetCurrentCommandBuffer() const
+		{
+			VOE_CORE_ASSERT(isFrameStarted && "Cannot get command buffer when frame not in progress");
+			return m_CommandBuffers[m_CurrentFrame];
+		}
+
+		bool IsFrameInProgress() const { return m_IsFrameStarted; }
+
+		VkCommandBuffer BeginFrame();
+		void EndFrame();
+		void BeginSwapChainRenderPass(VkCommandBuffer commandBuffer);
+		void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
 	private:
 		void InitVulkanDevice();
 		void CreateSwapchain();
+		void RecreateSwapChain();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 		void CreatePipelineCache();
@@ -58,6 +83,7 @@ namespace voe{
 		std::vector<VkFence> m_WaitFences;
 
 		size_t m_CurrentFrame = 0;
+		bool m_IsFrameStarted = false;
 	};
 }
 
