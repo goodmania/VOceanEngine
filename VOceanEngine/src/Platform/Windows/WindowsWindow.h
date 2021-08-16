@@ -12,8 +12,11 @@ namespace voe {
 
 		void OnUpdate() override;
 
-		unsigned int GetWidth() const override { return m_Data.Width; }
-		unsigned int GetHeight() const override { return m_Data.Height; }
+		uint32_t GetWidth() const override { return m_Data.Width; }
+		uint32_t GetHeight() const override { return m_Data.Height; }
+		// describe the size of a rectangular region of pixels within an image or framebuffer,
+		// as (width,height) for two-dimensional images
+		VkExtent2D GetExtent() const override { return { static_cast<uint32_t>(m_Data.Width), static_cast<uint32_t>(m_Data.Height) }; }
 		virtual void* GetNativeWindow() const { return m_Window; }
 
 		void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);

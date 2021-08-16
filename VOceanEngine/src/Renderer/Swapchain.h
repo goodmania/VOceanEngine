@@ -28,6 +28,11 @@ namespace voe {
 
 		const size_t GetSwapchainImageCount() const { return m_SwapchainImages.size(); }
 		const VkExtent2D GetSwapchainExtent() const { return m_SwapchainExtent; }
+		bool compareSwapFormats(const Swapchain& swapchain) const
+		{
+			return swapchain.m_SwapchainDepthFormat == m_SwapchainDepthFormat &&
+				swapchain.m_SwapchainImageFormat == m_SwapchainImageFormat;
+		}
 
 	private:
 		void InitSwapchain();
