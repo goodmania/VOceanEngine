@@ -16,6 +16,7 @@ namespace voe {
 		~Device();
 
 		const VkDevice& GetVkDevice() const { return m_Device; }
+		const VkCommandPool& GetCommandPool() const{ return m_CommandPool; }
 
 		const VkQueue& GetGraphicsQueue() const { return m_GraphicsQueue; }
 		const VkQueue& GetPresentQueue() const	{ return m_PresentQueue; }
@@ -27,19 +28,33 @@ namespace voe {
 		uint32_t GetComputeQueueFamily()  const { return m_Indices.computeFamily; }
 		uint32_t GetTransferQueueFamily() const { return m_Indices.transferFamily; }
 
+		// Buffer Helper Functions
+		void CreateBuffer(
+			VkDeviceSize size,
+			VkBufferUsageFlags usage,
+			VkMemoryPropertyFlags properties,
+			VkBuffer& buffer,
+			VkDeviceMemory& bufferMemory);
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
+
 	private:
+		void CreateDevice();
+		void CreateCommandPool();
+
 		VkDevice m_Device = VK_NULL_HANDLE;
 
 		const Instance* m_Instance;
-		const PhDevice* m_PhDevice;
+		PhDevice* m_PhDevice;
 		const Surface*	m_Surface;
 
 		VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
 		VkQueue m_PresentQueue	= VK_NULL_HANDLE;
 		VkQueue m_ComputeQueue  = VK_NULL_HANDLE;
 		VkQueue m_TransferQueue = VK_NULL_HANDLE;
-
 		QueueFamilyIndices m_Indices;
+
+		VkCommandPool m_CommandPool;
 	};
 }
 

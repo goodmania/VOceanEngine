@@ -54,7 +54,6 @@ namespace voe {
 		CreateDepthResources();
 		CreateRenderPass();
 		CreateFramebuffers();
-		CreateSyncObjects();
 	}
 
 	void Swapchain::CreateSwapchain()
@@ -129,10 +128,6 @@ namespace voe {
 		}
 		VOE_CORE_INFO("Present mode: V-Sync");
 		return VK_PRESENT_MODE_FIFO_KHR;
-	}
-
-	void Swapchain::CreateSyncObjects()
-	{
 	}
 
 	VkExtent2D Swapchain::ChooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities)
@@ -415,7 +410,7 @@ namespace voe {
 			dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-			VkRenderPassCreateInfo renderPassCI{};
+			VkRenderPassCreateInfo renderPassCI = {};
 			renderPassCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 			renderPassCI.attachmentCount = static_cast<uint32_t>(attachments.size());
 			renderPassCI.pAttachments = attachments.data();

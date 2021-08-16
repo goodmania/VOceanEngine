@@ -36,7 +36,6 @@ namespace voe {
 		void CreateDepthResources();
 		void CreateRenderPass();
 		void CreateFramebuffers();
-		void CreateSyncObjects();
 
 		// choose swapchian format, present mode, and extent
 		VkPresentModeKHR ChooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
