@@ -32,8 +32,8 @@ namespace voe {
 		VOE_CORE_ASSERT(!m_IsFrameStarted && "Can't call beginFrame while already in progress");
 
 		auto result = m_Swapchain->AcquireNextImage(
-			m_ImageAvailableSemaphores[m_CurrentFrame],
-			m_InFlightFences[m_CurrentFrame],
+			m_ImageAvailableSemaphores[m_CurrentFrameIndex],
+			m_InFlightFences[m_CurrentFrameIndex],
 			&m_CurrentImageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) 
@@ -56,6 +56,27 @@ namespace voe {
 		VOE_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
 		return commandBuffer;
+	}
+
+	void VulkanBase::EndFrame()
+	{
+		VOE_CORE_ASSERT(isFrameStarted && "Can't call endFrame while frame is not in progress");
+		auto commandBuffer = GetCurrentCommandBuffer();
+		VOE_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+		auto result = SubmitCommandBuffers();
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_Window->WasWindowResized())
+		{
+			m_Window->ResetWindowResizedFlag();
+			RecreateSwapChain();
+		}
+		else if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to present swap chain image!");
+		}
+
+		m_IsFrameStarted = false;
+		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanBase::BeginSwapchainRenderPass(VkCommandBuffer commandBuffer)
@@ -104,6 +125,14 @@ namespace voe {
 		VkRect2D scissor{ {0, 0}, m_Swapchain->GetSwapchainExtent() };
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+	}
+
+	void VulkanBase::EndSwapchainRenderPass(VkCommandBuffer commandBuffer)
+	{
+		VOE_CORE_ASSERT(m_IsFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
+		VOE_CORE_ASSERT(commandBuffer == GetCurrentCommandBuffer() &&
+			"Can't end render pass on command buffer from a different frame");
+		vkCmdEndRenderPass(commandBuffer);
 	}
 
 	void VulkanBase::InitVulkanDevice()
@@ -197,6 +226,46 @@ namespace voe {
 		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 		pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 		VOE_CHECK_RESULT(vkCreatePipelineCache(m_Device->GetVkDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
+	}
+
+	VkResult VulkanBase::SubmitCommandBuffers()
+	{
+		if (m_ImagesInFlight[m_CurrentImageIndex] != VK_NULL_HANDLE) 
+		{
+			vkWaitForFences(m_Device->GetVkDevice(), 1, &m_ImagesInFlight[m_CurrentImageIndex], VK_TRUE, UINT64_MAX);
+		}
+
+		m_ImagesInFlight[m_CurrentImageIndex] = m_InFlightFences[m_CurrentFrameIndex];
+
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		auto currentCmdBuffer = GetCurrentCommandBuffer();
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = &m_ImageAvailableSemaphores[m_CurrentFrameIndex];
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &currentCmdBuffer;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrameIndex];
+
+		vkResetFences(m_Device->GetVkDevice(), 1, &m_InFlightFences[m_CurrentFrameIndex]);
+		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrameIndex]));
+		
+		VkSwapchainKHR swapChains[] = { m_Swapchain->GetSwapchain() };
+
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrameIndex];
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &m_CurrentImageIndex;
+
+		auto result = vkQueuePresentKHR(m_Device->GetPresentQueue(), &presentInfo);
+
+		return result;
 	}
 
 	void VulkanBase::DestroyCommandBuffers()
