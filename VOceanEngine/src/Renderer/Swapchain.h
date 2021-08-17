@@ -24,11 +24,13 @@ namespace voe {
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface);
 		~Swapchain();
 
-		VkResult AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence);
+		VkResult AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence, uint32_t* imageIndex);
 
 		const size_t GetSwapchainImageCount() const { return m_SwapchainImages.size(); }
 		const VkExtent2D GetSwapchainExtent() const { return m_SwapchainExtent; }
-		bool compareSwapFormats(const Swapchain& swapchain) const
+		const VkRenderPass GetRenderPass() const { return m_RenderPass; }
+		const VkFramebuffer GetFramebuffer(uint32_t index) const { return m_Framebuffer; }
+		bool CompareSwapFormats(const Swapchain& swapchain) const
 		{
 			return swapchain.m_SwapchainDepthFormat == m_SwapchainDepthFormat &&
 				swapchain.m_SwapchainImageFormat == m_SwapchainImageFormat;
@@ -77,7 +79,7 @@ namespace voe {
 		std::vector<SwapchainBuffer> m_Buffers;
 
 		VkRenderPass m_RenderPass;
-		std::vector<VkFramebuffer> m_FrameBuffers;
+		std::vector<VkFramebuffer> m_Framebuffers;
 
 		struct DepthStencil
 		{
