@@ -18,20 +18,19 @@ namespace voe{
 
 		VulkanBase(std::shared_ptr<Window> window);
 		~VulkanBase();
-
 		VulkanBase(const VulkanBase&) = delete;
 		VulkanBase& operator=(const VulkanBase&) = delete;
 
 		uint32_t GetFrameIndex() const
 		{
 			VOE_CORE_ASSERT(m_IsFrameStarted && "Cannot get frame index when frame not in progress");
-			return m_CurrentFrame;
+			return m_CurrentFrameIndex;
 		}
 
 		VkCommandBuffer GetCurrentCommandBuffer() const
 		{
 			VOE_CORE_ASSERT(m_IsFrameStarted && "Cannot get command buffer when frame not in progress");
-			return m_CommandBuffers[m_CurrentFrame];
+			return m_CommandBuffers[m_CurrentFrameIndex];
 		}
 
 		bool IsFrameInProgress() const { return m_IsFrameStarted; }
@@ -40,6 +39,8 @@ namespace voe{
 		void EndFrame();
 		void BeginSwapchainRenderPass(VkCommandBuffer commandBuffer);
 		void EndSwapchainRenderPass(VkCommandBuffer commandBuffer);
+
+		VkResult SubmitCommandBuffers();
 
 	private:
 		void InitVulkanDevice();
@@ -65,16 +66,15 @@ namespace voe{
 
 		VkPipelineCache m_PipelineCache;
 
-		// lve syncs
+		// syncs
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VkFence> m_InFlightFences;
 		std::vector<VkFence> m_ImagesInFlight;
 
 		uint32_t m_CurrentImageIndex = 0;
-		size_t m_CurrentFrame = 0;
+		size_t m_CurrentFrameIndex = 0;
 		bool m_IsFrameStarted = false;
-
 	};
 }
 

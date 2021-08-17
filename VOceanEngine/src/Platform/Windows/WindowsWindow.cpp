@@ -129,6 +129,14 @@ namespace voe {
 				MouseMovedEvent event((float)xPos, (float)yPos);
 				data.EventCallback(event);
 			});
+
+		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				data.FramebufferResized = true;
+				data.Width = width;
+				data.Height = height;
+			});
 	}
 
 	void WindowsWindow::Shutdown()

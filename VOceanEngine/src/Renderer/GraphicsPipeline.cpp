@@ -200,5 +200,4 @@ namespace voe {
             static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
         configInfo.dynamicStateInfo.flags = 0;
     }
-
 }  // namespace lve

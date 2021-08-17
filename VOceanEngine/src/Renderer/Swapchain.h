@@ -26,10 +26,11 @@ namespace voe {
 
 		VkResult AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence, uint32_t* imageIndex);
 
+		const VkSwapchainKHR GetSwapchain() const { return m_Swapchain; }
 		const size_t GetSwapchainImageCount() const { return m_SwapchainImages.size(); }
 		const VkExtent2D GetSwapchainExtent() const { return m_SwapchainExtent; }
 		const VkRenderPass GetRenderPass() const { return m_RenderPass; }
-		const VkFramebuffer GetFramebuffer(uint32_t index) const { return m_Framebuffer; }
+		const VkFramebuffer GetFramebuffer(uint32_t index) const { return m_Framebuffers[index]; }
 		bool CompareSwapFormats(const Swapchain& swapchain) const
 		{
 			return swapchain.m_SwapchainDepthFormat == m_SwapchainDepthFormat &&
