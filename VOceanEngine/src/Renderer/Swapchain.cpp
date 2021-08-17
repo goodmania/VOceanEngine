@@ -441,30 +441,26 @@ namespace voe {
 		frameBufferCreateInfo.layers = 1;
 
 		// Create frame buffers for every swap chain image
-		m_FrameBuffers.resize(m_SwapchainImages.size());
-		for (uint32_t i = 0; i < m_FrameBuffers.size(); i++)
+		m_Framebuffers.resize(m_SwapchainImages.size());
+		for (uint32_t i = 0; i < m_Framebuffers.size(); i++)
 		{
 			attachments[0] = m_Buffers[i].view;
-			VOE_CHECK_RESULT(vkCreateFramebuffer(m_Device->GetVkDevice(), &frameBufferCreateInfo, nullptr, &m_FrameBuffers[i]));
+			VOE_CHECK_RESULT(vkCreateFramebuffer(m_Device->GetVkDevice(), &frameBufferCreateInfo, nullptr, &m_Framebuffers[i]));
 		}
 	}
 	
-	VkResult Swapchain::AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence)
+	VkResult Swapchain::AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence, uint32_t* imageIndex)
 	{
 		if (fence != VK_NULL_HANDLE)
 			VOE_CHECK_RESULT(vkWaitForFences(m_Device->GetVkDevice(), 1, &fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
 
-		auto acquireResult =
-			vkAcquireNextImageKHR(
+		auto acquireResult = vkAcquireNextImageKHR(
 				m_Device->GetVkDevice(),
 				m_Swapchain,
 				std::numeric_limits<uint64_t>::max(),
 				presentCompleteSemaphore,
 				VK_NULL_HANDLE,
 				&m_ActiveImageIndex);
-
-		if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR && acquireResult != VK_ERROR_OUT_OF_DATE_KHR)
-			throw std::runtime_error("Failed to acquire swapchain image");
 
 		return acquireResult;
 	}

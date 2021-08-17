@@ -30,7 +30,7 @@ namespace voe{
 
 		VkCommandBuffer GetCurrentCommandBuffer() const
 		{
-			VOE_CORE_ASSERT(isFrameStarted && "Cannot get command buffer when frame not in progress");
+			VOE_CORE_ASSERT(m_IsFrameStarted && "Cannot get command buffer when frame not in progress");
 			return m_CommandBuffers[m_CurrentFrame];
 		}
 
@@ -38,8 +38,8 @@ namespace voe{
 
 		VkCommandBuffer BeginFrame();
 		void EndFrame();
-		void BeginSwapChainRenderPass(VkCommandBuffer commandBuffer);
-		void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
+		void BeginSwapchainRenderPass(VkCommandBuffer commandBuffer);
+		void EndSwapchainRenderPass(VkCommandBuffer commandBuffer);
 
 	private:
 		void InitVulkanDevice();
@@ -71,19 +71,10 @@ namespace voe{
 		std::vector<VkFence> m_InFlightFences;
 		std::vector<VkFence> m_ImagesInFlight;
 
-		// sascha syncs
-		struct {
-			VkSemaphore presentComplete;
-			VkSemaphore renderComplete;
-		} m_Semaphores;
-		// Contains the command buffer and semaphore to be presented to the queue.
-		VkSubmitInfo m_SubmitInfo;
-		/** @brief Pipeline stages used to wait at for graphics queue submissions */
-		VkPipelineStageFlags m_SubmitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		std::vector<VkFence> m_WaitFences;
-
+		uint32_t m_CurrentImageIndex = 0;
 		size_t m_CurrentFrame = 0;
 		bool m_IsFrameStarted = false;
+
 	};
 }
 
