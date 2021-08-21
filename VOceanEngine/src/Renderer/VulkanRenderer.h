@@ -1,17 +1,18 @@
 #pragma once
 
+#include "Renderer/GraphicsPipeline.h"
+
 namespace voe {
 
-    class VulkanRenderSystem
+    class VulkanRenderer
     {
-        class GraphicsPipeline;
 
     public:
-        VulkanRenderSystem(Device& device, VkRenderPass renderPass);
-        ~VulkanRenderSystem();
+        VulkanRenderer(Device& device, VkRenderPass renderPass);
+        ~VulkanRenderer();
 
-        VulkanRenderSystem(const VulkanRenderSystem&) = delete;
-        VulkanRenderSystem& operator=(const VulkanRenderSystem&) = delete;
+        VulkanRenderer(const VulkanRenderer&) = delete;
+        VulkanRenderer& operator=(const VulkanRenderer&) = delete;
 
         void RenderGameObjects(
             VkCommandBuffer commandBuffer,
@@ -24,7 +25,7 @@ namespace voe {
 
         Device& m_Device;
 
-        std::unique_ptr<GraphicsPipeline> m_GPipeline;
+        std::unique_ptr<GraphicsPipeline> m_GraphicsPipeline;
         VkPipelineLayout m_PipelineLayout;
     };
 }  // namespace lve

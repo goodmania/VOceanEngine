@@ -90,10 +90,19 @@
     <ClInclude Include="src\PreCompileHeader.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\GraphicsPipeline.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Renderer\HeightMap\HeightMap.h">
       <Filter>src\Renderer\HeightMap</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\Model.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Renderer\Swapchain.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\Utils.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\VulkanBase.h">
@@ -1437,9 +1446,8 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h">
       <Filter>vender\tinyobjloader</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Model.h" />
-    <ClInclude Include="src\Renderer\Utils.h" />
-    <ClInclude Include="src\Renderer\GraphicsPipeline.h" />
+    <ClInclude Include="src\Renderer\Camera.h" />
+    <ClInclude Include="src\Renderer\GameObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
@@ -1454,8 +1462,14 @@
     <ClCompile Include="src\PreCompileHeader.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\GraphicsPipeline.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp">
       <Filter>src\Renderer\HeightMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\Model.cpp">
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\Swapchain.cpp">
       <Filter>src\Renderer</Filter>
@@ -1499,7 +1513,7 @@
     <ClCompile Include="src\VulkanCore\Tools.cpp">
       <Filter>src\VulkanCore</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Model.cpp" />
-    <ClCompile Include="src\Renderer\GraphicsPipeline.cpp" />
+    <ClCompile Include="src\Renderer\Camera.cpp" />
+    <ClCompile Include="src\Renderer\GameObject.cpp" />
   </ItemGroup>
 </Project>
