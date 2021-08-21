@@ -140,7 +140,7 @@ namespace voe {
 		m_Instance	= std::make_unique<Instance>();
 		m_Surface	= std::make_unique<Surface>(m_Instance.get(), m_Window.get());
 		m_PhDevice	= std::make_unique<PhDevice>(m_Instance.get(), m_Surface.get());
-		m_Device	= std::make_unique<Device>(m_Instance.get(), m_PhDevice.get(), m_Surface.get());	
+		m_Device	= std::make_shared<Device>(m_Instance.get(), m_PhDevice.get(), m_Surface.get());	
 	}
 
 	void VulkanBase::CreateSwapchain()

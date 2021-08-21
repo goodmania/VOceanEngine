@@ -27,12 +27,14 @@ namespace voe {
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		static Application* s_Instance;
+		void LoadGameObjects();
 
 		std::shared_ptr<Window> m_Window;
 		bool m_Running;
 		LayerStack m_LayerStack;
 
 		std::unique_ptr<VulkanBase> m_VulkanBase;
+		std::vector<GameObject> m_GameObjects;
 	};
 
 	Application* CreateApplication();

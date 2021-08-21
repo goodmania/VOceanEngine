@@ -8,7 +8,7 @@ const std::string getAssetPath()
 #elif defined(VK_EXAMPLE_DATA_DIR)
 	return VK_EXAMPLE_DATA_DIR;
 #else
-	return "data/";
+	return "Assets/";
 #endif
 }
 

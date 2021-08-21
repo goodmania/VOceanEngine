@@ -4,6 +4,8 @@
 
 namespace voe {
 
+    class Camera;
+
     class VulkanRenderer
     {
 

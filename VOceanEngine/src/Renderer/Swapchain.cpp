@@ -5,7 +5,7 @@
 
 namespace voe {
 
-	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent, const Swapchain* previous)
+	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent, Swapchain* previous)
 	{
 		InitSwapchain();
 	}
@@ -43,7 +43,6 @@ namespace voe {
 			vkDestroyImage(m_Device->GetVkDevice(), m_DepthImages[i], nullptr);
 			vkFreeMemory(m_Device->GetVkDevice(), m_DepthImageMemories[i], nullptr);
 		}
-
 		vkDestroyRenderPass(m_Device->GetVkDevice(), m_RenderPass, nullptr);
 	}
 

@@ -41,7 +41,8 @@ namespace voe{
 		void EndSwapchainRenderPass(VkCommandBuffer commandBuffer);
 
 		VkResult SubmitCommandBuffers();
-
+		const std::shared_ptr<Device> GetDevice() const { return m_Device; }
+		
 	private:
 		void InitVulkanDevice();
 		void CreateSwapchain();
@@ -57,7 +58,7 @@ namespace voe{
 		std::unique_ptr<Instance>	m_Instance;
 		std::unique_ptr<Surface>	m_Surface;
 		std::unique_ptr<PhDevice>	m_PhDevice;
-		std::unique_ptr<Device>		m_Device;
+		std::shared_ptr<Device>		m_Device;
 		
 		std::vector<VkCommandBuffer> m_CommandBuffers; // command buffers for rendering
 

@@ -4,6 +4,7 @@
 #include "VulkanCore/Device.h"
 #include "Renderer/GraphicsPipeline.h"
 #include "Renderer/Camera.h"
+#include "Renderer/GameObject.h"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -64,8 +65,10 @@ namespace voe {
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = m_PipelineLayout;
 
+
+		auto device = const_cast<Device&>(m_Device);
 		m_GraphicsPipeline = std::make_unique<GraphicsPipeline>(
-			m_Device.GetVkDevice(),
+			device,
 			"shaders/simple_shader.vert.spv",
 			"shaders/simple_shader.frag.spv",
 			pipelineConfig);

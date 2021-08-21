@@ -18,7 +18,7 @@ namespace voe {
 	{
 	public:
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface, 
-			VkExtent2D windowExtent, const Swapchain* previous = nullptr);
+			VkExtent2D windowExtent, Swapchain* previous = nullptr);
 
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent);
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface);
