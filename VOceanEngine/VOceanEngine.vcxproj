@@ -155,14 +155,16 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Renderer\GraphicsPipeline.h" />
-    <ClInclude Include="src\Renderer\Model.h" />
+    <ClInclude Include="src\Renderer\GameObject.h" />
+    <ClInclude Include="src\Renderer\Camera.h" />
     <ClInclude Include="src\Platform\Vulkan\SetupVulkanForImGui.h" />
     <ClInclude Include="src\Platform\Vulkan\imgui_impl_vulkan.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\PreCompileHeader.h" />
+    <ClInclude Include="src\Renderer\GraphicsPipeline.h" />
     <ClInclude Include="src\Renderer\HeightMap\HeightMap.h" />
+    <ClInclude Include="src\Renderer\Model.h" />
     <ClInclude Include="src\Renderer\Swapchain.h" />
     <ClInclude Include="src\Renderer\Utils.h" />
     <ClInclude Include="src\Renderer\VulkanBase.h" />
@@ -614,15 +616,17 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Renderer\GraphicsPipeline.cpp" />
-    <ClCompile Include="src\Renderer\Model.cpp" />
+    <ClCompile Include="src\Renderer\GameObject.cpp" />
+    <ClCompile Include="src\Renderer\Camera.cpp" />
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\PreCompileHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Renderer\GraphicsPipeline.cpp" />
     <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp" />
+    <ClCompile Include="src\Renderer\Model.cpp" />
     <ClCompile Include="src\Renderer\Swapchain.cpp" />
     <ClCompile Include="src\Renderer\VulkanBase.cpp" />
     <ClCompile Include="src\Renderer\VulkanRenderer.cpp" />
