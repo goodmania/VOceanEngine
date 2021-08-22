@@ -7,7 +7,7 @@ namespace voe {
 	class Camera
 	{
 	public:
-		Camera(float l, float r, float t, float b, float n, float f);
+		Camera();
 		~Camera();
 
 		glm::mat4 CreateOrthoProjectionMatrix(float l, float r, float t, float b, float n, float f);
@@ -18,10 +18,9 @@ namespace voe {
 		void SetViewXYZ(glm::vec3 pos, glm::vec3 rotation);
 
 		const glm::vec3 GetCameraPos() { return m_CameraPos; }
-		const float GetCameraRotation(){}
 
-		const glm::mat4 GetProjectionMatrix() { return m_ProjectionMatrix; }
-		const glm::mat4 GetViewMatrix() { return m_ViewMatrix; }
+		const glm::mat4 GetProjectionMatrix() const { return m_ProjectionMatrix; }
+		const glm::mat4 GetViewMatrix() const { return m_ViewMatrix; }
 
 		void OnUpdate();
 

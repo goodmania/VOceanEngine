@@ -3,7 +3,8 @@
 
 namespace voe {
 
-    glm::mat4 TransformComponent::Mat4() {
+    glm::mat4 TransformComponent::Mat4() 
+    {
         const float c3 = glm::cos(Rotation.z);
         const float s3 = glm::sin(Rotation.z);
         const float c2 = glm::cos(Rotation.x);
@@ -34,7 +35,8 @@ namespace voe {
             {Translation.x, Translation.y, Translation.z, 1.0f} };
     }
 
-    glm::mat3 TransformComponent::NormalMatrix() {
+    glm::mat3 TransformComponent::NormalMatrix() 
+    {
         const float c3 = glm::cos(Rotation.z);
         const float s3 = glm::sin(Rotation.z);
         const float c2 = glm::cos(Rotation.x);

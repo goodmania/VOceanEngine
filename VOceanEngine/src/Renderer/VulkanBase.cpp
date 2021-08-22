@@ -12,6 +12,7 @@ namespace voe {
 		CreateCommandBuffers();
 		CreateSyncObjects();
 		CreatePipelineCache();
+		CreateVulkanRenderer();
 	}
 
 	VulkanBase::~VulkanBase()
@@ -149,6 +150,11 @@ namespace voe {
 		m_Swapchain = std::make_unique<Swapchain>(m_Device.get(), m_PhDevice.get(), m_Surface.get(), m_Window->GetExtent());
 	}
 
+	void VulkanBase::CreateVulkanRenderer()
+	{
+		m_Renderer = std::make_unique<VulkanRenderer>(*m_Device, m_Swapchain->GetRenderPass());
+	}
+
 	void VulkanBase::RecreateSwapChain()
 	{
 		auto extent = m_Window->GetExtent();
@@ -170,7 +176,7 @@ namespace voe {
 		{
 			std::shared_ptr<Swapchain> oldSwapchain = std::move(m_Swapchain);
 			m_Swapchain = std::make_unique<Swapchain>(
-				m_Device.get(), m_PhDevice.get(), m_Surface.get(), extent, oldSwapchain);
+				m_Device.get(), m_PhDevice.get(), m_Surface.get(), extent, oldSwapchain.get());
 
 			if (!oldSwapchain->CompareSwapFormats(*m_Swapchain.get()))
 			{

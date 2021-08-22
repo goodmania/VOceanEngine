@@ -3,7 +3,7 @@
 
 namespace voe {
 
-	Camera::Camera(float l, float r, float t, float b, float n, float f)
+	Camera::Camera()
 	{
 
 	}

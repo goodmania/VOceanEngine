@@ -6,18 +6,14 @@
 namespace voe {
 
 	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent, Swapchain* previous)
-	{
-		InitSwapchain();
-	}
-
-	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent)
+		: m_Device(device), m_PhDevice(phDevice), m_Surface(surface), m_WindowExtent(windowExtent), m_OldSwapchain(previous)
 	{
 		InitSwapchain();
 		m_OldSwapchain = nullptr;
 	}
 
-	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface)
-		: m_Device(device), m_PhDevice(phDevice), m_Surface(surface)
+	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent)
+		: m_Device(device), m_PhDevice(phDevice), m_Surface(surface), m_WindowExtent(windowExtent)
 	{
 		InitSwapchain();
 	}
@@ -362,7 +358,7 @@ namespace voe {
 			attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 			// Depth attachment
-			attachments[1].format = m_SwapchainImageFormat;
+			attachments[1].format = m_SwapchainDepthFormat;
 			attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
 			attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;

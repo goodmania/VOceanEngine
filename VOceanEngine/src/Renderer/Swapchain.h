@@ -18,10 +18,10 @@ namespace voe {
 	{
 	public:
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface, 
-			VkExtent2D windowExtent, Swapchain* previous = nullptr);
+			VkExtent2D windowExtent, Swapchain* previous);
 
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent);
-		Swapchain(Device* device, PhDevice* phDevice, Surface* surface);
+
 		~Swapchain();
 
 		VkResult AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence, uint32_t* imageIndex);

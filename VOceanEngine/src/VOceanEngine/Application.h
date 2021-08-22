@@ -7,8 +7,11 @@
 
 #include "Window.h"
 #include "Renderer/VulkanBase.h"
+#include "Renderer/Camera.h"
 
 namespace voe {
+
+	class Camera;
 
 	class VOE_API Application
 	{
@@ -29,6 +32,7 @@ namespace voe {
 		static Application* s_Instance;
 		void LoadGameObjects();
 
+		Camera m_Camera{};
 		std::shared_ptr<Window> m_Window;
 		bool m_Running;
 		LayerStack m_LayerStack;

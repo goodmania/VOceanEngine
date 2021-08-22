@@ -45,7 +45,8 @@ namespace voe {
     void GraphicsPipeline::CreateGraphicsPipeline(
         const std::string& vertFilepath,
         const std::string& fragFilepath,
-        const PipelineConfigInfo& configInfo) {
+        const PipelineConfigInfo& configInfo) 
+    {
         assert(
             configInfo.pipelineLayout != VK_NULL_HANDLE &&
             "Cannot create graphics pipeline: no pipelineLayout provided in configInfo");
@@ -67,6 +68,7 @@ namespace voe {
         shaderStages[0].flags = 0;
         shaderStages[0].pNext = nullptr;
         shaderStages[0].pSpecializationInfo = nullptr;
+
         shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
         shaderStages[1].module = m_FragShaderModule;
