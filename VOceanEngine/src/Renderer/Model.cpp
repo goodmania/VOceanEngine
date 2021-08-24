@@ -127,7 +127,14 @@ namespace voe {
         }
     }
 
-    void Model::Bind(VkCommandBuffer commandBuffer) 
+    std::unique_ptr<Model> Model::CreateModelFromFile(Device& device, const std::string& filepath)
+    {
+        Builder builder{};
+        builder.LoadModel(filepath);
+        return std::make_unique<Model>(device, builder);
+    }
+
+    void Model::Bind(VkCommandBuffer commandBuffer)
     {
         VkBuffer buffers[] = { m_VertexBuffer };
         VkDeviceSize offsets[] = { 0 };
@@ -194,12 +201,19 @@ namespace voe {
                         attrib.vertices[3 * index.vertex_index + 2],
                     };
 
-                    vertex.color = 
+                    auto colorIndex = 3 * index.vertex_index + 2;
+                    if (colorIndex < attrib.colors.size()) 
                     {
-                        attrib.colors[3 * index.vertex_index + 0],
-                        attrib.colors[3 * index.vertex_index + 1],
-                        attrib.colors[3 * index.vertex_index + 2],
-                    };
+                        vertex.color = {
+                            attrib.colors[colorIndex - 2],
+                            attrib.colors[colorIndex - 1],
+                            attrib.colors[colorIndex - 0],
+                        };
+                    }
+                    else 
+                    {
+                        vertex.color = { 1.f, 1.f, 1.f };  // set default color
+                    }
                 }
 
                 if (index.normal_index >= 0) 

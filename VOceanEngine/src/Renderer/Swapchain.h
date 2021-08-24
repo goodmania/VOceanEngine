@@ -18,13 +18,16 @@ namespace voe {
 	{
 	public:
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface, 
-			VkExtent2D windowExtent, const Swapchain* previous = nullptr);
+			VkExtent2D windowExtent, std::shared_ptr<Swapchain> previous);
 
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent);
-		Swapchain(Device* device, PhDevice* phDevice, Surface* surface);
+
 		~Swapchain();
 
 		VkResult AcquireNextImage(const VkSemaphore& presentCompleteSemaphore, VkFence fence, uint32_t* imageIndex);
+
+		float AspectRatio() const { 
+			return static_cast<float>(m_SwapchainExtent.width) / static_cast<float>(m_SwapchainExtent.height); }
 
 		const VkSwapchainKHR GetSwapchain() const { return m_Swapchain; }
 		const size_t GetSwapchainImageCount() const { return m_SwapchainImages.size(); }
@@ -69,7 +72,7 @@ namespace voe {
 		VkCompositeAlphaFlagBitsKHR m_CompositeAlpha;
 
 		std::vector<VkImage> m_SwapchainImages;
-		std::vector<VkImageView> m_SwapchainImgaeViews;
+		std::vector<VkImageView> m_SwapchainImageViews;
 		std::vector<VkImage> m_DepthImages;
 		std::vector<VkImageView> m_DepthImageViews;
 		std::vector<VkDeviceMemory> m_DepthImageMemories;

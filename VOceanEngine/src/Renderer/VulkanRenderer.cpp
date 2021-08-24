@@ -4,6 +4,7 @@
 #include "VulkanCore/Device.h"
 #include "Renderer/GraphicsPipeline.h"
 #include "Renderer/Camera.h"
+#include "Renderer/GameObject.h"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -35,7 +36,28 @@ namespace voe {
 		std::vector<GameObject>& gameObjects,
 		const Camera& camera)
 	{
+		m_GraphicsPipeline->Bind(commandBuffer);
 
+		auto projectionView = camera.GetProjectionMatrix() * camera.GetViewMatrix();
+
+		for (auto& obj : gameObjects)
+		{
+			PushConstantData push{};
+			auto modelMatrix = obj.m_Transform.Mat4();
+			push.Transform = projectionView * modelMatrix;
+			push.NormalMatrix = obj.m_Transform.NormalMatrix();
+
+			vkCmdPushConstants(
+				commandBuffer,
+				m_PipelineLayout,
+				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+				0,
+				sizeof(PushConstantData),
+				&push);
+
+			obj.m_Model->Bind(commandBuffer);
+			obj.m_Model->Draw(commandBuffer);
+		}
 	}
 
 	void VulkanRenderer::CreatePipelineLayout()
@@ -64,10 +86,12 @@ namespace voe {
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = m_PipelineLayout;
 
+
+		// auto device = const_cast<Device&>(m_Device);
 		m_GraphicsPipeline = std::make_unique<GraphicsPipeline>(
-			m_Device.GetVkDevice(),
-			"shaders/simple_shader.vert.spv",
-			"shaders/simple_shader.frag.spv",
+			m_Device,
+			"Assets/Shaders/testVert.spv",
+			"Assets/Shaders/testFrag.spv",
 			pipelineConfig);
 	}
 }

@@ -31,6 +31,7 @@
 
 #include "VOceanEngine/Log.h"
 #include "VulkanCore/Tools.h"
+#include "Renderer/GameObject.h"
 
 #ifdef VOE_PLATFORM_WINDOWS
 #include <Windows.h>

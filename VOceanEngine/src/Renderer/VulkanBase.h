@@ -33,6 +33,10 @@ namespace voe{
 			return m_CommandBuffers[m_CurrentFrameIndex];
 		}
 
+		const std::shared_ptr<Device> GetDevice() const { return m_Device; }
+		VulkanRenderer& GetRenderer() const { return *m_Renderer; }
+		const float GetAspectRatio() const { return m_Swapchain->AspectRatio(); }
+
 		bool IsFrameInProgress() const { return m_IsFrameStarted; }
 
 		VkCommandBuffer BeginFrame();
@@ -41,10 +45,11 @@ namespace voe{
 		void EndSwapchainRenderPass(VkCommandBuffer commandBuffer);
 
 		VkResult SubmitCommandBuffers();
-
+		
 	private:
 		void InitVulkanDevice();
 		void CreateSwapchain();
+		void CreateVulkanRenderer();
 		void RecreateSwapChain();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
@@ -57,7 +62,7 @@ namespace voe{
 		std::unique_ptr<Instance>	m_Instance;
 		std::unique_ptr<Surface>	m_Surface;
 		std::unique_ptr<PhDevice>	m_PhDevice;
-		std::unique_ptr<Device>		m_Device;
+		std::shared_ptr<Device>		m_Device;
 		
 		std::vector<VkCommandBuffer> m_CommandBuffers; // command buffers for rendering
 

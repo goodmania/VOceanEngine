@@ -4,7 +4,9 @@
 
 namespace voe {
 
-    class VulkanRenderer
+    class Camera;
+
+    class VOE_API VulkanRenderer
     {
 
     public:

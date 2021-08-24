@@ -5,6 +5,9 @@
 #include "VOceanEngine/Log.h"
 #include "VOceanEngine/Input.h"
 
+#include "VulkanCore/Device.h"
+#include "Renderer/GameObject.h"
+
 namespace voe {
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
@@ -18,8 +21,8 @@ namespace voe {
 
 		m_Window = std::shared_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
-
 		m_VulkanBase = std::make_unique<VulkanBase>(m_Window);
+		LoadGameObjects();
 	}
 
 	Application::~Application()
@@ -29,13 +32,38 @@ namespace voe {
 
 	void Application::Run()
 	{
+		auto viewerObject = GameObject::CreateGameObject();
+
 		while (m_Running)
 		{
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
+			// m_Camera OnUpdate 
+			float aspect = m_VulkanBase->GetAspectRatio();
+			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
+			m_Camera.SetFrustumProjectionMatrix(glm::radians(50.f), aspect, 0.1f, 10.f);
+
+			if (auto commandBuffer = m_VulkanBase->BeginFrame())
+			{
+				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
+				m_VulkanBase->GetRenderer().RenderGameObjects(commandBuffer, m_GameObjects, m_Camera);
+				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
+				m_VulkanBase->EndFrame();
+			}
 			m_Window->OnUpdate();
 		}
+	}
+
+	void Application::LoadGameObjects() 
+	{
+		auto device = m_VulkanBase->GetDevice();
+		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/ocean-high-poly/Ocean.obj");
+		auto ocean = GameObject::CreateGameObject();
+		ocean.m_Model = model;
+		ocean.m_Transform.Translation = { 0.f, 0.f, 10.f };
+		ocean.m_Transform.Scale = { .5f, .5f, .5f };
+		m_GameObjects.push_back(std::move(ocean));
 	}
 
 	void Application::OnEvent(Event& e)
