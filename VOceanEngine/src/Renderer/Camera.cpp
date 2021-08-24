@@ -26,16 +26,19 @@ namespace voe {
 			glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) };
 	}
 
-	glm::mat4 Camera::CreateFrustrumProjectionMatrix(float fovy, float aspect, float n, float f)
+	void Camera::SetFrustumProjectionMatrix(float fovy, float aspect, float n, float f)
 	{
+		VOE_ASSERT(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
 		const float g = 1.0f / glm::tan(fovy * 0.5f); // Distance from camera to projection plane
 		const float k = f / (f - n);
 
-		return glm::mat4{
-			glm::vec4(g / aspect, 0.0f, 0.0f, 0.0f),
-			glm::vec4(0.0f, g, 0.0f, 0.0f),
-			glm::vec4(0.0f, 0.0f, k, -n * k),
-			glm::vec4(0.0f, 0.0f, 1.0f, 0.0f) };
+		
+		m_ProjectionMatrix = glm::mat4{ 0.0f };
+		m_ProjectionMatrix = glm::mat4{
+			g / aspect,	0.0f,	0.0f,		0.0f,
+			0.0f,		g	,	0.0f,		0.0f,
+			0.0f,		0.0f,	k,			1.0f,
+			0.0f,		0.0f,	-n * k,		0.0f};
 	}
 
 	glm::mat4 Camera::CreateViewMatrix(glm::vec3 pos, glm::vec3 target, glm::vec3 up)
@@ -47,13 +50,13 @@ namespace voe {
 		const glm::vec3 yAxis(glm::normalize(cross(zAxis, xAxis)));
 
 		return glm::mat4{
-			glm::vec4(xAxis.x, yAxis.x, zAxis.x, -glm::dot(xAxis, pos)),
-			glm::vec4(xAxis.y, yAxis.y, zAxis.y, -glm::dot(yAxis, pos)),
-			glm::vec4(xAxis.z, yAxis.z, zAxis.z, -glm::dot(zAxis, pos)),
-			glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) };
+			xAxis.x,	xAxis.y,	xAxis.z,	-glm::dot(xAxis, pos),
+			yAxis.x,	yAxis.y,	yAxis.z,	-glm::dot(yAxis, pos),
+			zAxis.x,	zAxis.y,	zAxis.z,	-glm::dot(zAxis, pos),
+			0.0f,		0.0f,		0.0f,		1.0f };
 	}
 
-	void Camera::SetViewXYZ(glm::vec3 pos, glm::vec3 rotation)
+	void Camera::SetViewYXZ(glm::vec3 pos, glm::vec3 rotation)
 	{
 		const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);
@@ -65,12 +68,14 @@ namespace voe {
 		const glm::vec3 v{ (c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3) };
 		const glm::vec3 w{ (c2 * s1), (-s2), (c1 * c2) };
 
+		m_ViewMatrix = glm::mat4{ 1.f };
 		m_ViewMatrix = glm::mat4{
-			glm::vec4(u.x, v.x, w.x, -glm::dot(u, pos)),
-			glm::vec4(u.x, v.x, w.x, -glm::dot(v, pos)),
-			glm::vec4(u.x, v.x, w.x, -glm::dot(w, pos)),
-			glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) };
+			u.x,				v.x,				w.x,				1.0f,
+			u.y,				v.y,				w.y,				1.0f,
+			u.z,				v.z,				w.z,				1.0f,
+			-glm::dot(u, pos),	-glm::dot(v, pos),	-glm::dot(w, pos),	1.0f };
 	}
+
 
 	void Camera::OnUpdate()
 	{

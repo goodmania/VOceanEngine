@@ -17,7 +17,7 @@ namespace voe {
 		glm::mat3 NormalMatrix();
 	};
 
-	class GameObject
+	class VOE_API GameObject
 	{
 	public:
 		using id_t = uint32_t;

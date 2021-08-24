@@ -32,7 +32,7 @@ namespace voe {
 		static Application* s_Instance;
 		void LoadGameObjects();
 
-		Camera m_Camera{};
+		Camera m_Camera {};
 		std::shared_ptr<Window> m_Window;
 		bool m_Running;
 		LayerStack m_LayerStack;

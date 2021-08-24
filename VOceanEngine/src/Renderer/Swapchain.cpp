@@ -5,7 +5,7 @@
 
 namespace voe {
 
-	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent, Swapchain* previous)
+	Swapchain::Swapchain(Device* device, PhDevice* phDevice, Surface* surface, VkExtent2D windowExtent, std::shared_ptr<Swapchain> previous)
 		: m_Device(device), m_PhDevice(phDevice), m_Surface(surface), m_WindowExtent(windowExtent), m_OldSwapchain(previous)
 	{
 		InitSwapchain();
@@ -20,12 +20,12 @@ namespace voe {
 
 	Swapchain::~Swapchain()
 	{
-		for (auto imageView : m_SwapchainImgaeViews)
+		for (auto imageView : m_SwapchainImageViews)
 		{
 			vkDestroyImageView(m_Device->GetVkDevice(), imageView, nullptr);
 		}
 
-		m_SwapchainImgaeViews.clear();
+		m_SwapchainImageViews.clear();
 
 		if (m_Swapchain != nullptr)
 		{
@@ -39,6 +39,12 @@ namespace voe {
 			vkDestroyImage(m_Device->GetVkDevice(), m_DepthImages[i], nullptr);
 			vkFreeMemory(m_Device->GetVkDevice(), m_DepthImageMemories[i], nullptr);
 		}
+
+		for (auto framebuffer : m_Framebuffers) 
+		{
+			vkDestroyFramebuffer(m_Device->GetVkDevice(), framebuffer, nullptr);
+		}
+
 		vkDestroyRenderPass(m_Device->GetVkDevice(), m_RenderPass, nullptr);
 	}
 
@@ -158,12 +164,12 @@ namespace voe {
 	void Swapchain::CreateImageView()
 	{
 		// Get the swap chain buffers containing the image and imageview
-		m_Buffers.resize(GetSwapchainImageCount());
+		m_SwapchainImageViews.resize(GetSwapchainImageCount());
 		for (uint32_t i = 0; i < GetSwapchainImageCount(); i++)
 		{
 			VkImageViewCreateInfo colorAttachmentView = {};
 			colorAttachmentView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			colorAttachmentView.pNext = NULL;
+			colorAttachmentView.pNext = nullptr;
 			colorAttachmentView.format = m_SwapchainImageFormat;
 
 			colorAttachmentView.components = {
@@ -180,12 +186,9 @@ namespace voe {
 			colorAttachmentView.subresourceRange.layerCount = 1;
 			colorAttachmentView.viewType = VK_IMAGE_VIEW_TYPE_2D;
 			colorAttachmentView.flags = 0;
+			colorAttachmentView.image = m_SwapchainImages[i];
 
-			m_Buffers[i].image = m_SwapchainImages[i];
-
-			colorAttachmentView.image = m_Buffers[i].image;
-
-			VOE_CHECK_RESULT(vkCreateImageView(m_Device->GetVkDevice(), &colorAttachmentView, nullptr, &m_Buffers[i].view));
+			VOE_CHECK_RESULT(vkCreateImageView(m_Device->GetVkDevice(), &colorAttachmentView, nullptr, &m_SwapchainImageViews[i]));
 		}
 	}
 
@@ -222,7 +225,7 @@ namespace voe {
 			VkMemoryRequirements memRequirements;
 			vkGetImageMemoryRequirements(m_Device->GetVkDevice(), m_DepthImages[i], &memRequirements);
 
-			VkMemoryAllocateInfo allocInfo{};
+			VkMemoryAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			allocInfo.allocationSize = memRequirements.size;
 			allocInfo.memoryTypeIndex = m_PhDevice->FindMemoryType(
@@ -231,7 +234,7 @@ namespace voe {
 			VOE_CHECK_RESULT(vkAllocateMemory(m_Device->GetVkDevice(), &allocInfo, nullptr, &m_DepthImageMemories[i]));
 			VOE_CHECK_RESULT(vkBindImageMemory(m_Device->GetVkDevice(), m_DepthImages[i], m_DepthImageMemories[i], 0));
 
-			VkImageViewCreateInfo viewInfo{};
+			VkImageViewCreateInfo viewInfo = {};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			viewInfo.image = m_DepthImages[i];
 			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -316,7 +319,7 @@ namespace voe {
 			subpass.pResolveAttachments = &resolveReference;
 			subpass.pDepthStencilAttachment = &depthReference;
 
-			std::array<VkSubpassDependency, 2> dependencies;
+			std::array<VkSubpassDependency, 2> dependencies = {};
 
 			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 			dependencies[0].dstSubpass = 0;
@@ -387,7 +390,7 @@ namespace voe {
 			subpassDescription.pResolveAttachments = nullptr;
 
 			// Subpass dependencies for layout transitions
-			std::array<VkSubpassDependency, 2> dependencies;
+			std::array<VkSubpassDependency, 2> dependencies = {};
 
 			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 			dependencies[0].dstSubpass = 0;
@@ -420,27 +423,27 @@ namespace voe {
 
 	void Swapchain::CreateFramebuffers()
 	{
-		VkImageView attachments[2];
-
-		// Depth/Stencil attachment is the same for all frame buffers
-		attachments[1] = m_DepthStencil.view;
-
-		VkFramebufferCreateInfo frameBufferCreateInfo;
-		frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		frameBufferCreateInfo.pNext = NULL;
-		frameBufferCreateInfo.renderPass = m_RenderPass;
-		frameBufferCreateInfo.attachmentCount = 2;
-		frameBufferCreateInfo.pAttachments = attachments;
-		frameBufferCreateInfo.width = m_SwapchainExtent.width;
-		frameBufferCreateInfo.height = m_SwapchainExtent.height;
-		frameBufferCreateInfo.layers = 1;
-
-		// Create frame buffers for every swap chain image
-		m_Framebuffers.resize(m_SwapchainImages.size());
-		for (uint32_t i = 0; i < m_Framebuffers.size(); i++)
+		m_Framebuffers.resize(GetSwapchainImageCount());
+		for (size_t i = 0; i < GetSwapchainImageCount(); i++) 
 		{
-			attachments[0] = m_Buffers[i].view;
-			VOE_CHECK_RESULT(vkCreateFramebuffer(m_Device->GetVkDevice(), &frameBufferCreateInfo, nullptr, &m_Framebuffers[i]));
+			std::array<VkImageView, 2> attachments = { m_SwapchainImageViews[i], m_DepthImageViews[i] };
+
+			VkExtent2D swapChainExtent = GetSwapchainExtent();
+			VkFramebufferCreateInfo framebufferInfo = {};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = m_RenderPass;
+			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			framebufferInfo.pAttachments = attachments.data();
+			framebufferInfo.width = swapChainExtent.width;
+			framebufferInfo.height = swapChainExtent.height;
+			framebufferInfo.layers = 1;
+
+			VOE_CHECK_RESULT(
+				vkCreateFramebuffer(
+					m_Device->GetVkDevice(),
+					&framebufferInfo,
+					nullptr,
+					&m_Framebuffers[i]));
 		}
 	}
 	
@@ -450,12 +453,12 @@ namespace voe {
 			VOE_CHECK_RESULT(vkWaitForFences(m_Device->GetVkDevice(), 1, &fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
 
 		auto acquireResult = vkAcquireNextImageKHR(
-				m_Device->GetVkDevice(),
-				m_Swapchain,
-				std::numeric_limits<uint64_t>::max(),
-				presentCompleteSemaphore,
-				VK_NULL_HANDLE,
-				&m_ActiveImageIndex);
+			m_Device->GetVkDevice(),
+			m_Swapchain,
+			std::numeric_limits<uint64_t>::max(),
+			presentCompleteSemaphore,
+			VK_NULL_HANDLE,
+			imageIndex);
 
 		return acquireResult;
 	}

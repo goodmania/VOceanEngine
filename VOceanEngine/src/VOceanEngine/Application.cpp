@@ -6,7 +6,7 @@
 #include "VOceanEngine/Input.h"
 
 #include "VulkanCore/Device.h"
-
+#include "Renderer/GameObject.h"
 
 namespace voe {
 
@@ -32,10 +32,17 @@ namespace voe {
 
 	void Application::Run()
 	{
+		auto viewerObject = GameObject::CreateGameObject();
+
 		while (m_Running)
 		{
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
+
+			// m_Camera OnUpdate 
+			float aspect = m_VulkanBase->GetAspectRatio();
+			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
+			m_Camera.SetFrustumProjectionMatrix(glm::radians(50.f), aspect, 0.1f, 10.f);
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{
@@ -52,18 +59,11 @@ namespace voe {
 	{
 		auto device = m_VulkanBase->GetDevice();
 		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/ocean-high-poly/Ocean.obj");
-		auto flatVase = GameObject::CreateGameObject();
-		flatVase.m_Model = model;
-		flatVase.m_Transform.Translation = { -.5f, .5f, 2.5f };
-		flatVase.m_Transform.Scale = { 3.f, 1.5f, 3.f };
-		m_GameObjects.push_back(std::move(flatVase));
-
-		/*model = Model::CreateModelFromFile(*device, "Assets/Models/ocean-high-poly/Ocean.obj");
-		auto smoothVase = GameObject::CreateGameObject();
-		smoothVase.m_Model = model;
-		smoothVase.m_Transform.Translation = { .5f, .5f, 2.5f };
-		smoothVase.m_Transform.Scale = { 3.f, 1.5f, 3.f };
-		m_GameObjects.push_back(std::move(smoothVase));*/
+		auto ocean = GameObject::CreateGameObject();
+		ocean.m_Model = model;
+		ocean.m_Transform.Translation = { 0.f, 0.f, 10.f };
+		ocean.m_Transform.Scale = { .5f, .5f, .5f };
+		m_GameObjects.push_back(std::move(ocean));
 	}
 
 	void Application::OnEvent(Event& e)

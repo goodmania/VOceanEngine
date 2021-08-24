@@ -176,7 +176,7 @@ namespace voe {
 		{
 			std::shared_ptr<Swapchain> oldSwapchain = std::move(m_Swapchain);
 			m_Swapchain = std::make_unique<Swapchain>(
-				m_Device.get(), m_PhDevice.get(), m_Surface.get(), extent, oldSwapchain.get());
+				m_Device.get(), m_PhDevice.get(), m_Surface.get(), extent, oldSwapchain);
 
 			if (!oldSwapchain->CompareSwapFormats(*m_Swapchain.get()))
 			{

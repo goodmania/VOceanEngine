@@ -23,7 +23,7 @@ namespace voe {
 		uint32_t subpass = 0;
 	};
 
-	class GraphicsPipeline
+	class VOE_API GraphicsPipeline
 	{
 	public:
 		GraphicsPipeline(

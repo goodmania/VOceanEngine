@@ -87,9 +87,9 @@ namespace voe {
 		pipelineConfig.pipelineLayout = m_PipelineLayout;
 
 
-		auto device = const_cast<Device&>(m_Device);
+		// auto device = const_cast<Device&>(m_Device);
 		m_GraphicsPipeline = std::make_unique<GraphicsPipeline>(
-			device,
+			m_Device,
 			"Assets/Shaders/testVert.spv",
 			"Assets/Shaders/testFrag.spv",
 			pipelineConfig);

@@ -4,3 +4,4 @@ bin/
 bin-int/
 VulkanSDK/
 /Assets/Shader/compile.bat
+/Sandbox/Assets/Models

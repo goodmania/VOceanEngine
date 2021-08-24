@@ -35,6 +35,7 @@ namespace voe{
 
 		const std::shared_ptr<Device> GetDevice() const { return m_Device; }
 		VulkanRenderer& GetRenderer() const { return *m_Renderer; }
+		const float GetAspectRatio() const { return m_Swapchain->AspectRatio(); }
 
 		bool IsFrameInProgress() const { return m_IsFrameStarted; }
 
