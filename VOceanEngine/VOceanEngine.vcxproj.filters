@@ -1448,6 +1448,7 @@
     </ClInclude>
     <ClInclude Include="src\Renderer\Camera.h" />
     <ClInclude Include="src\Renderer\GameObject.h" />
+    <ClInclude Include="src\Renderer\CameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
@@ -1515,5 +1516,6 @@
     </ClCompile>
     <ClCompile Include="src\Renderer\Camera.cpp" />
     <ClCompile Include="src\Renderer\GameObject.cpp" />
+    <ClCompile Include="src\Renderer\CameraController.cpp" />
   </ItemGroup>
 </Project>
