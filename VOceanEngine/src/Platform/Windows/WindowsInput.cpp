@@ -4,7 +4,6 @@
 #include "VOceanEngine/Application.h"
 #include <GLFW/glfw3.h>
 
-
 namespace voe {
 
 	Input* Input::s_Instance = new WindowsInput();

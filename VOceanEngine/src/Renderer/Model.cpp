@@ -134,6 +134,11 @@ namespace voe {
         return std::make_unique<Model>(device, builder);
     }
 
+    /*std::unique_ptr<Model> Model::CreatePhillipsSpectrumModel(Device& device)
+    {
+        Builder builder{};
+    }*/
+
     void Model::Bind(VkCommandBuffer commandBuffer)
     {
         VkBuffer buffers[] = { m_VertexBuffer };

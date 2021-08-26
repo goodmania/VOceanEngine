@@ -7,6 +7,7 @@
 
 #include "VulkanCore/Device.h"
 #include "Renderer/GameObject.h"
+#include "Renderer/CameraController.h"
 
 namespace voe {
 
@@ -33,11 +34,19 @@ namespace voe {
 	void Application::Run()
 	{
 		auto viewerObject = GameObject::CreateGameObject();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		CameraController cameraController;
 
 		while (m_Running)
 		{
-			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate();
+			auto newTime = std::chrono::high_resolution_clock::now();
+			auto frameTime 
+				= std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+			if (frameTime > 0.25f)
+				frameTime = 0.25f;
+
+			currentTime = newTime;
+			cameraController.OnUpdate(frameTime, viewerObject);
 
 			// m_Camera OnUpdate 
 			float aspect = m_VulkanBase->GetAspectRatio();
@@ -51,6 +60,10 @@ namespace voe {
 				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->EndFrame();
 			}
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnUpdate();
+
 			m_Window->OnUpdate();
 		}
 	}
@@ -58,11 +71,12 @@ namespace voe {
 	void Application::LoadGameObjects() 
 	{
 		auto device = m_VulkanBase->GetDevice();
-		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/ocean-high-poly/Ocean.obj");
+		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/plane.obj");
+		//std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/flat_vase.obj");
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
-		ocean.m_Transform.Translation = { 0.f, 0.f, 10.f };
-		ocean.m_Transform.Scale = { .5f, .5f, .5f };
+		ocean.m_Transform.Translation = { 0.f, 2.f, 10.f };
+		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
 		m_GameObjects.push_back(std::move(ocean));
 	}
 
