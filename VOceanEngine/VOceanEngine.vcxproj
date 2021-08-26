@@ -80,7 +80,7 @@
       <PrecompiledHeaderFile>PreCompileHeader.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>VOE_PLATFORM_WINDOWS;VOE_BUILD_DLL;VOE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vender\spdlog\include;vender\VulkanSDK\Include;vender\GLFW\include;vender\imgui;vender\glm;vender\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vender\spdlog\include;vender\VulkanSDK\Include;vender\GLFW\include;vender\imgui;vender\glm;vender\tinyobjloader;vender\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -104,7 +104,7 @@
       <PrecompiledHeaderFile>PreCompileHeader.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>VOE_PLATFORM_WINDOWS;VOE_BUILD_DLL;VOE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vender\spdlog\include;vender\VulkanSDK\Include;vender\GLFW\include;vender\imgui;vender\glm;vender\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vender\spdlog\include;vender\VulkanSDK\Include;vender\GLFW\include;vender\imgui;vender\glm;vender\tinyobjloader;vender\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -132,7 +132,7 @@
       <PrecompiledHeaderFile>PreCompileHeader.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>VOE_PLATFORM_WINDOWS;VOE_BUILD_DLL;VOE_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vender\spdlog\include;vender\VulkanSDK\Include;vender\GLFW\include;vender\imgui;vender\glm;vender\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vender\spdlog\include;vender\VulkanSDK\Include;vender\GLFW\include;vender\imgui;vender\glm;vender\tinyobjloader;vender\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -155,16 +155,17 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Renderer\CameraController.h" />
-    <ClInclude Include="src\Renderer\GameObject.h" />
-    <ClInclude Include="src\Renderer\Camera.h" />
     <ClInclude Include="src\Platform\Vulkan\SetupVulkanForImGui.h" />
     <ClInclude Include="src\Platform\Vulkan\imgui_impl_vulkan.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\PreCompileHeader.h" />
+    <ClInclude Include="src\Renderer\Camera.h" />
+    <ClInclude Include="src\Renderer\CameraController.h" />
+    <ClInclude Include="src\Renderer\GameObject.h" />
     <ClInclude Include="src\Renderer\GraphicsPipeline.h" />
     <ClInclude Include="src\Renderer\HeightMap\HeightMap.h" />
+    <ClInclude Include="src\Renderer\HeightMap\TessendorfOceane.h" />
     <ClInclude Include="src\Renderer\Model.h" />
     <ClInclude Include="src\Renderer\Swapchain.h" />
     <ClInclude Include="src\Renderer\Utils.h" />
@@ -607,6 +608,7 @@
     <ClInclude Include="vender\glm\glm\vec3.hpp" />
     <ClInclude Include="vender\glm\glm\vec4.hpp" />
     <ClInclude Include="vender\glm\glm\vector_relational.hpp" />
+    <ClInclude Include="vender\stb\stb_image.h" />
     <ClInclude Include="vender\tinyobjloader\examples\obj_sticher\obj_writer.h" />
     <ClInclude Include="vender\tinyobjloader\examples\viewer\stb_image.h" />
     <ClInclude Include="vender\tinyobjloader\examples\viewer\trackball.h" />
@@ -617,17 +619,18 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Renderer\CameraController.cpp" />
-    <ClCompile Include="src\Renderer\GameObject.cpp" />
-    <ClCompile Include="src\Renderer\Camera.cpp" />
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\PreCompileHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Renderer\Camera.cpp" />
+    <ClCompile Include="src\Renderer\CameraController.cpp" />
+    <ClCompile Include="src\Renderer\GameObject.cpp" />
     <ClCompile Include="src\Renderer\GraphicsPipeline.cpp" />
     <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp" />
+    <ClCompile Include="src\Renderer\HeightMap\TessendorfOceane.cpp" />
     <ClCompile Include="src\Renderer\Model.cpp" />
     <ClCompile Include="src\Renderer\Swapchain.cpp" />
     <ClCompile Include="src\Renderer\VulkanBase.cpp" />

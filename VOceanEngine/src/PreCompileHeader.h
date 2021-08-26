@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include <algorithm>
 #include <memory>
 #include <chrono>
 #include <utility>

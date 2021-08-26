@@ -52,6 +52,9 @@
     <Filter Include="vender\glm\glm\gtx">
       <UniqueIdentifier>{6966251B-554A-E670-BEAA-E0C3AAADD0F2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vender\stb">
+      <UniqueIdentifier>{413D7291-2DF5-B3DE-96FC-8C3A82D34ECF}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vender\tinyobjloader">
       <UniqueIdentifier>{6EF1AFB0-5A80-397A-039F-4D75EF0C4A20}</UniqueIdentifier>
     </Filter>
@@ -90,10 +93,22 @@
     <ClInclude Include="src\PreCompileHeader.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\Camera.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\CameraController.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\GameObject.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Renderer\GraphicsPipeline.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\HeightMap\HeightMap.h">
+      <Filter>src\Renderer\HeightMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\HeightMap\TessendorfOceane.h">
       <Filter>src\Renderer\HeightMap</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\Model.h">
@@ -1422,6 +1437,9 @@
     <ClInclude Include="vender\glm\glm\vector_relational.hpp">
       <Filter>vender\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="vender\stb\stb_image.h">
+      <Filter>vender\stb</Filter>
+    </ClInclude>
     <ClInclude Include="vender\tinyobjloader\examples\obj_sticher\obj_writer.h">
       <Filter>vender\tinyobjloader\examples\obj_sticher</Filter>
     </ClInclude>
@@ -1446,9 +1464,6 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h">
       <Filter>vender\tinyobjloader</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Camera.h" />
-    <ClInclude Include="src\Renderer\GameObject.h" />
-    <ClInclude Include="src\Renderer\CameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
@@ -1463,10 +1478,22 @@
     <ClCompile Include="src\PreCompileHeader.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\Camera.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\CameraController.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\GameObject.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Renderer\GraphicsPipeline.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp">
+      <Filter>src\Renderer\HeightMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\HeightMap\TessendorfOceane.cpp">
       <Filter>src\Renderer\HeightMap</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\Model.cpp">
@@ -1514,8 +1541,5 @@
     <ClCompile Include="src\VulkanCore\Tools.cpp">
       <Filter>src\VulkanCore</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Camera.cpp" />
-    <ClCompile Include="src\Renderer\GameObject.cpp" />
-    <ClCompile Include="src\Renderer\CameraController.cpp" />
   </ItemGroup>
 </Project>
