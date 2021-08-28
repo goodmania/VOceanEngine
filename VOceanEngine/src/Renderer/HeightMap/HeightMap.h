@@ -44,13 +44,13 @@ namespace voe
 		VkDeviceSize m_IndexBufferSize = 0;
 		uint32_t m_IndexCount = 0;
 
+		// vertex and index buffer.
 		VkBuffer m_VertexBuffer;
 		VkDeviceMemory m_VertexBufferMemory;
 		uint32_t m_VertexCount;
 
-		bool m_HasIndexBuffer = false;
+		bool m_HasIndexBuffer = true;
 		VkBuffer m_IndexBuffer;
 		VkDeviceMemory m_IndexBufferMemory;
-		uint32_t m_IndexCount;
 	};
 }
