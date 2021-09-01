@@ -1,11 +1,4 @@
 #pragma once
-/*
-* Heightmap terrain generator
-*
-* Copyright (C) by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
 
 #include "VulkanCore/Device.h"
 
@@ -14,43 +7,45 @@ namespace voe
 	class HeightMap
 	{
 	public:
-		struct Vertex
+		//struct OceanSize 
+		//{
+		//	glm::uvec2 gridsize = glm::uvec2(512, 512);
+		//	glm::vec2  size = glm::vec2(5.0f);
+		//} m_Ocean;
+
+	public:
+		struct Ocean
 		{
-			glm::vec3 position{};
-			glm::vec3 normal{};
-			glm::vec2 uv{};
+			glm::vec4 Pos;
+			glm::vec4 UV;
+			glm::vec4 Normal;
 		};
 
-		enum Topology { Triangles, Quads };
+		struct StorageBuffers 
+		{
+			VkBuffer InputBuffer;
+			VkDeviceMemory InputMemory;
+			VkBuffer OutputBuffer;
+			VkDeviceMemory OutputMemory;
+
+		} m_StorageBuffers;
+
+		struct Semaphores 
+		{
+			VkSemaphore Ready{ 0L };
+			VkSemaphore Complete{ 0L };
+		} m_Semaphores;
 
 		HeightMap(Device& device, VkQueue copyQueue);
 		~HeightMap();
 
-		float GetHeight(uint32_t x, uint32_t y);
-		void LoadFromFile(const std::string filename, uint32_t patchsize, glm::vec3 scale, Topology topology);
+		void  CreateHeightMapSSBO(uint32_t gridsize);
 
 	private:
-		uint16_t* m_Heightdata;
-		uint32_t m_Dim;
-		uint32_t m_Scale;
-
-		float m_HeightScale = 1.0f;
-		float m_UvScale = 1.0f;
+		uint32_t m_IndexCount;
 
 		Device& m_Device;
 		VkQueue& m_CopyQueue;
 
-		VkDeviceSize m_VertexBufferSize = 0;
-		VkDeviceSize m_IndexBufferSize = 0;
-		uint32_t m_IndexCount = 0;
-
-		// vertex and index buffer.
-		VkBuffer m_VertexBuffer;
-		VkDeviceMemory m_VertexBufferMemory;
-		uint32_t m_VertexCount;
-
-		bool m_HasIndexBuffer = true;
-		VkBuffer m_IndexBuffer;
-		VkDeviceMemory m_IndexBufferMemory;
 	};
 }

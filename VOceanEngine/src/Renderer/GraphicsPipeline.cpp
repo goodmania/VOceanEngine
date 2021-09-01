@@ -23,11 +23,12 @@ namespace voe {
         vkDestroyPipeline(m_Device.GetVkDevice(), m_GraphicsPipeline, nullptr);
     }
 
-    std::vector<char> GraphicsPipeline::ReadFile(const std::string& filepath) 
+    std::vector<char> GraphicsPipeline::ReadFile(const std::string& filepath)
     {
+
         std::ifstream file{ filepath, std::ios::ate | std::ios::binary };
 
-        if (!file.is_open()) 
+        if (!file.is_open())
         {
             throw std::runtime_error("failed to open file: " + filepath);
         }

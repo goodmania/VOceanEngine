@@ -155,6 +155,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Renderer\Descriptor.h" />
+    <ClInclude Include="src\Renderer\ComputePipeline.h" />
     <ClInclude Include="src\Platform\Vulkan\SetupVulkanForImGui.h" />
     <ClInclude Include="src\Platform\Vulkan\imgui_impl_vulkan.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
@@ -193,6 +195,7 @@
     <ClInclude Include="src\VulkanCore\Surface.h" />
     <ClInclude Include="src\VulkanCore\Tools.h" />
     <ClInclude Include="src\VulkanCore\VulkanCoreHeader.h" />
+    <ClInclude Include="src\Renderer\Texture.h" />
     <ClInclude Include="vender\glm\glm\common.hpp" />
     <ClInclude Include="vender\glm\glm\detail\_features.hpp" />
     <ClInclude Include="vender\glm\glm\detail\_fixes.hpp" />
@@ -619,6 +622,8 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\Descriptor.cpp" />
+    <ClCompile Include="src\Renderer\ComputePipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
@@ -646,6 +651,7 @@
     <ClCompile Include="src\VulkanCore\PhDevice.cpp" />
     <ClCompile Include="src\VulkanCore\Surface.cpp" />
     <ClCompile Include="src\VulkanCore\Tools.cpp" />
+    <ClCompile Include="src\Renderer\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="vender\GLFW\GLFW.vcxproj">

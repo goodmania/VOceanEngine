@@ -1,12 +1,22 @@
 #pragma once
 
+#include "Renderer/HeightMap/HeightMap.h"
+
 namespace voe
 {
     class TessendorfOceane
     {
     public:
+
+        TessendorfOceane(uint32_t gridSize) 
+            : m_MeshSize(gridSize), m_OceanSizeLx(gridSize * 5 / 2), m_OceanSizeLz(gridSize * 5 / 2)
+        {
+        }
+
+        ~TessendorfOceane() = default;
+
         // Generates Gaussian random number with mean 0 and standard deviation 1.
-        glm::fvec2 GaussianRanndomNum()
+        glm::vec4 GaussianRanndomNum()
         {
             std::random_device seed_gen;
             std::default_random_engine engine(seed_gen());
@@ -15,7 +25,7 @@ namespace voe
             float val1 = dist(engine);
             float val2 = dist(engine);
 
-            return glm::vec2(val1, val2);
+            return glm::vec4(val1, 0.0f, val2, 1.0f);
         }
 
         // Phillips spectrum
@@ -46,9 +56,8 @@ namespace voe
         }
 
         // Generate base heightfield in frequency space
-        std::vector<glm::vec2> Generate()
+        void Generate(std::vector<HeightMap::Ocean>& oceanBuffer)
         {
-            std::vector<glm::vec2> h0(m_MeshSize * m_MeshSize);
             for (uint32_t y = 0; y < m_MeshSize; y++)
             {
                 for (uint32_t x = 0; x < m_MeshSize; x++)
@@ -61,18 +70,15 @@ namespace voe
                     {
                         P = 0.0f;
                     }
-
-                    uint32_t i = y * m_MeshSize + x;
-                    h0[i] = GaussianRanndomNum() * glm::sqrt(P * 0.5f);
+                    oceanBuffer[y * m_MeshSize + x].Pos = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
                 }
             }
-            return h0;
         }
 
     private:
-        const uint32_t m_MeshSize = 256;
-        const uint32_t m_OceanSizeLx = m_MeshSize * 5 / 2;
-        const uint32_t m_OceanSizeLz = m_MeshSize * 5 / 2;
+        const uint32_t m_MeshSize;
+        const uint32_t m_OceanSizeLx;
+        const uint32_t m_OceanSizeLz;
         // gravitational constant
         const float G = 9.81f;  
         // wave scale factor  A - constant
