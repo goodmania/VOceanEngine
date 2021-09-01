@@ -38,6 +38,12 @@ namespace voe {
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
 
+		// Command Buffer Helper Functions
+		VkCommandBuffer CreateCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin);
+		VkCommandBuffer CreateCommandBuffer(VkCommandBufferLevel level, bool begin);
+		void FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free);
+		void FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free);
+
 	private:
 		void CreateDevice();
 		void CreateCommandPool();

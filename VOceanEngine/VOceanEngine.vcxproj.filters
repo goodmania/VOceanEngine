@@ -1464,6 +1464,9 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h">
       <Filter>vender\tinyobjloader</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\Texture.h" />
+    <ClInclude Include="src\Renderer\ComputePipeline.h" />
+    <ClInclude Include="src\Renderer\Descriptor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
@@ -1541,5 +1544,8 @@
     <ClCompile Include="src\VulkanCore\Tools.cpp">
       <Filter>src\VulkanCore</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\Texture.cpp" />
+    <ClCompile Include="src\Renderer\ComputePipeline.cpp" />
+    <ClCompile Include="src\Renderer\Descriptor.cpp" />
   </ItemGroup>
 </Project>

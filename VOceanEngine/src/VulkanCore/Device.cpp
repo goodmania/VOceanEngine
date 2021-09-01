@@ -126,38 +126,78 @@ namespace voe {
 
     void Device::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     {
-        VkCommandBufferAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = m_CommandPool;
-        allocInfo.commandBufferCount = 1;
+        auto commandBuffer = CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, m_CommandPool, true);
 
-        VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
-
-        VkCommandBufferBeginInfo beginInfo = {};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-        VkBufferCopy copyRegion{};
+        VkBufferCopy copyRegion = {};
         copyRegion.srcOffset = 0; // Optional
         copyRegion.dstOffset = 0; // Optional
         copyRegion.size = size;
+
         vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-        vkEndCommandBuffer(commandBuffer);
+        FlushCommandBuffer(commandBuffer, m_GraphicsQueue, m_CommandPool, true);
+    }
 
-        VkSubmitInfo submitInfo{};
+    VkCommandBuffer Device::CreateCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin)
+    {
+        VkCommandBufferAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level = level;
+        allocInfo.commandPool = pool;
+        allocInfo.commandBufferCount = 1;
+
+        VkCommandBuffer commandBuffer;
+        VOE_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer));
+
+        if (begin)
+        {
+            VkCommandBufferBeginInfo beginInfo = {};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+            VOE_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+        }
+        return commandBuffer;
+    }
+
+    VkCommandBuffer Device::CreateCommandBuffer(VkCommandBufferLevel level, bool begin)
+    {
+        return CreateCommandBuffer(level, m_CommandPool, begin);
+    }
+
+    void Device::FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free)
+    {
+        if (commandBuffer == VK_NULL_HANDLE) return;
+
+        VOE_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+        VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(m_GraphicsQueue);
+        // Create fence to ensure that the command buffer has finished executing
+        VkFenceCreateInfo fenceCreateInfo = {};
+        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceCreateInfo.flags = VK_FLAGS_NONE;
+        VkFence fence;
 
-        vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
+        VOE_CHECK_RESULT(vkCreateFence(m_Device, &fenceCreateInfo, nullptr, &fence));
+        // Submit to the queue
+        VOE_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+        // Wait for the fence to signal that command buffer has finished executing
+        VOE_CHECK_RESULT(vkWaitForFences(m_Device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+        vkDestroyFence(m_Device, fence, nullptr);
+
+        if (free)
+        {
+            vkFreeCommandBuffers(m_Device, pool, 1, &commandBuffer);
+        }
+    }
+
+    void Device::FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
+    {
+        return FlushCommandBuffer(commandBuffer, queue, m_CommandPool, free);
     }
 
     void Device::CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount)

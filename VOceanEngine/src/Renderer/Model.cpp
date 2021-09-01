@@ -17,7 +17,7 @@ namespace std {
         size_t operator()(voe::Model::Vertex const& vertex) const 
         {
             size_t seed = 0;
-            voe::HashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            voe::Utils::HashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
             return seed;
         }
     };

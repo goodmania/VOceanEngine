@@ -86,7 +86,6 @@ namespace voe {
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = m_PipelineLayout;
 
-
 		// auto device = const_cast<Device&>(m_Device);
 		m_GraphicsPipeline = std::make_unique<GraphicsPipeline>(
 			m_Device,
