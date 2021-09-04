@@ -18,6 +18,11 @@ namespace voe {
 
 	}
 
+	void HeightMap::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer)
+	{
+
+	}
+
 	void HeightMap::CreateHeightMapSSBO(uint32_t gridSize)
 	{
 		VOE_CORE_ASSERT(m_Device);
@@ -66,6 +71,7 @@ namespace voe {
 		vkCmdCopyBuffer(copyCmd, stagingBuffer, m_StorageBuffers.InputBuffer, 1, &copyRegion);
 		vkCmdCopyBuffer(copyCmd, stagingBuffer, m_StorageBuffers.OutputBuffer, 1, &copyRegion);
 
+		AddGraphicsToComputeBarriers(copyCmd);
 		m_Device.FlushCommandBuffer(copyCmd, m_CopyQueue, true);
 
 		vkDestroyBuffer(m_Device.GetVkDevice(), stagingBuffer, nullptr);
@@ -86,6 +92,25 @@ namespace voe {
 
 		uint32_t indexBufferSize = static_cast<uint32_t>(indices.size()) * sizeof(uint32_t);
 		m_IndexCount = static_cast<uint32_t>(indices.size());
+
+		m_Device.CreateBuffer(
+			indexBufferSize,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			stagingBuffer,
+			stagingBufferMemory);
+
+		void* idata;
+		vkMapMemory(m_Device.GetVkDevice(), stagingBufferMemory, 0, indexBufferSize, 0, &idata);
+		memcpy(data, indices.data(), static_cast<size_t>(indices.size()));
+		vkUnmapMemory(m_Device.GetVkDevice(), stagingBufferMemory);
+
+		m_Device.CreateBuffer(
+			indexBufferSize,
+			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_IndexBuffer,
+			m_IndexBufferMemory);
 	}
 }
 

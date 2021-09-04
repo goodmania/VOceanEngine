@@ -57,9 +57,14 @@ namespace voe {
 
 	// -- Descriptor Allocator class methods --
 
-	void DescriptorAllocator::Init(VkDevice& device)
+	DescriptorAllocator::DescriptorAllocator(const VkDevice& device) : m_Device(device)
 	{
-		m_Device = device;
+
+	}
+
+	DescriptorAllocator::~DescriptorAllocator()
+	{
+		DestroyPools();
 	}
 
 	void DescriptorAllocator::DestroyPools()
@@ -137,9 +142,14 @@ namespace voe {
 
 	// -- Descriptor LayoutCache class methods --
 
-	void DescriptorLayoutCache::Init(VkDevice& device)
+	DescriptorLayoutCache::DescriptorLayoutCache(const VkDevice& device) : m_Device(device)
 	{
-		m_Device = device;
+
+	}
+
+	DescriptorLayoutCache::~DescriptorLayoutCache()
+	{
+		DestroyLayout();
 	}
 
 	VkDescriptorSetLayout DescriptorLayoutCache::CreateDescriptorLayout(VkDescriptorSetLayoutCreateInfo* info)
