@@ -39,10 +39,13 @@ namespace voe
 		HeightMap(Device& device, VkQueue copyQueue);
 		~HeightMap();
 
-		void  CreateHeightMapSSBO(uint32_t gridsize);
+		void CreateHeightMapSSBO(uint32_t gridsize);
+		void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
 
 	private:
 		uint32_t m_IndexCount;
+		VkBuffer m_IndexBuffer;
+		VkDeviceMemory m_IndexBufferMemory;
 
 		Device& m_Device;
 		VkQueue& m_CopyQueue;

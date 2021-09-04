@@ -48,9 +48,11 @@ namespace voe{
 			};
 		};
 
+		DescriptorAllocator(const VkDevice& device);
+		~DescriptorAllocator();
+
 		void ResetPools();
 		bool Allocate(VkDescriptorSet* descriptorSet, VkDescriptorSetLayout layout);
-		void Init(VkDevice& device);
 		void DestroyPools();
 		const VkDevice GetVkDevice() const { return m_Device; }
 
@@ -61,13 +63,15 @@ namespace voe{
 		PoolSizes m_DescriptorSizes;
 		std::vector<VkDescriptorPool> m_UsedPools;
 		std::vector<VkDescriptorPool> m_FreePools;
-		VkDevice& m_Device;
+		const VkDevice& m_Device;
 	};
 
 	class DescriptorLayoutCache
 	{
 	public:
-		void Init(VkDevice& device);
+		DescriptorLayoutCache(const VkDevice& device);
+		~DescriptorLayoutCache();
+
 		void DestroyLayout();
 		VkDescriptorSetLayout CreateDescriptorLayout(VkDescriptorSetLayoutCreateInfo* info);
 
@@ -82,7 +86,6 @@ namespace voe{
 	private:
 		struct DescriptorLayoutHash
 		{
-
 			std::size_t operator()(const DescriptorLayoutInfo& k) const
 			{
 				return k.Hash();
@@ -90,7 +93,7 @@ namespace voe{
 		};
 
 		std::unordered_map<DescriptorLayoutInfo, VkDescriptorSetLayout, DescriptorLayoutHash> layoutCache;
-		VkDevice& m_Device;
+		const VkDevice& m_Device;
 	};
 
 	class DescriptorBuilder 

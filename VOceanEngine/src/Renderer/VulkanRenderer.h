@@ -5,6 +5,8 @@
 namespace voe {
 
     class Camera;
+    class DescriptorLayoutCache;
+    class DescriptorAllocator;
 
     class VOE_API VulkanRenderer
     {
@@ -22,6 +24,8 @@ namespace voe {
             const Camera& camera);
 
     private:
+        void InitDescriptors();
+        void CreateDescriptorSet();
         void CreatePipelineLayout();
         void CreatePipeline(VkRenderPass renderPass);
 
@@ -29,5 +33,9 @@ namespace voe {
 
         std::unique_ptr<GraphicsPipeline> m_GraphicsPipeline;
         VkPipelineLayout m_PipelineLayout;
+
+        // descriptor
+        DescriptorAllocator* m_DescriptorAllocator;
+        DescriptorLayoutCache* m_DescriptorLayoutCache;
     };
 }  // namespace lve

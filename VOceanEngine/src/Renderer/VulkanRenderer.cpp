@@ -2,7 +2,7 @@
 #include "VulkanRenderer.h"
 
 #include "VulkanCore/Device.h"
-#include "Renderer/GraphicsPipeline.h"
+#include "Renderer/Descriptor.h"
 #include "Renderer/Camera.h"
 #include "Renderer/GameObject.h"
 
@@ -58,6 +58,22 @@ namespace voe {
 			obj.m_Model->Bind(commandBuffer);
 			obj.m_Model->Draw(commandBuffer);
 		}
+	}
+
+	void VulkanRenderer::InitDescriptors()
+	{
+		m_DescriptorAllocator	= new DescriptorAllocator(m_Device.GetVkDevice());
+		m_DescriptorLayoutCache = new DescriptorLayoutCache(m_Device.GetVkDevice());
+	}
+
+	void VulkanRenderer::CreateDescriptorSet()
+	{
+		/*VkDescriptorSet ObjectDataSet;
+		DescriptorBuilder::Begin(m_DescriptorLayoutCache, get_current_frame().dynamicDescriptorAllocator)
+			.BindBuffer(0, &objectBufferInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.BindBuffer(1, &instanceInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.Build(ObjectDataSet);
+		vkCmdSetDepthBias(cmd, 0, 0, 0);*/
 	}
 
 	void VulkanRenderer::CreatePipelineLayout()
