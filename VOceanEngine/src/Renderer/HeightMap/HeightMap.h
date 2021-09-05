@@ -7,13 +7,6 @@ namespace voe
 	class HeightMap
 	{
 	public:
-		//struct OceanSize 
-		//{
-		//	glm::uvec2 gridsize = glm::uvec2(512, 512);
-		//	glm::vec2  size = glm::vec2(5.0f);
-		//} m_Ocean;
-
-	public:
 		struct Ocean
 		{
 			glm::vec4 Pos;
@@ -21,34 +14,35 @@ namespace voe
 			glm::vec4 Normal;
 		};
 
-		struct StorageBuffers 
+		struct StorageBuffers
 		{
-			VkBuffer InputBuffer;
-			VkDeviceMemory InputMemory;
-			VkBuffer OutputBuffer;
-			VkDeviceMemory OutputMemory;
+			VkBuffer InputBuffer = VK_NULL_HANDLE;
+			VkDeviceMemory InputMemory = VK_NULL_HANDLE;
+			mutable VkDescriptorBufferInfo* InputBufferDscInfo = VK_NULL_HANDLE;
+			VkBuffer OutputBuffer = VK_NULL_HANDLE;
+			VkDeviceMemory OutputMemory = VK_NULL_HANDLE;
+			mutable VkDescriptorBufferInfo* OutputBufferDscInfo = VK_NULL_HANDLE;
+		};
 
-		} m_StorageBuffers;
-
-		struct Semaphores 
-		{
-			VkSemaphore Ready{ 0L };
-			VkSemaphore Complete{ 0L };
-		} m_Semaphores;
-
-		HeightMap(Device& device, VkQueue copyQueue);
+		HeightMap(Device& device, const VkQueue& copyQueue);
 		~HeightMap();
 
-		void CreateHeightMapSSBO(uint32_t gridsize);
+		void CreateHeightMap(uint32_t gridsize);
 		void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
-
+		const StorageBuffers GetStorageBuffers() const { return m_StorageBuffers; }
+		
 	private:
+		void SetDescriptorBufferInfo(VkDescriptorBufferInfo* info, VkBuffer buffer, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 		uint32_t m_IndexCount;
 		VkBuffer m_IndexBuffer;
 		VkDeviceMemory m_IndexBufferMemory;
 
 		Device& m_Device;
-		VkQueue& m_CopyQueue;
+		const VkQueue& m_CopyComputeQueue;
 
+		StorageBuffers m_StorageBuffers;
+
+		VkBuffer m_UniformBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory m_UniformBufferMemory = VK_NULL_HANDLE;
 	};
 }
