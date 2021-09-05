@@ -7,15 +7,22 @@
 
 namespace voe {
 
-	HeightMap::HeightMap(Device& device, VkQueue copyQueue)
-		: m_Device(device), m_CopyQueue(copyQueue)
+	HeightMap::HeightMap(Device& device, const VkQueue& copyQueue)
+		: m_Device(device), m_CopyComputeQueue(copyQueue)
 	{
-
+		m_StorageBuffers.InputBufferDscInfo  = new VkDescriptorBufferInfo();
+		m_StorageBuffers.OutputBufferDscInfo = new VkDescriptorBufferInfo();
 	}
 
 	HeightMap::~HeightMap()
 	{
+		vkDestroyBuffer(m_Device.GetVkDevice(), m_StorageBuffers.InputBuffer, nullptr);
+		vkFreeMemory(m_Device.GetVkDevice(), m_StorageBuffers.InputMemory, nullptr);
+		delete m_StorageBuffers.InputBufferDscInfo;
 
+		vkDestroyBuffer(m_Device.GetVkDevice(), m_StorageBuffers.OutputBuffer, nullptr);
+		vkFreeMemory(m_Device.GetVkDevice(), m_StorageBuffers.OutputMemory, nullptr);
+		delete m_StorageBuffers.OutputBufferDscInfo;
 	}
 
 	void HeightMap::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer)
@@ -23,7 +30,7 @@ namespace voe {
 
 	}
 
-	void HeightMap::CreateHeightMapSSBO(uint32_t gridSize)
+	void HeightMap::CreateHeightMap(uint32_t gridSize)
 	{
 		VOE_CORE_ASSERT(m_Device);
 		VOE_CORE_ASSERT(m_CopyQueue != nullptr);
@@ -64,6 +71,9 @@ namespace voe {
 			m_StorageBuffers.OutputBuffer,
 			m_StorageBuffers.OutputMemory);
 
+		SetDescriptorBufferInfo(m_StorageBuffers.InputBufferDscInfo,  m_StorageBuffers.InputBuffer);
+		SetDescriptorBufferInfo(m_StorageBuffers.OutputBufferDscInfo, m_StorageBuffers.OutputBuffer);
+
 		// Copy from staging buffer
 		VkCommandBuffer copyCmd = m_Device.CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		VkBufferCopy copyRegion = {};
@@ -72,7 +82,7 @@ namespace voe {
 		vkCmdCopyBuffer(copyCmd, stagingBuffer, m_StorageBuffers.OutputBuffer, 1, &copyRegion);
 
 		AddGraphicsToComputeBarriers(copyCmd);
-		m_Device.FlushCommandBuffer(copyCmd, m_CopyQueue, true);
+		m_Device.FlushCommandBuffer(copyCmd, m_CopyComputeQueue, true);
 
 		vkDestroyBuffer(m_Device.GetVkDevice(), stagingBuffer, nullptr);
 		vkFreeMemory(m_Device.GetVkDevice(), stagingBufferMemory, nullptr);
@@ -112,6 +122,11 @@ namespace voe {
 			m_IndexBuffer,
 			m_IndexBufferMemory);
 	}
+
+	void HeightMap::SetDescriptorBufferInfo(VkDescriptorBufferInfo* info, VkBuffer buffer, VkDeviceSize size, VkDeviceSize offset)
+	{
+		info->buffer = buffer;
+		info->offset = offset;
+		info->range = size;
+	}
 }
-
-

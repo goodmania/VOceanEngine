@@ -9,8 +9,6 @@
 
 namespace voe {
 
-	
-
 	void CameraController::OnUpdate(float dt, GameObject& gameObject)
 	{
 		glm::vec3 rotate{ 0.f };

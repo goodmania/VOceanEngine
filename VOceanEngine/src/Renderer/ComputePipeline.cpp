@@ -7,9 +7,10 @@ namespace voe {
 
 	ComputePipeline::ComputePipeline(
 		Device& device,
-		const std::string& compFilepath) : m_Device{ device }
+		const std::string& compFilepath,
+        VkPipelineLayout& layout) : m_Device{ device }
 	{
-		CreateComputePipeline(compFilepath);
+		CreateComputePipeline(compFilepath, layout);
 	}
 
 	ComputePipeline::~ComputePipeline()
@@ -37,7 +38,7 @@ namespace voe {
         return buffer;
     }
 
-    void ComputePipeline::CreateComputePipeline(const std::string& compFilepath)
+    void ComputePipeline::CreateComputePipeline(const std::string& compFilepath, VkPipelineLayout layout)
     {
         auto compCode = ReadFile(compFilepath);
 
@@ -55,7 +56,7 @@ namespace voe {
         VkComputePipelineCreateInfo pipelineCreateInfo = {};
         pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
         pipelineCreateInfo.stage = shaderStage;
-        pipelineCreateInfo.layout = nullptr;
+        pipelineCreateInfo.layout = layout;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineCreateInfo.basePipelineIndex = -1;
 

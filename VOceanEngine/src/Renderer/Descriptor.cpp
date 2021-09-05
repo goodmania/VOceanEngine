@@ -352,7 +352,10 @@ namespace voe {
 
 		vkUpdateDescriptorSets(
 			m_Alloc->GetVkDevice(),
-			static_cast<uint32_t>(m_Writes.size()), m_Writes.data(), 0, nullptr);
+			static_cast<uint32_t>(m_Writes.size()),
+			m_Writes.data(),
+			0,
+			nullptr);
 
 		return true;
 	}
