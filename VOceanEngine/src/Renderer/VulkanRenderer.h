@@ -24,12 +24,15 @@ namespace voe {
             const Camera& camera);
 
         bool IsComputeQueueSpecialized() const;
+        void OnUpdate(float dt);
 
     private:
         void InitOceanH0Param();
         void InitDescriptors();
         void SetupFFTOceanComputePipeline();
+        void SetupUniformBuffers();
         void BuildComputeCommandBuffer();
+
         void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
         void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer);
         void AddComputeToGraphicsBarriers(VkCommandBuffer commandBuffer);

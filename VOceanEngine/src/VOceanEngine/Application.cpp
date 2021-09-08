@@ -64,6 +64,7 @@ namespace voe {
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
+			m_VulkanBase->GetRenderer().OnUpdate(frameTime);
 			m_Window->OnUpdate();
 		}
 	}

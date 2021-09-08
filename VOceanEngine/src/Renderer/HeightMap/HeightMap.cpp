@@ -12,6 +12,7 @@ namespace voe {
 	{
 		m_StorageBuffers.InputBufferDscInfo  = new VkDescriptorBufferInfo();
 		m_StorageBuffers.OutputBufferDscInfo = new VkDescriptorBufferInfo();
+		m_ComputeUniformBuffers.UniformBufferDscInfo = new VkDescriptorBufferInfo();
 	}
 
 	HeightMap::~HeightMap()
@@ -23,11 +24,35 @@ namespace voe {
 		vkDestroyBuffer(m_Device.GetVkDevice(), m_StorageBuffers.OutputBuffer, nullptr);
 		vkFreeMemory(m_Device.GetVkDevice(), m_StorageBuffers.OutputMemory, nullptr);
 		delete m_StorageBuffers.OutputBufferDscInfo;
+
+		vkDestroyBuffer(m_Device.GetVkDevice(), m_ComputeUniformBuffers.UniformBuffer, nullptr);
+		vkFreeMemory(m_Device.GetVkDevice(), m_ComputeUniformBuffers.UniformBufferMemory, nullptr);
+		delete m_ComputeUniformBuffers.UniformBufferDscInfo;
 	}
 
 	void HeightMap::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer)
 	{
 
+	}
+
+	void HeightMap::CreateUniformBuffers()
+	{
+		m_Device.CreateBuffer(
+			sizeof(ComputeUBO),
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			m_ComputeUniformBuffers.UniformBuffer,
+			m_ComputeUniformBuffers.UniformBufferMemory);
+
+		vkMapMemory(m_Device.GetVkDevice(), m_ComputeUniformBuffers.UniformBufferMemory, 0, sizeof(ComputeUBO), 0, &m_ComputeUniformBuffers.data);
+		memcpy(m_ComputeUniformBuffers.data, &m_ComputeUniformBuffers.UniformBuffer, sizeof(ComputeUBO));
+		vkUnmapMemory(m_Device.GetVkDevice(), m_ComputeUniformBuffers.UniformBufferMemory);
+	}
+
+	void HeightMap::UpdateUniformBuffers(float dt)
+	{
+		m_ComputeUniformBuffers.deltaT = dt;
+		memcpy(m_ComputeUniformBuffers.data, &m_ComputeUniformBuffers.UniformBuffer, sizeof(ComputeUBO));
 	}
 
 	void HeightMap::CreateHeightMap(uint32_t gridSize)
@@ -39,6 +64,11 @@ namespace voe {
 
 		TessendorfOceane* tOceanManeger = new TessendorfOceane(gridSize);
 		tOceanManeger->Generate(oceanBuffer);
+
+		// init uniform buffer members
+		m_ComputeUniformBuffers.meshSize = tOceanManeger->m_MeshSize;
+		m_ComputeUniformBuffers.OceanSizeLx = tOceanManeger->m_OceanSizeLx;
+		m_ComputeUniformBuffers.OceanSizeLx = tOceanManeger->m_OceanSizeLz;
 
 		VkDeviceSize bufferSize = oceanBuffer.size() * sizeof(Ocean);
 
