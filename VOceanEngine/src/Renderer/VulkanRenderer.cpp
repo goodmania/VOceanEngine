@@ -90,6 +90,11 @@ namespace voe {
 		return m_Device.GetGraphicsQueueFamily() != m_Device.GetComputeQueueFamily();
 	}
 
+	void VulkanRenderer::OnUpdate(float dt)
+	{
+		m_OceanH0->UpdateUniformBuffers(dt);
+	}
+
 	void VulkanRenderer::SetupFFTOceanComputePipeline()
 	{
 		auto device = m_Device.GetVkDevice();
@@ -100,11 +105,13 @@ namespace voe {
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
 			.BindBuffer(0, m_OceanH0->GetStorageBuffers().InputBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(1, m_OceanH0->GetStorageBuffers().OutputBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(2, m_OceanH0->GetUBOBuffers().UniformBufferDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.Build(m_DescriptorSets[0], m_DescriptorSetLayout);
 
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
 			.BindBuffer(0, m_OceanH0->GetStorageBuffers().OutputBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(1, m_OceanH0->GetStorageBuffers().InputBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(2, m_OceanH0->GetUBOBuffers().UniformBufferDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.Build(m_DescriptorSets[1]);
 
 		// create pipeline layout
@@ -143,6 +150,11 @@ namespace voe {
 
 		// Build a single command buffer containing the compute dispatch commands
 		BuildComputeCommandBuffer();
+	}
+
+	void VulkanRenderer::SetupUniformBuffers()
+	{
+		m_OceanH0->CreateUniformBuffers();
 	}
 
 	void VulkanRenderer::BuildComputeCommandBuffer()

@@ -75,10 +75,12 @@ namespace voe
             }
         }
 
-    private:
+        // Ocean params
         const uint32_t m_MeshSize;
         const uint32_t m_OceanSizeLx;
         const uint32_t m_OceanSizeLz;
+
+    private:
         // gravitational constant
         const float G = 9.81f;  
         // wave scale factor  A - constant
