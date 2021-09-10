@@ -124,7 +124,7 @@ namespace voe {
 		// create compute pipeline
 		m_ComputePipeline = std::make_unique<ComputePipeline>(
 			m_Device,
-			"** todo set Compute shader file path for fftOcean **",
+			"Assets/Shaders/spectrum.spv",
 			m_ComputePipelineLayout);
 
 		// Separate command pool as queue family for compute may be different than graphics
