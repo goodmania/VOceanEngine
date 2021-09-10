@@ -1,7 +1,9 @@
 #version 450
+#define PI 3.14159265358979323846264338327950288
 
 struct Ocean
 {
+	vec2 h;
 	vec4 Pos;
 	vec4 UV;
 	vec4 Normal;
@@ -21,11 +23,20 @@ layout (binding = 2) uniform UBO
 {
 	float deltaT;
 	uint meshSize;
+	uint OceanSizeLx;
+	uint OceanSizeLz;
 } ubo;
 
 layout (local_size_x = 10, local_size_y = 10) in;
 
-// h(k,x)の計算に必要な関数を実装する。
+vec2 conjugate(vec2 arg)
+{
+    vec2 f2;
+    f2.x = arg.x;
+    f2.y = -arg.y;
+    return f2;
+}
+
 vec2 MultiplyComplex(vec2 a, vec2 b)
 {
 	return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
@@ -36,15 +47,33 @@ vec2 AddComplex(vec2 a, vec2 b)
 	return vec2(a.x + b.x , a.y + b.y);
 }
 
-
+vec2 ComplexExp(float a)
+{
+    return vec2(cos(a), sin(a));
+}
 
 void main()
 {
 	uvec3 id = gl_GlobalInvocationID; 
 
-	uint index = id.y * ubo.meshSize + id.x;
-	if(index > ubo.meshSize * ubo.meshSize)
-		return;
+	uint in_index = id.y * ubo.meshSize + id.x;
+    uint in_mindex = (ubo.meshSize - id.y) % ubo.meshSize * ubo.meshSize + (ubo.meshSize - id.x) % ubo.meshSize; // mirrored
+    uint out_index = id.y * ubo.meshSize + id.x;
 
+	vec2 k;
+	k.x = (-ubo.meshSize / 2.0f + id.x) * (2.0f * PI / ubo.OceanSizeLx);
+	k.y = (-ubo.meshSize / 2.0f + id.y) * (2.0f * PI / ubo.OceanSizeLz);
 
+	float k_len = sqrt(k.x * k.x + k.y * k.y);
+    float w = sqrt(9.81f * k_len);
+
+	if((id.x < ubo.meshSize ) && (id.y < ubo.meshSize))
+	{
+		vec2 h0_k  = OceanIn[in_index].h;
+		vec2 h0_mk = OceanIn[in_mindex].h;
+		
+		OceanOut[out_index].h = AddComplex(
+				MultiplyComplex(h0_k, ComplexExp(w * ubo.deltaT)),
+				MultiplyComplex(conjugate(h0_mk), ComplexExp(-w * ubo.deltaT)));
+	}
 }

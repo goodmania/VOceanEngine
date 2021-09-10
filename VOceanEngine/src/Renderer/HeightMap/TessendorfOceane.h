@@ -16,7 +16,7 @@ namespace voe
         ~TessendorfOceane() = default;
 
         // Generates Gaussian random number with mean 0 and standard deviation 1.
-        glm::vec4 GaussianRanndomNum()
+        glm::vec2 GaussianRanndomNum()
         {
             std::random_device seed_gen;
             std::default_random_engine engine(seed_gen());
@@ -25,7 +25,7 @@ namespace voe
             float val1 = dist(engine);
             float val2 = dist(engine);
 
-            return glm::vec4(val1, 0.0f, val2, 1.0f);
+            return glm::vec2(val1, val2);
         }
 
         // Phillips spectrum
@@ -70,7 +70,7 @@ namespace voe
                     {
                         P = 0.0f;
                     }
-                    oceanBuffer[y * m_MeshSize + x].Pos = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
+                    oceanBuffer[y * m_MeshSize + x].h = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
                 }
             }
         }

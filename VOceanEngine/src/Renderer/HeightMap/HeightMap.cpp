@@ -64,13 +64,14 @@ namespace voe {
 
 		TessendorfOceane* tOceanManeger = new TessendorfOceane(gridSize);
 		tOceanManeger->Generate(oceanBuffer);
+		VkDeviceSize bufferSize = oceanBuffer.size() * sizeof(Ocean);
 
-		// init uniform buffer members
+		// init ComputeUBO members
 		m_ComputeUniformBuffers.meshSize = tOceanManeger->m_MeshSize;
 		m_ComputeUniformBuffers.OceanSizeLx = tOceanManeger->m_OceanSizeLx;
-		m_ComputeUniformBuffers.OceanSizeLx = tOceanManeger->m_OceanSizeLz;
-
-		VkDeviceSize bufferSize = oceanBuffer.size() * sizeof(Ocean);
+		m_ComputeUniformBuffers.OceanSizeLz = tOceanManeger->m_OceanSizeLz;
+		CreateUniformBuffers();
+		SetDescriptorBufferInfo(m_ComputeUniformBuffers.UniformBufferDscInfo, m_ComputeUniformBuffers.UniformBuffer);
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;

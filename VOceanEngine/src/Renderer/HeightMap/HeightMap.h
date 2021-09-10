@@ -9,6 +9,7 @@ namespace voe
 	public:
 		struct Ocean
 		{
+			glm::vec2 h;
 			glm::vec4 Pos;
 			glm::vec4 UV;
 			glm::vec4 Normal;
