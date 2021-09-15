@@ -11,7 +11,6 @@ namespace voe {
 		CreateSwapchain();
 		CreateCommandBuffers();
 		CreateSyncObjects();
-		CreatePipelineCache();
 		CreateVulkanRenderer();
 	}
 
@@ -24,8 +23,6 @@ namespace voe {
 			vkDestroySemaphore(m_Device->GetVkDevice(), m_ImageAvailableSemaphores[i], nullptr);
 			vkDestroyFence(m_Device->GetVkDevice(), m_InFlightFences[i], nullptr);
 		}
-		
-		vkDestroyPipelineCache(m_Device->GetVkDevice(), m_PipelineCache, nullptr);
 	}
 
 	VkCommandBuffer VulkanBase::BeginFrame()
@@ -225,13 +222,6 @@ namespace voe {
 			VOE_CHECK_RESULT(vkCreateSemaphore(m_Device->GetVkDevice(), &semaphoreCreateInfo, nullptr, &m_RenderFinishedSemaphores[i]));
 			VOE_CHECK_RESULT(vkCreateFence(m_Device->GetVkDevice(), &fenceCreateInfo, nullptr, &m_InFlightFences[i]));
 		}
-	}
-
-	void VulkanBase::CreatePipelineCache()
-	{
-		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
-		pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-		VOE_CHECK_RESULT(vkCreatePipelineCache(m_Device->GetVkDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
 	}
 
 	VkResult VulkanBase::SubmitCommandBuffers()

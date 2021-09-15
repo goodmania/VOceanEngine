@@ -53,7 +53,6 @@ namespace voe{
 		void RecreateSwapChain();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
-		void CreatePipelineCache();
 
 		void DestroyCommandBuffers();
 		
@@ -68,8 +67,6 @@ namespace voe{
 
 		std::unique_ptr<Swapchain>  m_Swapchain;
 		std::unique_ptr<VulkanRenderer> m_Renderer;
-
-		VkPipelineCache m_PipelineCache;
 
 		// syncs
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;

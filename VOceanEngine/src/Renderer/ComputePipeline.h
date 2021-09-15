@@ -10,7 +10,8 @@ namespace voe {
 		ComputePipeline(
 			Device& device,
 			const std::string& compFilepath,
-			VkPipelineLayout& layout);
+			VkPipelineLayout layout = nullptr,
+			VkPipelineCache cache = nullptr);
 
 		~ComputePipeline();
 
@@ -21,7 +22,7 @@ namespace voe {
 		static std::vector<char> ReadFile(const std::string& filepath);
 
 	private:
-		void CreateComputePipeline(const std::string& compFilepath, VkPipelineLayout layout = nullptr);
+		void CreateComputePipeline(const std::string& compFilepath, VkPipelineLayout layout, VkPipelineCache cache);
 		void CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
 		Device& m_Device;

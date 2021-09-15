@@ -1,0 +1,81 @@
+#version 450
+#define PI 3.14159265358979323846264338327950288
+
+//256*256要素の2D IFFT専用かつ負の周波数もあることも考慮しているコード(普通のFFT,DFTは正の周波数からはじまる)
+//グループ数Nで実行されること前提
+//2回実行されること前提
+#define M (8)
+#define N (1<<M)
+
+struct Ocean
+{
+	vec2 h;
+	vec4 Pos;
+	vec4 UV;
+	vec4 Normal;
+};
+
+layout(std430, binding = 0) buffer H0In 
+{
+	Ocean OceanIn[ ];
+};
+
+layout(std430, binding = 1) buffer H0Out 
+{
+	Ocean OceanOut[ ];
+};
+
+layout (binding = 2) uniform UBO 
+{
+	float deltaT;
+	uint meshSize;
+	uint OceanSizeLx;
+	uint OceanSizeLz;
+} ubo;
+
+// GLSLではHLSLの numthreads の代わりに layout で local_size_[xyz] を指定します。
+layout (local_size_x = N/2) in;
+
+shared vec2 block[N];
+
+void main()
+{
+    uvec3 id = gl_GlobalInvocationID;
+    uvec3 grid = gl_WorkGroupID;
+    uint gi = gl_LocalInvocationIndex;
+    block[gi * 2] = OceanIn[grid.x * N + gi * 2].h;
+    block[gi * 2 + 1] = OceanOut[grid.x * N + gi * 2 + 1].h;
+
+    for (int loopidx = 0; loopidx < M; loopidx++)
+    {
+        int dleng = 1 << (M - loopidx - 1);
+        uint t = gi % dleng;
+        uint t0 = (gi / dleng) * dleng * 2 + t;
+        uint t1 = t0 + dleng;
+
+        groupMemoryBarrier();
+
+        float r1 = block[t1].x;
+        float i1 = block[t1].y;
+        float r0 = block[t0].x - r1;
+        float i0 = block[t0].y - i1;
+        float rad = PI * ubo.deltaT / dleng;    //invなので-がかかっている
+        float fsin = sin(rad);
+        float fcos = cos(rad);
+
+        block[t0].x += r1;
+        block[t0].y += i1;
+        block[t1].x = r0 * fcos - i0 * fsin;
+        block[t1].y = r0 * fsin + i0 * fcos;
+    }
+
+    groupMemoryBarrier();
+
+    vec2 reim0 = block[bitfieldReverse(gi * 2) >> (32 - M)];    //32はuint=32bitの32
+    vec2 reim1 = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)];
+    reim1 = -reim1;//出力結果に(-1)^indexが乗算されるので
+    //書き込みはx,yを転置している。これによって2D FFTの計算の1回目と2回目を同じコードにできて、かつ、最終的なメモリ配置は最初と同じに戻る
+    //最終的な書き込み先をN/2,N/2ずらすのも忘れずに
+    OceanOut[(gi * 2 + N / 2) % N * N + grid.x].h = reim0;
+    OceanOut[(gi * 2 + 1 + N / 2) % N * N + grid.x].h = reim1;
+}

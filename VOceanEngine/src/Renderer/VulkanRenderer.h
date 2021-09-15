@@ -29,7 +29,7 @@ namespace voe {
     private:
         void InitOceanH0Param();
         void InitDescriptors();
-        void SetupFFTOceanComputePipeline();
+        void SetupFFTOceanComputePipelines();
         void SetupUniformBuffers();
         void BuildComputeCommandBuffer();
 
@@ -39,6 +39,7 @@ namespace voe {
 
         void CreatePipelineLayout();
         void CreatePipeline(VkRenderPass renderPass);
+        void CreatePipelineCache();
 
         Device& m_Device;
         bool m_SpecializedComputeQueue = false;
@@ -48,7 +49,10 @@ namespace voe {
         VkPipelineLayout m_GraphicsPipelineLayout;
 
         std::unique_ptr<ComputePipeline> m_ComputePipeline;
+        std::unique_ptr<ComputePipeline> m_FFTComputePipeline;
         VkPipelineLayout m_ComputePipelineLayout;
+
+        VkPipelineCache m_PipelineCache;
 
         // descriptor helpers
         DescriptorAllocator* m_DescriptorAllocator;
@@ -56,7 +60,8 @@ namespace voe {
 
         // ocean params
         std::unique_ptr<HeightMap> m_OceanH0;
-        const uint32_t m_OceanGridSize = 512;
+        // 512->256
+        const uint32_t m_OceanThreadsSize = 256;
         uint32_t m_ReadSet = 0;
         std::array<VkDescriptorSet, 2> m_DescriptorSets;
         VkDescriptorSetLayout m_DescriptorSetLayout;
@@ -69,6 +74,6 @@ namespace voe {
 
         // maybe the following variables should be moved to a Device class ?
         VkCommandPool m_ComputeCommandPool;
-        std::array<VkCommandBuffer, 2> m_ComputeCommandBuffers;
+        VkCommandBuffer m_ComputeCommandBuffer;
     };
 }  
