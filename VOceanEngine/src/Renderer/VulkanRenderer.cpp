@@ -50,7 +50,46 @@ namespace voe {
 		std::vector<GameObject>& gameObjects,
 		const Camera& camera)
 	{
+		// Acquire barrier
+		if (m_SpecializedComputeQueue)
+		{
+			VkBufferMemoryBarrier bufferBarrier = {};
+			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+			bufferBarrier.srcAccessMask = 0;
+			bufferBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+			bufferBarrier.srcQueueFamilyIndex = m_Device.GetGraphicsQueueFamily();
+			bufferBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			bufferBarrier.size = VK_WHOLE_SIZE;
+
+			std::vector<VkBufferMemoryBarrier> bufferBarriers;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+
+			vkCmdPipelineBarrier(
+				commandBuffer,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+				VK_FLAGS_NONE,
+				0,
+				nullptr,
+				static_cast<uint32_t>(bufferBarriers.size()),
+				bufferBarriers.data(),
+				0,
+				nullptr);
+		}
+
 		m_GraphicsPipeline->Bind(commandBuffer);
+		vkCmdBindDescriptorSets(
+			commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			m_GraphicsPipelineLayout,
+			0,
+			1,
+			&m_DescriptorSets[0],
+			0,
+			0);
 
 		auto projectionView = camera.GetProjectionMatrix() * camera.GetViewMatrix();
 
@@ -71,6 +110,36 @@ namespace voe {
 
 			obj.m_Model->Bind(commandBuffer);
 			obj.m_Model->Draw(commandBuffer);
+		}
+
+		// Acquire barrier
+		if (m_SpecializedComputeQueue)
+		{
+			VkBufferMemoryBarrier bufferBarrier = {};
+			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+			bufferBarrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+			bufferBarrier.dstAccessMask = 0;
+			bufferBarrier.srcQueueFamilyIndex = m_Device.GetGraphicsQueueFamily();
+			bufferBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			bufferBarrier.size = VK_WHOLE_SIZE;
+
+			std::vector<VkBufferMemoryBarrier> bufferBarriers;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+
+			vkCmdPipelineBarrier(
+				commandBuffer,
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_FLAGS_NONE,
+				0,
+				nullptr,
+				static_cast<uint32_t>(bufferBarriers.size()),
+				bufferBarriers.data(),
+				0,
+				nullptr);
 		}
 	}
 

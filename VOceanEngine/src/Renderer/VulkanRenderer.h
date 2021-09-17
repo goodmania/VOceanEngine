@@ -60,6 +60,7 @@ namespace voe {
 
         // ocean params
         std::unique_ptr<HeightMap> m_OceanH0;
+
         // 512->256
         const uint32_t m_OceanThreadsSize = 256;
         uint32_t m_ReadSet = 0;
