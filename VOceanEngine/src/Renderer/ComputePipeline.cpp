@@ -8,9 +8,10 @@ namespace voe {
 	ComputePipeline::ComputePipeline(
 		Device& device,
 		const std::string& compFilepath,
-        VkPipelineLayout& layout) : m_Device{ device }
+        VkPipelineLayout layout,
+        VkPipelineCache cache) : m_Device{ device }
 	{
-		CreateComputePipeline(compFilepath, layout);
+		CreateComputePipeline(compFilepath, layout, cache);
 	}
 
 	ComputePipeline::~ComputePipeline()
@@ -38,7 +39,7 @@ namespace voe {
         return buffer;
     }
 
-    void ComputePipeline::CreateComputePipeline(const std::string& compFilepath, VkPipelineLayout layout)
+    void ComputePipeline::CreateComputePipeline(const std::string& compFilepath, VkPipelineLayout layout, VkPipelineCache cache)
     {
         auto compCode = ReadFile(compFilepath);
 
@@ -62,7 +63,7 @@ namespace voe {
 
         VOE_CHECK_RESULT(vkCreateComputePipelines(
             m_Device.GetVkDevice(),
-            VK_NULL_HANDLE,
+            cache,
             1,
             &pipelineCreateInfo,
             nullptr,

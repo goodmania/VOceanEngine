@@ -14,12 +14,12 @@ namespace voe {
 		glm::vec3 rotate{ 0.f };
 
 		m_CurrentMousePos = m_NewMousePos;
-		m_NewMousePos = glm::vec2(Input::GetMouseX(), Input::GetMouseY());
+		m_NewMousePos = glm::vec2(glm::clamp(Input::GetMouseX(), 0.0f, 1280.f), glm::clamp(Input::GetMouseY(), 0.0f, 720.f));
 		
 		if (m_NewMousePos.x > m_CurrentMousePos.x)
-			rotate.y += 0.05f;
+			rotate.y += 0.1f;
 		else if (m_NewMousePos.x < m_CurrentMousePos.x)
-			rotate.y -= 0.05f;
+			rotate.y -= 0.1f;
 
 		if (m_NewMousePos.y > m_CurrentMousePos.y)
 			rotate.x -= 0.1;

@@ -25,9 +25,10 @@ namespace voe {
 	VulkanRenderer::VulkanRenderer(Device& device, VkRenderPass renderPass) : m_Device{ device } 
 	{
 		InitDescriptors();
-		SetupFFTOceanComputePipeline();
 		CreatePipelineLayout();
+		CreatePipelineCache();
 		CreatePipeline(renderPass);
+		SetupFFTOceanComputePipelines();
 	}
 
 	VulkanRenderer::~VulkanRenderer() 
@@ -40,7 +41,7 @@ namespace voe {
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_ComputePipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(m_Device.GetVkDevice(),m_DescriptorSetLayout, nullptr);
 		vkDestroyCommandPool(m_Device.GetVkDevice(), m_ComputeCommandPool, nullptr);
-
+		vkDestroyPipelineCache(m_Device.GetVkDevice(), m_PipelineCache, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_GraphicsPipelineLayout, nullptr);
 	}
 
@@ -49,13 +50,52 @@ namespace voe {
 		std::vector<GameObject>& gameObjects,
 		const Camera& camera)
 	{
+		// Acquire barrier
+		if (m_SpecializedComputeQueue)
+		{
+			VkBufferMemoryBarrier bufferBarrier = {};
+			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+			bufferBarrier.srcAccessMask = 0;
+			bufferBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+			bufferBarrier.srcQueueFamilyIndex = m_Device.GetGraphicsQueueFamily();
+			bufferBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			bufferBarrier.size = VK_WHOLE_SIZE;
+
+			std::vector<VkBufferMemoryBarrier> bufferBarriers;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+
+			vkCmdPipelineBarrier(
+				commandBuffer,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+				VK_FLAGS_NONE,
+				0,
+				nullptr,
+				static_cast<uint32_t>(bufferBarriers.size()),
+				bufferBarriers.data(),
+				0,
+				nullptr);
+		}
+
 		m_GraphicsPipeline->Bind(commandBuffer);
+		vkCmdBindDescriptorSets(
+			commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			m_GraphicsPipelineLayout,
+			0,
+			1,
+			&m_DescriptorSets[0],
+			0,
+			0);
 
 		auto projectionView = camera.GetProjectionMatrix() * camera.GetViewMatrix();
 
 		for (auto& obj : gameObjects)
 		{
-			PushConstantData push{};
+			PushConstantData push = {};
 			auto modelMatrix = obj.m_Transform.Mat4();
 			push.Transform = projectionView * modelMatrix;
 			push.NormalMatrix = obj.m_Transform.NormalMatrix();
@@ -71,12 +111,42 @@ namespace voe {
 			obj.m_Model->Bind(commandBuffer);
 			obj.m_Model->Draw(commandBuffer);
 		}
+
+		// Acquire barrier
+		if (m_SpecializedComputeQueue)
+		{
+			VkBufferMemoryBarrier bufferBarrier = {};
+			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+			bufferBarrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+			bufferBarrier.dstAccessMask = 0;
+			bufferBarrier.srcQueueFamilyIndex = m_Device.GetGraphicsQueueFamily();
+			bufferBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			bufferBarrier.size = VK_WHOLE_SIZE;
+
+			std::vector<VkBufferMemoryBarrier> bufferBarriers;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+
+			vkCmdPipelineBarrier(
+				commandBuffer,
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_FLAGS_NONE,
+				0,
+				nullptr,
+				static_cast<uint32_t>(bufferBarriers.size()),
+				bufferBarriers.data(),
+				0,
+				nullptr);
+		}
 	}
 
 	void VulkanRenderer::InitOceanH0Param()
 	{
 		m_OceanH0 = std::make_unique<HeightMap>(m_Device, m_Device.GetComputeQueue());
-		m_OceanH0->CreateHeightMap(m_OceanGridSize);
+		m_OceanH0->CreateHeightMap(m_OceanThreadsSize);
 	}
 
 	void VulkanRenderer::InitDescriptors()
@@ -95,7 +165,7 @@ namespace voe {
 		m_OceanH0->UpdateUniformBuffers(dt);
 	}
 
-	void VulkanRenderer::SetupFFTOceanComputePipeline()
+	void VulkanRenderer::SetupFFTOceanComputePipelines()
 	{
 		auto device = m_Device.GetVkDevice();
 		m_SpecializedComputeQueue = IsComputeQueueSpecialized();
@@ -125,7 +195,14 @@ namespace voe {
 		m_ComputePipeline = std::make_unique<ComputePipeline>(
 			m_Device,
 			"Assets/Shaders/spectrum.spv",
-			m_ComputePipelineLayout);
+			m_ComputePipelineLayout,
+			m_PipelineCache);
+
+		m_FFTComputePipeline = std::make_unique<ComputePipeline>(
+			m_Device,
+			"Assets/Shaders/FFT.spv",
+			m_ComputePipelineLayout,
+			m_PipelineCache);
 
 		// Separate command pool as queue family for compute may be different than graphics
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
@@ -139,8 +216,8 @@ namespace voe {
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.commandPool = m_ComputeCommandPool;
 		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		commandBufferAllocateInfo.commandBufferCount = m_ComputeCommandBuffers.size();
-		VOE_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_ComputeCommandBuffers[0]));
+		commandBufferAllocateInfo.commandBufferCount = 1;
+		VOE_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_ComputeCommandBuffer));
 
 		// Semaphores for graphics / compute synchronization
 		VkSemaphoreCreateInfo semaphoreCreateInfo = {};
@@ -163,51 +240,28 @@ namespace voe {
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-		for (uint32_t i = 0; i < 2; i++) {
+		VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffer, &cmdBufInfo));
+		AddGraphicsToComputeBarriers(m_ComputeCommandBuffer);
 
-			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[i], &cmdBufInfo));
+		// 1: Calculate spectrum
+		m_ComputePipeline->Bind(m_ComputeCommandBuffer);
+		vkCmdBindDescriptorSets(m_ComputeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
+		vkCmdDispatch(m_ComputeCommandBuffer, m_OceanThreadsSize, 1, 1);
+		
+		AddComputeToComputeBarriers(m_ComputeCommandBuffer);
 
-			// Acquire the storage buffers from the graphics queue
-			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
-			m_ComputePipeline->Bind(m_ComputeCommandBuffers[i]);
+		// 2-1: Calculate FFT in horizontal direction
+		m_FFTComputePipeline->Bind(m_ComputeCommandBuffer);
+		vkCmdDispatch(m_ComputeCommandBuffer, m_OceanThreadsSize, 1, 1);
 
-			uint32_t calculateNormals = 0;
-			//vkCmdPushConstants(m_ComputeCommandBuffers[i], m_ComputePipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &calculateNormals);
+		AddComputeToComputeBarriers(m_ComputeCommandBuffer);
 
-			// Dispatch the compute job
-			const uint32_t iterations = 64;
-			for (uint32_t j = 0; j < iterations; j++) 
-			{
-				m_ReadSet = 1 - m_ReadSet;
-				vkCmdBindDescriptorSets(
-					m_ComputeCommandBuffers[i],
-					VK_PIPELINE_BIND_POINT_COMPUTE,
-					m_ComputePipelineLayout,
-					0,
-					1,
-					&m_DescriptorSets[m_ReadSet],
-					0,
-					0);
+		// 2-2: Calculate FFT in vertical direction
+		vkCmdDispatch(m_ComputeCommandBuffer, m_OceanThreadsSize, 1, 1);
 
-				if (j == iterations - 1) 
-				{
-					calculateNormals = 1;
-					// vkCmdPushConstants(compute.commandBuffers[i], compute.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &calculateNormals);
-				}
+		AddGraphicsToComputeBarriers(m_ComputeCommandBuffer);
 
-				vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanGridSize / 10, m_OceanGridSize / 10, 1);
-
-				// Don't add a barrier on the last iteration of the loop, since we'll have an explicit release to the graphics queue
-				if (j != iterations - 1) 
-				{
-					AddComputeToComputeBarriers(m_ComputeCommandBuffers[i]);
-				}
-			}
-
-			// release the storage buffers back to the graphics queue
-			AddComputeToGraphicsBarriers(m_ComputeCommandBuffers[i]);
-			vkEndCommandBuffer(m_ComputeCommandBuffers[i]);
-		}
+		VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffer));
 	}
 
 	void VulkanRenderer::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer)
@@ -335,6 +389,13 @@ namespace voe {
 			"Assets/Shaders/testVert.spv",
 			"Assets/Shaders/testFrag.spv",
 			pipelineConfig);
+	}
+
+	void VulkanRenderer::CreatePipelineCache()
+	{
+		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
+		pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+		VOE_CHECK_RESULT(vkCreatePipelineCache(m_Device.GetVkDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
 	}
 }
 
