@@ -8,9 +8,10 @@ namespace voe
     {
     public:
 
-        TessendorfOceane(uint32_t gridSize) 
-            : m_MeshSize(gridSize), m_OceanSizeLx(gridSize * 5 / 2), m_OceanSizeLz(gridSize * 5 / 2)
+        TessendorfOceane(uint32_t size) 
+            : m_MeshSize(size), m_OceanSizeLx(size * 5 / 2), m_OceanSizeLz(size * 5 / 2)
         {
+            
         }
 
         ~TessendorfOceane() = default;
@@ -18,10 +19,9 @@ namespace voe
         // Generates Gaussian random number with mean 0 and standard deviation 1.
         glm::vec2 GaussianRanndomNum()
         {
-            std::random_device seed_gen;
             std::default_random_engine engine(seed_gen());
-
             std::normal_distribution<float> dist(0.0, 1.0);
+
             float val1 = dist(engine);
             float val2 = dist(engine);
 
@@ -56,7 +56,7 @@ namespace voe
         }
 
         // Generate base heightfield in frequency space
-        void Generate(std::vector<HeightMap::Ocean>& oceanBuffer)
+        void Generate(std::vector<glm::vec2>& oceanBuffer)
         {
             for (uint32_t y = 0; y < m_MeshSize; y++)
             {
@@ -70,7 +70,7 @@ namespace voe
                     {
                         P = 0.0f;
                     }
-                    oceanBuffer[y * m_MeshSize + x].h = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
+                    oceanBuffer[y * m_MeshSize + x] = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
                 }
             }
         }
@@ -87,6 +87,9 @@ namespace voe
         const float A = 0.000001f;              
         const float windSpeed = 30.0f;
         const float windDir = glm::pi<float>() * 1.234f; 
+
+
+        std::random_device seed_gen;
     };
 }
 

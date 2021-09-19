@@ -51,11 +51,12 @@ namespace voe {
 			// m_Camera OnUpdate 
 			float aspect = m_VulkanBase->GetAspectRatio();
 			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
-			m_Camera.SetFrustumProjectionMatrix(glm::radians(50.f), aspect, 0.1f, 10.f);
+			m_Camera.SetFrustumProjectionMatrix(glm::radians(50.f), aspect, 0.1f, 20.f);
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
+				m_VulkanBase->GetRenderer().BuildComputeCommandBuffer(commandBuffer);
 				m_VulkanBase->GetRenderer().RenderGameObjects(commandBuffer, m_GameObjects, m_Camera);
 				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->EndFrame();
@@ -72,7 +73,7 @@ namespace voe {
 	void Application::LoadGameObjects() 
 	{
 		auto device = m_VulkanBase->GetDevice();
-		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/plane.obj");
+		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/plane_5_256_256.obj");
 		//std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/flat_vase.obj");
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
