@@ -1,25 +1,17 @@
 #version 450
 #define PI 3.14159265358979323846264338327950288
 
-struct Ocean
+layout(std430, binding = 0) buffer H0Buffer
 {
-	vec2 h;
-	vec4 Pos;
-	vec4 UV;
-	vec4 Normal;
+	vec2 H0Buffers[ ];
 };
 
-layout(std430, binding = 0) buffer H0In 
+layout(std430, binding = 1) buffer HtBuffer 
 {
-	Ocean OceanIn[ ];
+	vec2 HtBuffers[ ];
 };
 
-layout(std430, binding = 1) buffer H0Out 
-{
-	Ocean OceanOut[ ];
-};
-
-layout (binding = 2) uniform UBO 
+layout (binding = 3) uniform UBO 
 {
 	float deltaT;
 	uint meshSize;
@@ -69,10 +61,10 @@ void main()
 
 	if((id.x < ubo.meshSize ) && (id.y < ubo.meshSize))
 	{
-		vec2 h0_k  = OceanIn[in_index].h;
-		vec2 h0_mk = OceanIn[in_mindex].h;
+		vec2 h0_k  = H0Buffers[in_index];
+		vec2 h0_mk = H0Buffers[in_mindex];
 		
-		OceanOut[out_index].h = AddComplex(
+		HtBuffers[out_index] = AddComplex(
 				MultiplyComplex(h0_k, ComplexExp(w * ubo.deltaT)),
 				MultiplyComplex(conjugate(h0_mk), ComplexExp(-w * ubo.deltaT)));
 	}

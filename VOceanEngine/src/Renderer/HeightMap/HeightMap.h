@@ -17,12 +17,17 @@ namespace voe
 
 		struct StorageBuffers
 		{
-			VkBuffer InputBuffer = VK_NULL_HANDLE;
-			VkDeviceMemory InputMemory = VK_NULL_HANDLE;
-			VkDescriptorBufferInfo* InputBufferDscInfo = VK_NULL_HANDLE;
-			VkBuffer OutputBuffer = VK_NULL_HANDLE;
-			VkDeviceMemory OutputMemory = VK_NULL_HANDLE;
-			VkDescriptorBufferInfo* OutputBufferDscInfo = VK_NULL_HANDLE;
+			VkBuffer H0Buffer = VK_NULL_HANDLE;
+			VkDeviceMemory H0Memory = VK_NULL_HANDLE;
+			VkDescriptorBufferInfo* H0BufferDscInfo = VK_NULL_HANDLE;
+
+			VkBuffer HtBuffer = VK_NULL_HANDLE;
+			VkDeviceMemory HtMemory = VK_NULL_HANDLE;
+			VkDescriptorBufferInfo* HtBufferDscInfo = VK_NULL_HANDLE;
+
+			VkBuffer Ht_dmyBuffer = VK_NULL_HANDLE;
+			VkDeviceMemory Ht_dmyMemory = VK_NULL_HANDLE;
+			VkDescriptorBufferInfo* Ht_dmyBufferDscInfo = VK_NULL_HANDLE;
 		};
 
 		struct ComputeUBO
@@ -30,22 +35,19 @@ namespace voe
 			float deltaT = 0.0f;
 			uint32_t meshSize;
 			uint32_t OceanSizeLx;
-			uint32_t OceanSizeLz;
-			void* data = nullptr;
-			VkBuffer UniformBuffer = VK_NULL_HANDLE;
-			VkDeviceMemory UniformBufferMemory = VK_NULL_HANDLE;
-			VkDescriptorBufferInfo* UniformBufferDscInfo = VK_NULL_HANDLE;
+			uint32_t OceanSizeLz;			
 		};
 
 		HeightMap(Device& device, const VkQueue& copyQueue);
 		~HeightMap();
 
-		void CreateHeightMap(uint32_t gridsize);
+		void CreateHeightMap(uint32_t size);
 		void CreateUniformBuffers();
 		void UpdateUniformBuffers(float dt);
 		void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
 		StorageBuffers GetStorageBuffers() { return m_StorageBuffers; }
 		ComputeUBO GetUBOBuffers() { return m_ComputeUniformBuffers; }
+		VkDescriptorBufferInfo* GetUniformBufferDscInfo() { return m_UniformBufferDscInfo; }
 		
 	private:
 		void SetDescriptorBufferInfo(
@@ -66,5 +68,7 @@ namespace voe
 
 		VkBuffer m_UniformBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_UniformBufferMemory = VK_NULL_HANDLE;
+		VkDescriptorBufferInfo* m_UniformBufferDscInfo = VK_NULL_HANDLE;
+		void* m_Udata = nullptr;
 	};
 }

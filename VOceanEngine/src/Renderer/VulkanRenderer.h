@@ -25,13 +25,13 @@ namespace voe {
 
         bool IsComputeQueueSpecialized() const;
         void OnUpdate(float dt);
+        void BuildComputeCommandBuffer();
 
     private:
         void InitOceanH0Param();
         void InitDescriptors();
         void SetupFFTOceanComputePipelines();
         void SetupUniformBuffers();
-        void BuildComputeCommandBuffer();
 
         void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
         void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer);

@@ -25,10 +25,10 @@ namespace voe {
 	VulkanRenderer::VulkanRenderer(Device& device, VkRenderPass renderPass) : m_Device{ device } 
 	{
 		InitDescriptors();
-		CreatePipelineLayout();
 		CreatePipelineCache();
-		CreatePipeline(renderPass);
 		SetupFFTOceanComputePipelines();
+		CreatePipelineLayout();
+		CreatePipeline(renderPass);
 	}
 
 	VulkanRenderer::~VulkanRenderer() 
@@ -62,9 +62,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -87,7 +89,7 @@ namespace voe {
 			m_GraphicsPipelineLayout,
 			0,
 			1,
-			&m_DescriptorSets[0],
+			&m_DescriptorSets[1],
 			0,
 			0);
 
@@ -124,9 +126,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -173,16 +177,11 @@ namespace voe {
 		// create and build ocean descriptorsets
 		InitOceanH0Param();
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
-			.BindBuffer(0, m_OceanH0->GetStorageBuffers().InputBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(1, m_OceanH0->GetStorageBuffers().OutputBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(2, m_OceanH0->GetUBOBuffers().UniformBufferDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(0, m_OceanH0->GetStorageBuffers().H0BufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(1, m_OceanH0->GetStorageBuffers().HtBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(2, m_OceanH0->GetStorageBuffers().Ht_dmyBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(3, m_OceanH0->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.Build(m_DescriptorSets[0], m_DescriptorSetLayout);
-
-		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
-			.BindBuffer(0, m_OceanH0->GetStorageBuffers().OutputBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(1, m_OceanH0->GetStorageBuffers().InputBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(2, m_OceanH0->GetUBOBuffers().UniformBufferDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.Build(m_DescriptorSets[1]);
 
 		// create pipeline layout
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
@@ -262,6 +261,29 @@ namespace voe {
 		AddGraphicsToComputeBarriers(m_ComputeCommandBuffer);
 
 		VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffer));
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_ComputeCommandBuffer;
+
+		// Create fence to ensure that the command buffer has finished executing
+		VkFenceCreateInfo fenceCreateInfo{};
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCreateInfo.flags = VK_FLAGS_NONE;
+		
+		VkFence fence;
+		VOE_CHECK_RESULT(vkCreateFence(m_Device.GetVkDevice(), &fenceCreateInfo, nullptr, &fence));
+
+		// Submit to the queue
+		VOE_CHECK_RESULT(vkQueueSubmit(m_Device.GetComputeQueue(), 1, &submitInfo, fence));
+
+		// Wait for the fence to signal that command buffer has finished executing
+		VOE_CHECK_RESULT(vkWaitForFences(m_Device.GetVkDevice(), 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+		vkDestroyFence(m_Device.GetVkDevice(), fence, nullptr);
+		
+		vkFreeCommandBuffers(m_Device.GetVkDevice(), m_ComputeCommandPool, 1, &m_ComputeCommandBuffer);
+
 	}
 
 	void VulkanRenderer::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer)
@@ -277,9 +299,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -307,9 +331,11 @@ namespace voe {
 		bufferBarrier.size = VK_WHOLE_SIZE;
 
 		std::vector<VkBufferMemoryBarrier> bufferBarriers;
-		bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+		bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
 		bufferBarriers.push_back(bufferBarrier);
-		bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+		bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
+		bufferBarriers.push_back(bufferBarrier);
+		bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
 		bufferBarriers.push_back(bufferBarrier);
 
 		vkCmdPipelineBarrier(
@@ -338,9 +364,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().InputBuffer;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().OutputBuffer;
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
+			bufferBarriers.push_back(bufferBarrier);
+			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -359,16 +387,22 @@ namespace voe {
 
 	void VulkanRenderer::CreatePipelineLayout()
 	{
+		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
+			.BindBuffer(0, m_OceanH0->GetStorageBuffers().Ht_dmyBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.BindBuffer(1, m_OceanH0->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.Build(m_DescriptorSets[1], m_DescriptorSetLayout);
+
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(PushConstantData);
 
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
+		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = nullptr;
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
+		pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 		VOE_CHECK_RESULT(vkCreatePipelineLayout(m_Device.GetVkDevice(), &pipelineLayoutInfo, nullptr, &m_GraphicsPipelineLayout));
