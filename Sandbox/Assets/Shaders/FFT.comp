@@ -1,9 +1,9 @@
 #version 450
 #define PI 3.14159265358979323846264338327950288
 
-//256*256—v‘f‚Ì2D IFFTê—p‚©‚Â•‰‚ÌŽü”g”‚à‚ ‚é‚±‚Æ‚àl—¶‚µ‚Ä‚¢‚éƒR[ƒh(•’Ê‚ÌFFT,DFT‚Í³‚ÌŽü”g”‚©‚ç‚Í‚¶‚Ü‚é)
-//ƒOƒ‹[ƒv”N‚ÅŽÀs‚³‚ê‚é‚±‚Æ‘O’ñ
-//2‰ñŽÀs‚³‚ê‚é‚±‚Æ‘O’ñ
+//256*256ï¿½vï¿½fï¿½ï¿½2D IFFTï¿½ï¿½pï¿½ï¿½ï¿½Â•ï¿½ï¿½ÌŽï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Rï¿½[ï¿½h(ï¿½ï¿½ï¿½Ê‚ï¿½FFT,DFTï¿½Íï¿½ï¿½ÌŽï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½Ü‚ï¿½)
+//ï¿½Oï¿½ï¿½ï¿½[ï¿½vï¿½ï¿½Nï¿½ÅŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‘Oï¿½ï¿½
+//2ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‘Oï¿½ï¿½
 #define M (8)
 #define N (1<<M)
 
@@ -22,7 +22,7 @@ layout(std430, binding = 2) buffer Ht_dmyBuffer
 	vec2 Ht_dmyBuffers[ ];
 };
 
-layout (binding = 3) uniform UBO 
+layout (std140, binding = 3) uniform UBO 
 {
 	float deltaT;
 	uint meshSize;
@@ -30,7 +30,7 @@ layout (binding = 3) uniform UBO
 	uint OceanSizeLz;
 } ubo;
 
-// GLSL‚Å‚ÍHLSL‚Ì numthreads ‚Ì‘ã‚í‚è‚É layout ‚Å local_size_[xyz] ‚ðŽw’è‚µ‚Ü‚·B
+// GLSLï¿½Å‚ï¿½HLSLï¿½ï¿½ numthreads ï¿½Ì‘ï¿½ï¿½ï¿½ï¿½ layout ï¿½ï¿½ local_size_[xyz] ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
 layout (local_size_x = N/2) in;
 
 shared vec2 block[N];
@@ -56,7 +56,7 @@ void main()
         float i1 = block[t1].y;
         float r0 = block[t0].x - r1;
         float i0 = block[t0].y - i1;
-        float rad = PI * ubo.deltaT / dleng;    //inv‚È‚Ì‚Å-‚ª‚©‚©‚Á‚Ä‚¢‚é
+        float rad = PI * ubo.deltaT / dleng;    //invï¿½È‚Ì‚ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
         float fsin = sin(rad);
         float fcos = cos(rad);
 
@@ -68,11 +68,11 @@ void main()
 
     groupMemoryBarrier();
 
-    vec2 reim0 = block[bitfieldReverse(gi * 2) >> (32 - M)];    //32‚Íuint=32bit‚Ì32
+    vec2 reim0 = block[bitfieldReverse(gi * 2) >> (32 - M)];    //32ï¿½ï¿½uint=32bitï¿½ï¿½32
     vec2 reim1 = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)];
-    reim1 = -reim1;//o—ÍŒ‹‰Ê‚É(-1)^index‚ªæŽZ‚³‚ê‚é‚Ì‚Å
-    //‘‚«ž‚Ý‚Íx,y‚ð“]’u‚µ‚Ä‚¢‚éB‚±‚ê‚É‚æ‚Á‚Ä2D FFT‚ÌŒvŽZ‚Ì1‰ñ–Ú‚Æ2‰ñ–Ú‚ð“¯‚¶ƒR[ƒh‚É‚Å‚«‚ÄA‚©‚ÂAÅI“I‚Èƒƒ‚ƒŠ”z’u‚ÍÅ‰‚Æ“¯‚¶‚É–ß‚é
-    //ÅI“I‚È‘‚«ž‚Ýæ‚ðN/2,N/2‚¸‚ç‚·‚Ì‚à–Y‚ê‚¸‚É
+    reim1 = -reim1;//ï¿½oï¿½ÍŒï¿½ï¿½Ê‚ï¿½(-1)^indexï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½x,yï¿½ï¿½]ï¿½uï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½ï¿½2D FFTï¿½ÌŒvï¿½Zï¿½ï¿½1ï¿½ï¿½Ú‚ï¿½2ï¿½ï¿½Ú‚ð“¯‚ï¿½ï¿½Rï¿½[ï¿½hï¿½É‚Å‚ï¿½ï¿½ÄAï¿½ï¿½ï¿½ÂAï¿½ÅIï¿½Iï¿½Èƒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½uï¿½ÍÅï¿½ï¿½Æ“ï¿½ï¿½ï¿½ï¿½É–ß‚ï¿½
+    //ï¿½ÅIï¿½Iï¿½Èï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýï¿½ï¿½N/2,N/2ï¿½ï¿½ï¿½ç‚·ï¿½Ì‚ï¿½ï¿½Yï¿½ê‚¸ï¿½ï¿½
     Ht_dmyBuffers[(gi * 2 + N / 2) % N * N + grid.x] = reim0;
     Ht_dmyBuffers[(gi * 2 + 1 + N / 2) % N * N + grid.x] = reim1;
 }

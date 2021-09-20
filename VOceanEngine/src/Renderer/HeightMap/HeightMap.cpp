@@ -130,7 +130,32 @@ namespace voe {
 		vkCmdCopyBuffer(copyCmd, stagingBuffer, m_StorageBuffers.H0Buffer, 1, &copyRegion);
 		// vkCmdCopyBuffer(copyCmd, stagingBuffer, m_StorageBuffers.HtBuffer, 1, &copyRegion);
 
-		AddGraphicsToComputeBarriers(copyCmd);
+		// Execute a transfer barrier to the compute queue, if necessary
+		if (m_Device.GetGraphicsQueueFamily() != m_Device.GetComputeQueueFamily())
+		{
+			/*VkBufferMemoryBarrier buffer_barrier =
+			{
+				VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+				nullptr,
+				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
+				0,
+				graphics.queueFamilyIndex,
+				compute.queueFamilyIndex,
+				compute.storageBuffer.buffer,
+				0,
+				compute.storageBuffer.size
+			};
+
+			vkCmdPipelineBarrier(
+				copyCmd,
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				0,
+				0, nullptr,
+				1, &buffer_barrier,
+				0, nullptr);*/
+		}
+
 		m_Device.FlushCommandBuffer(copyCmd, m_CopyComputeQueue, true);
 
 		vkDestroyBuffer(m_Device.GetVkDevice(), stagingBuffer, nullptr);

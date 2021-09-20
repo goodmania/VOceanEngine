@@ -88,7 +88,6 @@ namespace voe
         const float windSpeed = 30.0f;
         const float windDir = glm::pi<float>() * 1.234f; 
 
-
         std::random_device seed_gen;
     };
 }
