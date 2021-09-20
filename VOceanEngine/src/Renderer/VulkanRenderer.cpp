@@ -40,6 +40,7 @@ namespace voe {
 		vkDestroySemaphore(m_Device.GetVkDevice(), m_Semaphores.Complete, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_ComputePipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(m_Device.GetVkDevice(),m_DescriptorSetLayout, nullptr);
+		vkFreeCommandBuffers(m_Device.GetVkDevice(), m_ComputeCommandPool, 1, &m_ComputeCommandBuffer);
 		vkDestroyCommandPool(m_Device.GetVkDevice(), m_ComputeCommandPool, nullptr);
 		vkDestroyPipelineCache(m_Device.GetVkDevice(), m_PipelineCache, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_GraphicsPipelineLayout, nullptr);
@@ -245,7 +246,7 @@ namespace voe {
 		// 1: Calculate spectrum
 		m_ComputePipeline->Bind(m_ComputeCommandBuffer);
 		vkCmdBindDescriptorSets(m_ComputeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
-		vkCmdDispatch(m_ComputeCommandBuffer, m_OceanThreadsSize, 1, 1);
+		vkCmdDispatch(m_ComputeCommandBuffer, 1, m_OceanThreadsSize, 1);
 		
 		AddComputeToComputeBarriers(m_ComputeCommandBuffer);
 
@@ -282,7 +283,7 @@ namespace voe {
 		VOE_CHECK_RESULT(vkWaitForFences(m_Device.GetVkDevice(), 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 		vkDestroyFence(m_Device.GetVkDevice(), fence, nullptr);
 		
-		vkFreeCommandBuffers(m_Device.GetVkDevice(), m_ComputeCommandPool, 1, &m_ComputeCommandBuffer);
+		// 
 
 	}
 

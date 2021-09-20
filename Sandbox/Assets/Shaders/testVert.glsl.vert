@@ -15,7 +15,7 @@ layout(std430, binding = 0) buffer Ht_dmyBuffer
 	vec2 Ht_dmyBuffers[];
 };
 
-layout(binding = 1) uniform UBO
+layout(std140, binding = 1) uniform UBO
 {
 	float deltaT;
 	uint meshSize;
@@ -35,12 +35,12 @@ vec4 ui_calcPos(uint ui_idx)
 
 	vec2 h = Ht_dmyBuffers[ui_idx];
 
-	return vec4((1.0 * x - halfN) * dx * pos.x, h.x * pos.y, (1.0 * z - halfN) * dz * pos.z, 1);
+	return vec4((1.0 * x - halfN) * dx, h.x, (1.0 * z - halfN) * dz, 1);
 }
 
 void main()
 {
-	gl_Position = push.transform * ui_calcPos(gl_VertexIndex);
-	//gl_Position = push.transform * vec4(pos, 1.0);
+	// gl_Position = push.transform * ui_calcPos(gl_VertexIndex);
+	gl_Position = push.transform * vec4(pos.x, Ht_dmyBuffers[gl_VertexIndex].x, pos.z, 1.0);
 	fragColor = color;
 }
