@@ -50,18 +50,18 @@ void main()
 
 	
 
-	uint in_index = id.y * ubo.meshSize + id.x;
-    uint in_mindex = (ubo.meshSize - id.y) % ubo.meshSize * ubo.meshSize + (ubo.meshSize - id.x) % ubo.meshSize; // mirrored
-    uint out_index = id.y * ubo.meshSize + id.x;
+	uint in_index = id.y * 256 + id.x;
+    uint in_mindex = (256 - id.y) % 256 * 256 + (256 - id.x) % 256; // mirrored
+    uint out_index = id.y * 256 + id.x;
 
 	vec2 k;
-	k.x = (-ubo.meshSize / 2.0f + id.x) * (2.0f * PI / ubo.OceanSizeLx);
-	k.y = (-ubo.meshSize / 2.0f + id.y) * (2.0f * PI / ubo.OceanSizeLz);
+	k.x = (-256 / 2.0f + id.x) * (2.0f * PI / 640);
+	k.y = (-256 / 2.0f + id.y) * (2.0f * PI / 640);
 
 	float k_len = sqrt(k.x * k.x + k.y * k.y);
     float w = sqrt(9.81f * k_len);
 
-	if((id.x < ubo.meshSize ) && (id.y < ubo.meshSize))
+	if((id.x < 256 ) && (id.y < 256))
 	{
 		vec2 h0_k  = H0Buffers[in_index];
 		vec2 h0_mk = H0Buffers[in_mindex];

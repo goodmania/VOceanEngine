@@ -51,12 +51,14 @@ namespace voe {
 
 		vkMapMemory(m_Device.GetVkDevice(), m_UniformBufferMemory, 0, sizeof(ComputeUBO), 0, &m_Udata);
 		memcpy(m_Udata, &m_UniformBuffer, sizeof(ComputeUBO));
-		vkUnmapMemory(m_Device.GetVkDevice(), m_UniformBufferMemory);
+
+		UpdateUniformBuffers();
 	}
 
 	void HeightMap::UpdateUniformBuffers(float dt)
 	{
 		m_ComputeUniformBuffers.deltaT = dt;
+
 		memcpy(m_Udata, &m_UniformBuffer, sizeof(ComputeUBO));
 	}
 
@@ -75,13 +77,15 @@ namespace voe {
 		std::vector<glm::vec2> h0Buffer(size * size);
 		TessendorfOceane* tOceanManeger = new TessendorfOceane(size);
 		tOceanManeger->Generate(h0Buffer);
-		VkDeviceSize bufferSize = h0Buffer.size() * sizeof(glm::vec2);
+		VkDeviceSize bufferSize = static_cast<uint32_t>(h0Buffer.size()) * sizeof(glm::vec2);
 		
 		m_ComputeUniformBuffers.meshSize = tOceanManeger->m_MeshSize;
 		m_ComputeUniformBuffers.OceanSizeLx = tOceanManeger->m_OceanSizeLx;
 		m_ComputeUniformBuffers.OceanSizeLz = tOceanManeger->m_OceanSizeLz;
 		CreateUniformBuffers();
 		SetDescriptorBufferInfo(m_UniformBufferDscInfo, m_UniformBuffer);
+
+		delete tOceanManeger;
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -160,41 +164,6 @@ namespace voe {
 
 		vkDestroyBuffer(m_Device.GetVkDevice(), stagingBuffer, nullptr);
 		vkFreeMemory(m_Device.GetVkDevice(), stagingBufferMemory, nullptr);
-
-		// Indices
-		std::vector<uint32_t> indices;
-		for (uint32_t y = 0; y < size - 1; y++) 
-		{
-			for (uint32_t x = 0; x < size; x++) 
-			{
-				indices.push_back((y + 1) * size + x);
-				indices.push_back((y) * size + x);
-			}
-			// Primitive restart (signaled by special value 0xFFFFFFFF)
-			indices.push_back(0xFFFFFFFF);
-		}
-
-		uint32_t indexBufferSize = static_cast<uint32_t>(indices.size()) * sizeof(uint32_t);
-		m_IndexCount = static_cast<uint32_t>(indices.size());
-
-		m_Device.CreateBuffer(
-			indexBufferSize,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer,
-			stagingBufferMemory);
-
-		void* idata;
-		vkMapMemory(m_Device.GetVkDevice(), stagingBufferMemory, 0, indexBufferSize, 0, &idata);
-		memcpy(data, indices.data(), static_cast<size_t>(indices.size()));
-		vkUnmapMemory(m_Device.GetVkDevice(), stagingBufferMemory);
-
-		m_Device.CreateBuffer(
-			indexBufferSize,
-			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_IndexBuffer,
-			m_IndexBufferMemory);
 	}
 
 	void HeightMap::SetDescriptorBufferInfo(VkDescriptorBufferInfo* info, VkBuffer buffer, VkDeviceSize size, VkDeviceSize offset)

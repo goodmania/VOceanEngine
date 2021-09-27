@@ -233,18 +233,57 @@ namespace voe {
 
 		m_ImagesInFlight[m_CurrentImageIndex] = m_InFlightFences[m_CurrentFrameIndex];
 
+		static bool firstDraw = true;
+		VkSemaphore compReadySemaphore = m_Renderer->GetComputeSemaphores().Ready;
+		VkSemaphore compCompleteSemaphore = m_Renderer->GetComputeSemaphores().Complete;
+		VkCommandBuffer compCmb = m_Renderer->GetComputeCommandBuffer();
+
+		VkSubmitInfo computeSubmitInfo = {};
+		computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		if (!firstDraw) 
+		{
+			computeSubmitInfo.waitSemaphoreCount = 1;
+			computeSubmitInfo.pWaitSemaphores = &compReadySemaphore;
+			computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
+		}
+		else 
+		{
+			firstDraw = false;
+		}
+		computeSubmitInfo.signalSemaphoreCount = 1;
+		computeSubmitInfo.pSignalSemaphores = &compCompleteSemaphore;
+		computeSubmitInfo.commandBufferCount = 1;
+		computeSubmitInfo.pCommandBuffers = &compCmb;
+
+		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetComputeQueue(), 1, &computeSubmitInfo, VK_NULL_HANDLE));
+
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+		VkPipelineStageFlags waitDstStageMask[2] = {
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT
+		};
+
+		VkSemaphore waitSemaphores[2] = {
+			m_ImageAvailableSemaphores[m_CurrentFrameIndex], compCompleteSemaphore
+		};
+
+		VkSemaphore signalSemaphores[2] = {
+			m_RenderFinishedSemaphores[m_CurrentFrameIndex], compReadySemaphore
+		};
+
 		auto currentCmdBuffer = GetCurrentCommandBuffer();
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = &m_ImageAvailableSemaphores[m_CurrentFrameIndex];
-		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.waitSemaphoreCount = 2;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitDstStageMask;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &currentCmdBuffer;
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrameIndex];
+		submitInfo.signalSemaphoreCount = 2;
+		submitInfo.pSignalSemaphores = signalSemaphores;
 
 		vkResetFences(m_Device->GetVkDevice(), 1, &m_InFlightFences[m_CurrentFrameIndex]);
 		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrameIndex]));

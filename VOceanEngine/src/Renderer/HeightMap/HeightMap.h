@@ -32,7 +32,7 @@ namespace voe
 
 		struct ComputeUBO
 		{
-			float deltaT = 0.0f;
+			float deltaT;
 			uint32_t meshSize;
 			uint32_t OceanSizeLx;
 			uint32_t OceanSizeLz;			
@@ -43,7 +43,7 @@ namespace voe
 
 		void CreateHeightMap(uint32_t size);
 		void CreateUniformBuffers();
-		void UpdateUniformBuffers(float dt);
+		void UpdateUniformBuffers(float dt = 0);
 		void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
 		StorageBuffers GetStorageBuffers() { return m_StorageBuffers; }
 		ComputeUBO GetUBOBuffers() { return m_ComputeUniformBuffers; }

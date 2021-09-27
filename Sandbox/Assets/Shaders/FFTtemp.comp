@@ -47,9 +47,8 @@ void main()
         uint t0 = (gi / dleng) * dleng * 2 + t;
         uint t1 = t0 + dleng;
 
-        //groupMemoryBarrier();
-        memoryBarrier();
-        
+        groupMemoryBarrier();
+
         float r1 = block[t1].x;
         float i1 = block[t1].y;
         float r0 = block[t0].x - r1;
@@ -64,8 +63,7 @@ void main()
         block[t1].y = r0 * fsin + i0 * fcos;
     }
 
-    //groupMemoryBarrier();
-    memoryBarrier();
+    groupMemoryBarrier();
 
     vec2 reim0 = block[bitfieldReverse(gi * 2) >> (32 - M)];    //32��uint=32bit��32
     vec2 reim1 = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)];
