@@ -199,9 +199,7 @@ namespace voe {
 
 	void VulkanBase::CreateSyncObjects()
 	{
-		// Create synchronization objects
 		// Create a semaphore used to synchronize image presentation
-
 		m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 		m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 		m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -236,7 +234,7 @@ namespace voe {
 		static bool firstDraw = true;
 		VkSemaphore compReadySemaphore = m_Renderer->GetComputeSemaphores().Ready;
 		VkSemaphore compCompleteSemaphore = m_Renderer->GetComputeSemaphores().Complete;
-		VkCommandBuffer compCmb = m_Renderer->GetComputeCommandBuffer();
+		std::array<VkCommandBuffer, 2> compCmbs = m_Renderer->GetComputeCommandBuffer();
 
 		VkSubmitInfo computeSubmitInfo = {};
 		computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -255,7 +253,7 @@ namespace voe {
 		computeSubmitInfo.signalSemaphoreCount = 1;
 		computeSubmitInfo.pSignalSemaphores = &compCompleteSemaphore;
 		computeSubmitInfo.commandBufferCount = 1;
-		computeSubmitInfo.pCommandBuffers = &compCmb;
+		computeSubmitInfo.pCommandBuffers = &compCmbs[m_CurrentFrameIndex];
 
 		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetComputeQueue(), 1, &computeSubmitInfo, VK_NULL_HANDLE));
 

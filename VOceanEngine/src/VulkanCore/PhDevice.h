@@ -23,6 +23,7 @@ namespace voe {
 		bool transferFamilyHasValue = false;
 		bool IsComplete() { return graphicsFamilyHasValue && presentFamilyHasValue && computeFamilyHasValue && transferFamily; }
 	};
+
 	struct SwapchainSupportDetails
 	{
 		VkSurfaceCapabilitiesKHR capabilities;
@@ -33,7 +34,6 @@ namespace voe {
 	class VOE_API PhDevice 
 	{
 	public:
-
 		const std::vector<const char*> DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 		PhDevice(const Instance* instance, const Surface* surface);

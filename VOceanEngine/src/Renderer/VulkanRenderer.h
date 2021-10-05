@@ -35,7 +35,7 @@ namespace voe {
         void BuildComputeCommandBuffer();
 
         Semaphores GetComputeSemaphores() { return m_ComputeSemaphores; }
-        VkCommandBuffer GetComputeCommandBuffer() { return m_ComputeCommandBuffer; }
+        std::array<VkCommandBuffer, 2> GetComputeCommandBuffer() { return m_ComputeCommandBuffers; }
         const uint32_t GetOceanMeshSize() { return m_OceanThreadsSize; }
 
     private:
@@ -74,7 +74,7 @@ namespace voe {
 
         // 512->256
         const uint32_t m_OceanThreadsSize = 256;
-        uint32_t m_ReadSet = 0;
+ 
         std::array<VkDescriptorSet, 3> m_DescriptorSets;
         VkDescriptorSetLayout m_DescriptorSetLayout;
 
@@ -82,6 +82,6 @@ namespace voe {
 
         // maybe the following variables should be moved to a Device class ?
         VkCommandPool m_ComputeCommandPool;
-        VkCommandBuffer m_ComputeCommandBuffer;
+        std::array<VkCommandBuffer, 2> m_ComputeCommandBuffers;
     };
 }  

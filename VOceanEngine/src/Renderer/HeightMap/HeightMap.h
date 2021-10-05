@@ -4,7 +4,7 @@
 
 namespace voe
 {
-	class HeightMap
+	class VOE_API HeightMap
 	{
 	public:
 		struct Ocean
