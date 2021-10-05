@@ -4,7 +4,7 @@
 
 namespace voe {
 
-    class Buffer {
+    class VOE_API Buffer {
     public:
         Buffer(
             Device& device,

@@ -4,6 +4,8 @@
 
 namespace voe
 {
+	class Buffer;
+
 	class VOE_API HeightMap
 	{
 	public:
@@ -56,9 +58,9 @@ namespace voe
 			VkDeviceSize size = VK_WHOLE_SIZE,
 			VkDeviceSize offset = 0);
 
-		uint32_t m_IndexCount;
 		VkBuffer m_IndexBuffer;
 		VkDeviceMemory m_IndexBufferMemory;
+		uint32_t m_IndexCount;
 
 		Device& m_Device;
 		const VkQueue& m_CopyComputeQueue;

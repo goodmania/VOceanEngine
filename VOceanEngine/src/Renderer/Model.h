@@ -3,6 +3,7 @@
 namespace voe 
 {
     class Device;
+    class Buffer;
 
     class VOE_API Model 
     {
@@ -51,13 +52,11 @@ namespace voe
 
         Device& m_Device;
 
-        VkBuffer m_VertexBuffer;
-        VkDeviceMemory m_VertexBufferMemory;
+        std::unique_ptr<Buffer> m_VertexBuffer;
         uint32_t m_VertexCount;
 
-        bool m_HasIndexBuffer = false;
-        VkBuffer m_IndexBuffer;
-        VkDeviceMemory m_IndexBufferMemory;
+        std::unique_ptr<Buffer> m_IndexBuffer;
         uint32_t m_IndexCount;
+        bool m_HasIndexBuffer = false;
     };
 }  
