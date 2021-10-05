@@ -31,6 +31,7 @@ namespace voe {
 	
 #if defined(VOE_DEBUG)
 		VOE_CORE_INFO("\n Physical Device: {}  \n DeviceID: {}", m_Properties.deviceName, m_Properties.deviceID);
+		//VOE_CORE_INFO("\n Physical Device: {}", m_Properties.limits.minUniformBufferOffsetAlignment);
 #endif
 	}
 

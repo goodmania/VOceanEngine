@@ -1467,6 +1467,7 @@
     <ClInclude Include="src\Renderer\Texture.h" />
     <ClInclude Include="src\Renderer\ComputePipeline.h" />
     <ClInclude Include="src\Renderer\Descriptor.h" />
+    <ClInclude Include="src\Renderer\Buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
@@ -1547,5 +1548,6 @@
     <ClCompile Include="src\Renderer\Texture.cpp" />
     <ClCompile Include="src\Renderer\ComputePipeline.cpp" />
     <ClCompile Include="src\Renderer\Descriptor.cpp" />
+    <ClCompile Include="src\Renderer\Buffer.cpp" />
   </ItemGroup>
 </Project>

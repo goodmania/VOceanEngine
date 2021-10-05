@@ -134,6 +134,13 @@ namespace voe {
         return std::make_unique<Model>(device, builder);
     }
 
+    std::unique_ptr<Model> Model::CreateXZPlaneModelFromProcedural(Device& device, uint32_t w, uint32_t h)
+    {
+        Builder builder{};
+        builder.CreateXZPlaneModel(w, h);
+        return std::make_unique<Model>(device, builder);
+    }
+
     void Model::Bind(VkCommandBuffer commandBuffer)
     {
         VkBuffer buffers[] = { m_VertexBuffer };
@@ -241,6 +248,53 @@ namespace voe {
                     vertices.push_back(vertex);
                 }
                 indices.push_back(uniqueVertices[vertex]);
+            }
+        }
+    }
+
+    void Model::Builder::CreateXZPlaneModel(uint32_t w, uint32_t h)
+    {
+        vertices.clear();
+        indices.clear();
+
+        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+        // Indices
+        for (uint32_t y = 0; y < h - 1; y++)
+        {
+            for (uint32_t x = 0; x < w; x++)
+            {
+                indices.push_back((y)*h + x);
+                indices.push_back((y + 1) * w + x);
+            }
+            // start new strip with degenerate triangle
+            indices.push_back((y + 1) * w + (w - 1));
+            indices.push_back((y + 1) * w);
+        }
+
+        Vertex vertex{};
+
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                float u = x / (float)(w - 1);
+                float v = y / (float)(h - 1);
+
+                vertex.position = glm::vec3(
+                    u * 2.0f - 1.0f,
+                    0.0f,
+                    v * 2.0f - 1.0f);
+
+                if (uniqueVertices.count(vertex) == 0)
+                {
+                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+                    vertices.push_back(vertex);
+                }
+                /**pos++ = u * 2.0f - 1.0f;
+                *pos++ = 0.0f;
+                *pos++ = v * 2.0f - 1.0f;
+                *pos++ = 1.0f;*/
             }
         }
     }

@@ -155,6 +155,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Renderer\Buffer.h" />
     <ClInclude Include="src\Renderer\Descriptor.h" />
     <ClInclude Include="src\Renderer\ComputePipeline.h" />
     <ClInclude Include="src\Platform\Vulkan\SetupVulkanForImGui.h" />
@@ -622,6 +623,7 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Renderer\Descriptor.cpp" />
     <ClCompile Include="src\Renderer\ComputePipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp" />

@@ -23,7 +23,8 @@ namespace voe {
 		m_Window = std::shared_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 		m_VulkanBase = std::make_unique<VulkanBase>(m_Window);
-		LoadGameObjects();
+		//LoadGameObjects();
+		CreateOceanFFTObjects();
 	}
 
 	Application::~Application()
@@ -53,8 +54,6 @@ namespace voe {
 			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
 			m_Camera.SetFrustumProjectionMatrix(glm::radians(45.f), aspect, 0.1f, 100.f);
 
-			m_VulkanBase->GetRenderer().BuildComputeCommandBuffer();
-
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
@@ -67,6 +66,7 @@ namespace voe {
 				layer->OnUpdate();
 
 			m_VulkanBase->GetRenderer().OnUpdate(frameTime);
+			//m_VulkanBase->GetRenderer().BuildComputeCommandBuffer();
 			m_Window->OnUpdate();
 		}
 	}
@@ -74,12 +74,27 @@ namespace voe {
 	void Application::LoadGameObjects() 
 	{
 		auto device = m_VulkanBase->GetDevice();
-		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/flat_plane.obj");
+		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/304.obj");
 		//std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/flat_vase.obj");
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
 		ocean.m_Transform.Translation = { 0.f, 2.f, 0.f };
 		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
+		m_GameObjects.push_back(std::move(ocean));
+	}
+
+	void Application::CreateOceanFFTObjects()
+	{
+		auto device = m_VulkanBase->GetDevice();
+
+		uint32_t width = m_VulkanBase->GetRenderer().GetOceanMeshSize();
+		uint32_t height = m_VulkanBase->GetRenderer().GetOceanMeshSize();
+
+		std::shared_ptr<Model> model = Model::CreateXZPlaneModelFromProcedural(*device, width, height);
+		auto ocean = GameObject::CreateGameObject();
+		ocean.m_Model = model;
+		ocean.m_Transform.Translation = { 0.f, 1.f, 0.f };
+		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f } ;
 		m_GameObjects.push_back(std::move(ocean));
 	}
 
@@ -114,5 +129,3 @@ namespace voe {
 		return true;
 	}
 }
-
-

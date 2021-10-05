@@ -31,6 +31,7 @@ namespace voe {
 		bool OnWindowClose(WindowCloseEvent& e);
 		static Application* s_Instance;
 		void LoadGameObjects();
+		void CreateOceanFFTObjects();
 
 		Camera m_Camera {};
 		std::shared_ptr<Window> m_Window;

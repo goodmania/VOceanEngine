@@ -4,7 +4,7 @@
 
 namespace voe
 {
-    class TessendorfOceane
+    class VOE_API TessendorfOceane
     {
     public:
 

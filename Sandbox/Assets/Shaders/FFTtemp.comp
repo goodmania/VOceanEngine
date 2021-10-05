@@ -19,12 +19,12 @@ layout(std430, binding = 2) buffer Ht_dmyBuffer
 	vec2 Ht_dmyBuffers[ ];
 };
 
-layout (std140, binding = 3) uniform UBO 
+layout (binding = 3) uniform UBO 
 {
 	float deltaT;
-	highp uint meshSize;
-	highp uint OceanSizeLx;
-	highp uint OceanSizeLz;
+	uint meshSize;
+	uint OceanSizeLx;
+	uint OceanSizeLz;
 } ubo;
 
 // GLSL�ł�HLSL�� numthreads �̑���� layout �� local_size_[xyz] ���w�肵�܂��B
@@ -48,8 +48,7 @@ void main()
         uint t1 = t0 + dleng;
 
         groupMemoryBarrier();
-       // memoryBarrier();
-        
+
         float r1 = block[t1].x;
         float i1 = block[t1].y;
         float r0 = block[t0].x - r1;
@@ -65,7 +64,6 @@ void main()
     }
 
     groupMemoryBarrier();
-   // memoryBarrier();
 
     vec2 reim0 = block[bitfieldReverse(gi * 2) >> (32 - M)];    //32��uint=32bit��32
     vec2 reim1 = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)];

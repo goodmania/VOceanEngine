@@ -36,11 +36,11 @@ namespace voe {
 		delete m_DescriptorAllocator;
 		delete m_DescriptorLayoutCache;
 
-		vkDestroySemaphore(m_Device.GetVkDevice(), m_Semaphores.Ready, nullptr);
-		vkDestroySemaphore(m_Device.GetVkDevice(), m_Semaphores.Complete, nullptr);
+		vkDestroySemaphore(m_Device.GetVkDevice(), m_ComputeSemaphores.Ready, nullptr);
+		vkDestroySemaphore(m_Device.GetVkDevice(), m_ComputeSemaphores.Complete, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_ComputePipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(m_Device.GetVkDevice(),m_DescriptorSetLayout, nullptr);
-		vkFreeCommandBuffers(m_Device.GetVkDevice(), m_ComputeCommandPool, 1, &m_ComputeCommandBuffer);
+		//vkFreeCommandBuffers(m_Device.GetVkDevice(), m_ComputeCommandPool, 1, &m_ComputeCommandBuffer);
 		vkDestroyCommandPool(m_Device.GetVkDevice(), m_ComputeCommandPool, nullptr);
 		vkDestroyPipelineCache(m_Device.GetVkDevice(), m_PipelineCache, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_GraphicsPipelineLayout, nullptr);
@@ -90,7 +90,7 @@ namespace voe {
 			m_GraphicsPipelineLayout,
 			0,
 			1,
-			&m_DescriptorSets[1],
+			&m_DescriptorSets[2],
 			0,
 			0);
 
@@ -184,6 +184,13 @@ namespace voe {
 			.BindBuffer(3, m_OceanH0->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.Build(m_DescriptorSets[0], m_DescriptorSetLayout);
 
+		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
+			.BindBuffer(0, m_OceanH0->GetStorageBuffers().H0BufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(1, m_OceanH0->GetStorageBuffers().Ht_dmyBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(2, m_OceanH0->GetStorageBuffers().HtBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(3, m_OceanH0->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.Build(m_DescriptorSets[1], m_DescriptorSetLayout);
+
 		// create pipeline layout
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -216,14 +223,14 @@ namespace voe {
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.commandPool = m_ComputeCommandPool;
 		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		commandBufferAllocateInfo.commandBufferCount = 1;
-		VOE_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_ComputeCommandBuffer));
+		commandBufferAllocateInfo.commandBufferCount = m_ComputeCommandBuffers.size();
+		VOE_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_ComputeCommandBuffers[0]));
 
 		// Semaphores for graphics / compute synchronization
 		VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		VOE_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_Semaphores.Ready));
-		VOE_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_Semaphores.Complete));
+		VOE_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ComputeSemaphores.Ready));
+		VOE_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ComputeSemaphores.Complete));
 
 		// Build a single command buffer containing the compute dispatch commands
 		BuildComputeCommandBuffer();
@@ -240,51 +247,32 @@ namespace voe {
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-		VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffer, &cmdBufInfo));
-		AddGraphicsToComputeBarriers(m_ComputeCommandBuffer);
+		for (uint32_t i = 0; i < 2; i++) 
+		{
+			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[i], &cmdBufInfo));
+			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
 
-		// 1: Calculate spectrum
-		m_ComputePipeline->Bind(m_ComputeCommandBuffer);
-		vkCmdBindDescriptorSets(m_ComputeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
-		vkCmdDispatch(m_ComputeCommandBuffer, 1, m_OceanThreadsSize, 1);
-		
-		AddComputeToComputeBarriers(m_ComputeCommandBuffer);
+			// 1: Calculate spectrum
+			m_ComputePipeline->Bind(m_ComputeCommandBuffers[i]);
+			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
+			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
 
-		// 2-1: Calculate FFT in horizontal direction
-		m_FFTComputePipeline->Bind(m_ComputeCommandBuffer);
-		vkCmdDispatch(m_ComputeCommandBuffer, m_OceanThreadsSize, 1, 1);
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanH0->GetStorageBuffers().H0Buffer, m_OceanH0->GetStorageBuffers().HtBuffer);
 
-		AddComputeToComputeBarriers(m_ComputeCommandBuffer);
+			// 2-1: Calculate FFT in horizontal direction
+			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[i]);
+			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
 
-		// 2-2: Calculate FFT in vertical direction
-		vkCmdDispatch(m_ComputeCommandBuffer, m_OceanThreadsSize, 1, 1);
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanH0->GetStorageBuffers().Ht_dmyBuffer, m_OceanH0->GetStorageBuffers().HtBuffer);
 
-		AddGraphicsToComputeBarriers(m_ComputeCommandBuffer);
+			// 2-2: Calculate FFT in vertical direction
+			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[1], 0, 0);
+			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
 
-		VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffer));
+			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
 
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_ComputeCommandBuffer;
-
-		// Create fence to ensure that the command buffer has finished executing
-		VkFenceCreateInfo fenceCreateInfo{};
-		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceCreateInfo.flags = VK_FLAGS_NONE;
-		
-		VkFence fence;
-		VOE_CHECK_RESULT(vkCreateFence(m_Device.GetVkDevice(), &fenceCreateInfo, nullptr, &fence));
-
-		// Submit to the queue
-		VOE_CHECK_RESULT(vkQueueSubmit(m_Device.GetComputeQueue(), 1, &submitInfo, fence));
-
-		// Wait for the fence to signal that command buffer has finished executing
-		VOE_CHECK_RESULT(vkWaitForFences(m_Device.GetVkDevice(), 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
-		vkDestroyFence(m_Device.GetVkDevice(), fence, nullptr);
-		
-		// 
-
+			VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffers[i]));
+		}
 	}
 
 	void VulkanRenderer::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer)
@@ -321,7 +309,7 @@ namespace voe {
 		}
 	}
 
-	void VulkanRenderer::AddComputeToComputeBarriers(VkCommandBuffer commandBuffer)
+	void VulkanRenderer::AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, VkBuffer InputBuffer, VkBuffer OutputBuffer)
 	{
 		VkBufferMemoryBarrier bufferBarrier = {};
 		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -332,11 +320,9 @@ namespace voe {
 		bufferBarrier.size = VK_WHOLE_SIZE;
 
 		std::vector<VkBufferMemoryBarrier> bufferBarriers;
-		bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
+		bufferBarrier.buffer = InputBuffer;
 		bufferBarriers.push_back(bufferBarrier);
-		bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
-		bufferBarriers.push_back(bufferBarrier);
-		bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
+		bufferBarrier.buffer = OutputBuffer;
 		bufferBarriers.push_back(bufferBarrier);
 
 		vkCmdPipelineBarrier(
@@ -389,9 +375,9 @@ namespace voe {
 	void VulkanRenderer::CreatePipelineLayout()
 	{
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
-			.BindBuffer(0, m_OceanH0->GetStorageBuffers().Ht_dmyBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.BindBuffer(0, m_OceanH0->GetStorageBuffers().HtBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(1, m_OceanH0->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-			.Build(m_DescriptorSets[1], m_DescriptorSetLayout);
+			.Build(m_DescriptorSets[2], m_DescriptorSetLayout);
 
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;

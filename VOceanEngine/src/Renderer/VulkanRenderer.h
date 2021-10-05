@@ -13,6 +13,13 @@ namespace voe {
     class VOE_API VulkanRenderer
     {
     public:
+        struct Semaphores
+        {
+            VkSemaphore Ready{ 0L };
+            VkSemaphore Complete{ 0L };
+        };
+
+    public:
         VulkanRenderer(Device& device, VkRenderPass renderPass);
         ~VulkanRenderer();
         VulkanRenderer(const VulkanRenderer&) = delete;
@@ -27,6 +34,10 @@ namespace voe {
         void OnUpdate(float dt);
         void BuildComputeCommandBuffer();
 
+        Semaphores GetComputeSemaphores() { return m_ComputeSemaphores; }
+        std::array<VkCommandBuffer, 2> GetComputeCommandBuffer() { return m_ComputeCommandBuffers; }
+        const uint32_t GetOceanMeshSize() { return m_OceanThreadsSize; }
+
     private:
         void InitOceanH0Param();
         void InitDescriptors();
@@ -34,7 +45,7 @@ namespace voe {
         void SetupUniformBuffers();
 
         void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
-        void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer);
+        void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, VkBuffer InputBuffer, VkBuffer OutputBuffer);
         void AddComputeToGraphicsBarriers(VkCommandBuffer commandBuffer);
 
         void CreatePipelineLayout();
@@ -63,18 +74,14 @@ namespace voe {
 
         // 512->256
         const uint32_t m_OceanThreadsSize = 256;
-        uint32_t m_ReadSet = 0;
-        std::array<VkDescriptorSet, 2> m_DescriptorSets;
+ 
+        std::array<VkDescriptorSet, 3> m_DescriptorSets;
         VkDescriptorSetLayout m_DescriptorSetLayout;
 
-        struct Semaphores
-        {
-            VkSemaphore Ready{ 0L };
-            VkSemaphore Complete{ 0L };
-        } m_Semaphores;
+        Semaphores m_ComputeSemaphores;
 
         // maybe the following variables should be moved to a Device class ?
         VkCommandPool m_ComputeCommandPool;
-        VkCommandBuffer m_ComputeCommandBuffer;
+        std::array<VkCommandBuffer, 2> m_ComputeCommandBuffers;
     };
 }  
