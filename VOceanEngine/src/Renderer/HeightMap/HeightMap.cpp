@@ -2,6 +2,7 @@
 #include "Renderer/HeightMap/HeightMap.h"
 #include "Renderer/HeightMap/TessendorfOceane.h"
 
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -10,28 +11,17 @@ namespace voe {
 	HeightMap::HeightMap(Device& device, const VkQueue& copyQueue)
 		: m_Device(device), m_CopyComputeQueue(copyQueue)
 	{
-		m_StorageBuffers.H0BufferDscInfo  = new VkDescriptorBufferInfo();
-		m_StorageBuffers.HtBufferDscInfo = new VkDescriptorBufferInfo();
-		m_StorageBuffers.Ht_dmyBufferDscInfo = new VkDescriptorBufferInfo();
+		m_H0BufferDscInfo  = new VkDescriptorBufferInfo();
+		m_HtBufferDscInfo = new VkDescriptorBufferInfo();
+		m_Ht_dmyBufferDscInfo = new VkDescriptorBufferInfo();
 		m_UniformBufferDscInfo = new VkDescriptorBufferInfo();
 	}
 
 	HeightMap::~HeightMap()
 	{
-		vkDestroyBuffer(m_Device.GetVkDevice(), m_StorageBuffers.H0Buffer, nullptr);
-		vkFreeMemory(m_Device.GetVkDevice(), m_StorageBuffers.H0Memory, nullptr);
-		delete m_StorageBuffers.H0BufferDscInfo;
-
-		vkDestroyBuffer(m_Device.GetVkDevice(), m_StorageBuffers.HtBuffer, nullptr);
-		vkFreeMemory(m_Device.GetVkDevice(), m_StorageBuffers.HtMemory, nullptr);
-		delete m_StorageBuffers.HtBufferDscInfo;
-
-		vkDestroyBuffer(m_Device.GetVkDevice(), m_StorageBuffers.Ht_dmyBuffer, nullptr);
-		vkFreeMemory(m_Device.GetVkDevice(), m_StorageBuffers.Ht_dmyMemory, nullptr);
-		delete m_StorageBuffers.Ht_dmyBufferDscInfo;
-
-		vkDestroyBuffer(m_Device.GetVkDevice(), m_UniformBuffer, nullptr);
-		vkFreeMemory(m_Device.GetVkDevice(), m_UniformBufferMemory, nullptr);
+		delete m_H0BufferDscInfo;
+		delete m_HtBufferDscInfo;
+		delete m_Ht_dmyBufferDscInfo;
 		delete m_UniformBufferDscInfo;
 	}
 
@@ -40,26 +30,38 @@ namespace voe {
 
 	}
 
-	void HeightMap::CreateUniformBuffers()
+	void HeightMap::SetupComputeUniformBuffers(uint32_t meshSize, uint32_t lx, uint32_t lz)
 	{
-		m_Device.CreateBuffer(
-			sizeof(ComputeUBO),
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			m_UniformBuffer,
-			m_UniformBufferMemory);
-
-		vkMapMemory(m_Device.GetVkDevice(), m_UniformBufferMemory, 0, sizeof(ComputeUBO), 0, &m_Udata);
-		memcpy(m_Udata, &m_UniformBuffer, sizeof(ComputeUBO));
-
-		UpdateUniformBuffers();
+		m_ComputeUBO.meshSize = meshSize;
+		m_ComputeUBO.OceanSizeLx = lx;
+		m_ComputeUBO.OceanSizeLz = lz;
+		CreateComputeUniformBuffers();
 	}
 
-	void HeightMap::UpdateUniformBuffers(float dt)
+	void HeightMap::CreateComputeUniformBuffers()
 	{
-		m_ComputeUniformBuffers.deltaT = dt;
+		m_UniformBuffers.resize(2); // MAX_FRAMES_IN_FLIGHT
 
-		memcpy(m_Udata, &m_UniformBuffer, sizeof(ComputeUBO));
+		for (int i = 0; i < m_UniformBuffers.size(); i++)
+		{
+			m_UniformBuffers[i] = std::make_unique<Buffer>(
+				m_Device,
+				sizeof(ComputeUBO),
+				1, 
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+				m_Device.GetMinUniformBufferOffsetAlignment());
+
+			m_UniformBuffers[i]->Map();
+			SetDescriptorBufferInfo(m_UniformBufferDscInfo, m_UniformBuffers[i]->GetBuffer());
+		}
+	}
+
+	void HeightMap::UpdateComputeUniformBuffers(float dt, int frameIndex)
+	{
+		m_ComputeUBO.deltaT = dt;
+		m_UniformBuffers[frameIndex]->WriteToBuffer(&m_ComputeUBO);
+		m_UniformBuffers[frameIndex]->Flush();
 	}
 
 	void HeightMap::CreateHeightMap(uint32_t size)
@@ -67,72 +69,65 @@ namespace voe {
 		VOE_CORE_ASSERT(m_Device);
 		VOE_CORE_ASSERT(m_CopyQueue != nullptr);
 
-		//
-		// 
-		//			must reconstructing!!!!!
-		// 
-		// 
-
-		// init ComputeUBO members
 		std::vector<glm::vec2> h0Buffer(size * size);
 		TessendorfOceane* tOceanManeger = new TessendorfOceane(size);
 		tOceanManeger->Generate(h0Buffer);
 		VkDeviceSize bufferSize = static_cast<uint32_t>(h0Buffer.size()) * sizeof(glm::vec2);
-		
-		m_ComputeUniformBuffers.meshSize = tOceanManeger->m_MeshSize;
-		m_ComputeUniformBuffers.OceanSizeLx = tOceanManeger->m_OceanSizeLx;
-		m_ComputeUniformBuffers.OceanSizeLz = tOceanManeger->m_OceanSizeLz;
-		CreateUniformBuffers();
-		SetDescriptorBufferInfo(m_UniformBufferDscInfo, m_UniformBuffer);
+		uint32_t elementSize = sizeof(glm::vec2);
+
+		SetupComputeUniformBuffers(
+			tOceanManeger->m_MeshSize,
+			tOceanManeger->m_OceanSizeLx,
+			tOceanManeger->m_OceanSizeLz);
 
 		delete tOceanManeger;
 
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-
-		m_Device.CreateBuffer(
-			bufferSize,
+		Buffer stagingBuffer
+		{
+			m_Device,
+			elementSize,
+			static_cast<uint32_t>(h0Buffer.size()),
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer,
-			stagingBufferMemory);
+		};
 
-		void* data;
-		vkMapMemory(m_Device.GetVkDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, h0Buffer.data(), static_cast<size_t>(h0Buffer.size()));
-		vkUnmapMemory(m_Device.GetVkDevice(), stagingBufferMemory);
+		stagingBuffer.Map();
+		stagingBuffer.WriteToBuffer((void*)h0Buffer.data());
 
-		m_Device.CreateBuffer(
-			bufferSize,
+		m_H0Buffer = std::make_unique<Buffer>(
+			m_Device,
+			elementSize,
+			static_cast<uint32_t>(h0Buffer.size()),
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_StorageBuffers.H0Buffer,
-			m_StorageBuffers.H0Memory);
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		m_Device.CreateBuffer(
-			bufferSize,
-			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_StorageBuffers.HtBuffer,
-			m_StorageBuffers.HtMemory);
+		m_HtBuffer = std::make_unique<Buffer>(
+			m_Device,
+			elementSize,
+			static_cast<uint32_t>(h0Buffer.size()),
+			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, //| VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		m_Device.CreateBuffer(
-			bufferSize,
-			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_StorageBuffers.Ht_dmyBuffer,
-			m_StorageBuffers.Ht_dmyMemory);
+		m_Ht_dmyBuffer = std::make_unique<Buffer>(
+			m_Device,
+			elementSize,
+			static_cast<uint32_t>(h0Buffer.size()),
+			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, //| VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		SetDescriptorBufferInfo(m_StorageBuffers.H0BufferDscInfo,  m_StorageBuffers.H0Buffer);
-		SetDescriptorBufferInfo(m_StorageBuffers.HtBufferDscInfo, m_StorageBuffers.HtBuffer);
-		SetDescriptorBufferInfo(m_StorageBuffers.Ht_dmyBufferDscInfo, m_StorageBuffers.Ht_dmyBuffer);
+		SetDescriptorBufferInfo(m_H0BufferDscInfo, m_H0Buffer->GetBuffer());
+		SetDescriptorBufferInfo(m_HtBufferDscInfo, m_HtBuffer->GetBuffer());
+		SetDescriptorBufferInfo(m_Ht_dmyBufferDscInfo, m_Ht_dmyBuffer->GetBuffer());
 
 		// Copy from staging buffer
 		VkCommandBuffer copyCmd = m_Device.CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = bufferSize;
-		vkCmdCopyBuffer(copyCmd, stagingBuffer, m_StorageBuffers.H0Buffer, 1, &copyRegion);
-		// vkCmdCopyBuffer(copyCmd, stagingBuffer, m_StorageBuffers.HtBuffer, 1, &copyRegion);
+
+		// Should also initialize ht and h_dmy with stagingbuffer?
+		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_H0Buffer->GetBuffer(), 1, &copyRegion);
+		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_H0Buffer->GetBuffer(), 1, &copyRegion);
+		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_H0Buffer->GetBuffer(), 1, &copyRegion);
 
 		// Execute a transfer barrier to the compute queue, if necessary
 		if (m_Device.GetGraphicsQueueFamily() != m_Device.GetComputeQueueFamily())
@@ -161,9 +156,6 @@ namespace voe {
 		}
 
 		m_Device.FlushCommandBuffer(copyCmd, m_CopyComputeQueue, true);
-
-		vkDestroyBuffer(m_Device.GetVkDevice(), stagingBuffer, nullptr);
-		vkFreeMemory(m_Device.GetVkDevice(), stagingBufferMemory, nullptr);
 	}
 
 	void HeightMap::SetDescriptorBufferInfo(VkDescriptorBufferInfo* info, VkBuffer buffer, VkDeviceSize size, VkDeviceSize offset)

@@ -119,7 +119,8 @@ namespace voe {
      *
      * @return VkResult of the flush call
      */
-    VkResult Buffer::Flush(VkDeviceSize size, VkDeviceSize offset) {
+    VkResult Buffer::Flush(VkDeviceSize size, VkDeviceSize offset) 
+    {
         VkMappedMemoryRange mappedRange = {};
         mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
         mappedRange.memory = m_Memory;

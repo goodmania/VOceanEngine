@@ -41,11 +41,13 @@ namespace voe {
 		while (m_Running)
 		{
 			auto newTime = std::chrono::high_resolution_clock::now();
-			auto frameTime 
-				= std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
-			if (frameTime > 0.25f)
-				frameTime = 0.25f;
+			auto frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 
+			if (frameTime > 0.25f)
+			{
+				frameTime = 0.25f;
+			}
+				
 			currentTime = newTime;
 			cameraController.OnUpdate(frameTime, viewerObject);
 
@@ -56,6 +58,12 @@ namespace voe {
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{
+				int frameIndex = m_VulkanBase->GetFrameIndex();
+
+				// update
+				m_VulkanBase->GetRenderer().OnUpdate(frameTime, frameIndex);
+
+				// render
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->GetRenderer().RenderGameObjects(commandBuffer, m_GameObjects, m_Camera);
 				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
@@ -65,8 +73,6 @@ namespace voe {
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
-			m_VulkanBase->GetRenderer().OnUpdate(frameTime);
-			//m_VulkanBase->GetRenderer().BuildComputeCommandBuffer();
 			m_Window->OnUpdate();
 		}
 	}

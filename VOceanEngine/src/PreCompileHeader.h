@@ -4,10 +4,10 @@
 #include <iomanip>
 
 #include <algorithm>
+#include <numeric>
 #include <memory>
 #include <chrono>
 #include <utility>
-#include <algorithm>
 #include <functional>
 #include <random>
 
