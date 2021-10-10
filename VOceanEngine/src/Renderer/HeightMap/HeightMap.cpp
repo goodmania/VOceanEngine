@@ -126,8 +126,8 @@ namespace voe {
 
 		// Should also initialize ht and h_dmy with stagingbuffer?
 		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_H0Buffer->GetBuffer(), 1, &copyRegion);
-		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_H0Buffer->GetBuffer(), 1, &copyRegion);
-		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_H0Buffer->GetBuffer(), 1, &copyRegion);
+		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_HtBuffer->GetBuffer(), 1, &copyRegion);
+		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_Ht_dmyBuffer->GetBuffer(), 1, &copyRegion);
 
 		// Execute a transfer barrier to the compute queue, if necessary
 		if (m_Device.GetGraphicsQueueFamily() != m_Device.GetComputeQueueFamily())
