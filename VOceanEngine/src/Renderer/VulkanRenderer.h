@@ -31,7 +31,7 @@ namespace voe {
             const Camera& camera);
 
         bool IsComputeQueueSpecialized() const;
-        void OnUpdate(float dt);
+        void OnUpdate(float dt, int frameIndex);
         void BuildComputeCommandBuffer();
 
         Semaphores GetComputeSemaphores() { return m_ComputeSemaphores; }
@@ -39,10 +39,9 @@ namespace voe {
         const uint32_t GetOceanMeshSize() { return m_OceanThreadsSize; }
 
     private:
-        void InitOceanH0Param();
+        void InitOceanHeightMap();
         void InitDescriptors();
         void SetupFFTOceanComputePipelines();
-        void SetupUniformBuffers();
 
         void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
         void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, VkBuffer InputBuffer, VkBuffer OutputBuffer);
@@ -70,7 +69,7 @@ namespace voe {
         DescriptorLayoutCache* m_DescriptorLayoutCache;
 
         // ocean params
-        std::unique_ptr<HeightMap> m_OceanH0;
+        std::unique_ptr<HeightMap> m_OceanHeightMap;
 
         // 512->256
         const uint32_t m_OceanThreadsSize = 256;

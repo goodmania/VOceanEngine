@@ -27,6 +27,7 @@ namespace voe {
 		uint32_t GetPresentQueueFamily() const  { return m_Indices.presentFamily; }
 		uint32_t GetComputeQueueFamily()  const { return m_Indices.computeFamily; }
 		uint32_t GetTransferQueueFamily() const { return m_Indices.transferFamily; }
+		uint32_t GetMinUniformBufferOffsetAlignment() { return m_PhDevice->GetProperties().limits.minUniformBufferOffsetAlignment; }
 
 		// Buffer Helper Functions
 		void CreateBuffer(

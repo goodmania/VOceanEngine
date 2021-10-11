@@ -40,7 +40,6 @@ namespace voe {
 		vkDestroySemaphore(m_Device.GetVkDevice(), m_ComputeSemaphores.Complete, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_ComputePipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(m_Device.GetVkDevice(),m_DescriptorSetLayout, nullptr);
-		//vkFreeCommandBuffers(m_Device.GetVkDevice(), m_ComputeCommandPool, 1, &m_ComputeCommandBuffer);
 		vkDestroyCommandPool(m_Device.GetVkDevice(), m_ComputeCommandPool, nullptr);
 		vkDestroyPipelineCache(m_Device.GetVkDevice(), m_PipelineCache, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_GraphicsPipelineLayout, nullptr);
@@ -52,36 +51,7 @@ namespace voe {
 		const Camera& camera)
 	{
 		// Acquire barrier
-		if (m_SpecializedComputeQueue)
-		{
-			VkBufferMemoryBarrier bufferBarrier = {};
-			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-			bufferBarrier.srcAccessMask = 0;
-			bufferBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-			bufferBarrier.srcQueueFamilyIndex = m_Device.GetGraphicsQueueFamily();
-			bufferBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
-			bufferBarrier.size = VK_WHOLE_SIZE;
-
-			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
-			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
-			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
-			bufferBarriers.push_back(bufferBarrier);
-
-			vkCmdPipelineBarrier(
-				commandBuffer,
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-				VK_FLAGS_NONE,
-				0,
-				nullptr,
-				static_cast<uint32_t>(bufferBarriers.size()),
-				bufferBarriers.data(),
-				0,
-				nullptr);
-		}
+		AddComputeToGraphicsBarriers(commandBuffer);
 
 		m_GraphicsPipeline->Bind(commandBuffer);
 		vkCmdBindDescriptorSets(
@@ -116,42 +86,13 @@ namespace voe {
 		}
 
 		// Acquire barrier
-		if (m_SpecializedComputeQueue)
-		{
-			VkBufferMemoryBarrier bufferBarrier = {};
-			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-			bufferBarrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-			bufferBarrier.dstAccessMask = 0;
-			bufferBarrier.srcQueueFamilyIndex = m_Device.GetGraphicsQueueFamily();
-			bufferBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
-			bufferBarrier.size = VK_WHOLE_SIZE;
-
-			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
-			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
-			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
-			bufferBarriers.push_back(bufferBarrier);
-
-			vkCmdPipelineBarrier(
-				commandBuffer,
-				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				VK_FLAGS_NONE,
-				0,
-				nullptr,
-				static_cast<uint32_t>(bufferBarriers.size()),
-				bufferBarriers.data(),
-				0,
-				nullptr);
-		}
+		AddGraphicsToComputeBarriers(commandBuffer);
 	}
 
-	void VulkanRenderer::InitOceanH0Param()
+	void VulkanRenderer::InitOceanHeightMap()
 	{
-		m_OceanH0 = std::make_unique<HeightMap>(m_Device, m_Device.GetComputeQueue());
-		m_OceanH0->CreateHeightMap(m_OceanThreadsSize);
+		m_OceanHeightMap = std::make_unique<HeightMap>(m_Device, m_Device.GetComputeQueue());
+		m_OceanHeightMap->CreateHeightMap(m_OceanThreadsSize);
 	}
 
 	void VulkanRenderer::InitDescriptors()
@@ -165,9 +106,9 @@ namespace voe {
 		return m_Device.GetGraphicsQueueFamily() != m_Device.GetComputeQueueFamily();
 	}
 
-	void VulkanRenderer::OnUpdate(float dt)
+	void VulkanRenderer::OnUpdate(float dt, int frameIndex)
 	{
-		m_OceanH0->UpdateUniformBuffers(dt);
+		m_OceanHeightMap->UpdateComputeUniformBuffers(dt, frameIndex);
 	}
 
 	void VulkanRenderer::SetupFFTOceanComputePipelines()
@@ -176,19 +117,20 @@ namespace voe {
 		m_SpecializedComputeQueue = IsComputeQueueSpecialized();
 
 		// create and build ocean descriptorsets
-		InitOceanH0Param();
+		InitOceanHeightMap();
+
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
-			.BindBuffer(0, m_OceanH0->GetStorageBuffers().H0BufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(1, m_OceanH0->GetStorageBuffers().HtBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(2, m_OceanH0->GetStorageBuffers().Ht_dmyBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(3, m_OceanH0->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(0, m_OceanHeightMap->GetH0BufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(1, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(2, m_OceanHeightMap->GetHt_dmyBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(3, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.Build(m_DescriptorSets[0], m_DescriptorSetLayout);
 
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
-			.BindBuffer(0, m_OceanH0->GetStorageBuffers().H0BufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(1, m_OceanH0->GetStorageBuffers().Ht_dmyBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(2, m_OceanH0->GetStorageBuffers().HtBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(3, m_OceanH0->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(0, m_OceanHeightMap->GetH0BufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(1, m_OceanHeightMap->GetHt_dmyBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(2, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(3, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.Build(m_DescriptorSets[1], m_DescriptorSetLayout);
 
 		// create pipeline layout
@@ -236,11 +178,6 @@ namespace voe {
 		BuildComputeCommandBuffer();
 	}
 
-	void VulkanRenderer::SetupUniformBuffers()
-	{
-		m_OceanH0->CreateUniformBuffers();
-	}
-
 	void VulkanRenderer::BuildComputeCommandBuffer()
 	{
 		VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -255,15 +192,15 @@ namespace voe {
 			// 1: Calculate spectrum
 			m_ComputePipeline->Bind(m_ComputeCommandBuffers[i]);
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
-			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
+			vkCmdDispatch(m_ComputeCommandBuffers[i], 1, m_OceanThreadsSize, 1);
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanH0->GetStorageBuffers().H0Buffer, m_OceanH0->GetStorageBuffers().HtBuffer);
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetH0Buffer(), m_OceanHeightMap->GetHtBuffer());
 
 			// 2-1: Calculate FFT in horizontal direction
 			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[i]);
 			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanH0->GetStorageBuffers().Ht_dmyBuffer, m_OceanH0->GetStorageBuffers().HtBuffer);
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
 
 			// 2-2: Calculate FFT in vertical direction
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[1], 0, 0);
@@ -288,11 +225,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
+			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
+			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
+			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -351,11 +288,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().H0Buffer;
+			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().HtBuffer;
+			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanH0->GetStorageBuffers().Ht_dmyBuffer;
+			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -375,8 +312,8 @@ namespace voe {
 	void VulkanRenderer::CreatePipelineLayout()
 	{
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
-			.BindBuffer(0, m_OceanH0->GetStorageBuffers().HtBufferDscInfo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-			.BindBuffer(1, m_OceanH0->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.BindBuffer(0, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.BindBuffer(1, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.Build(m_DescriptorSets[2], m_DescriptorSetLayout);
 
 		VkPushConstantRange pushConstantRange = {};
