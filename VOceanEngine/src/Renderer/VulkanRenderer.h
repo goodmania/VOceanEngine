@@ -44,7 +44,7 @@ namespace voe {
         void SetupFFTOceanComputePipelines();
 
         void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
-        void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, VkBuffer InputBuffer, VkBuffer OutputBuffer);
+        void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, const VkBuffer& InputBuffer, const VkBuffer& OutputBuffer);
         void AddComputeToGraphicsBarriers(VkCommandBuffer commandBuffer);
 
         void CreatePipelineLayout();

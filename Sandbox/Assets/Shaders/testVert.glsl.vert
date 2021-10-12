@@ -40,7 +40,7 @@ vec4 ui_calcPos(uint ui_idx)
 
 void main()
 {
-	//gl_Position = push.transform * ui_calcPos(gl_VertexIndex);//HtBuffers[gl_VertexIndex].x
-	gl_Position = push.transform * vec4(pos.x, HtBuffers[gl_VertexIndex].x, pos.z, 1.0);
+	gl_Position = push.transform * ui_calcPos(gl_VertexIndex);//HtBuffers[gl_VertexIndex].x
+	//gl_Position = push.transform * vec4(pos.x, HtBuffers[gl_VertexIndex].x, pos.z, 1.0);
 	fragColor = color;
 }

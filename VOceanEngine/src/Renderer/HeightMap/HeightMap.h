@@ -32,12 +32,12 @@ namespace voe
 		void CreateHeightMap(uint32_t size);
 		void SetupComputeUniformBuffers(uint32_t meshSize, uint32_t lx, uint32_t lz);
 		void CreateComputeUniformBuffers();
-		void UpdateComputeUniformBuffers(float dt, int frameIndex);
+		void UpdateComputeUniformBuffers(float dt, uint32_t frameIndex);
 
 		ComputeUBO GetUBO() { return m_ComputeUBO; }
-		VkBuffer GetH0Buffer() { return m_H0Buffer->GetBuffer(); }
-		VkBuffer GetHtBuffer() { return m_HtBuffer->GetBuffer(); }
-		VkBuffer GetHt_dmyBuffer() { return m_Ht_dmyBuffer->GetBuffer(); }
+		VkBuffer GetH0Buffers(uint32_t frameIndex) { return m_H0Buffers[frameIndex]->GetBuffer(); }
+		VkBuffer GetHtBuffers(uint32_t frameIndex) { return m_HtBuffers[frameIndex]->GetBuffer(); }
+		VkBuffer GetHt_dmyBuffers(uint32_t frameIndex) { return m_Ht_dmyBuffers[frameIndex]->GetBuffer(); }
 		
 		VkDescriptorBufferInfo* GetUniformBufferDscInfo() { return m_UniformBufferDscInfo; }
 		VkDescriptorBufferInfo* GetH0BufferDscInfo() { return m_H0BufferDscInfo; }
@@ -56,17 +56,17 @@ namespace voe
 
 		ComputeUBO m_ComputeUBO;
 
-		std::vector<std::unique_ptr<Buffer>> m_UniformBuffers;
+		std::vector<std::shared_ptr<Buffer>> m_UniformBuffers;
 		VkDescriptorBufferInfo* m_UniformBufferDscInfo = VK_NULL_HANDLE;
 
 		// storage buffers
-		std::unique_ptr<Buffer> m_H0Buffer;
+		std::vector<std::shared_ptr<Buffer>> m_H0Buffers;
 		VkDescriptorBufferInfo* m_H0BufferDscInfo = VK_NULL_HANDLE;
 
-		std::unique_ptr<Buffer> m_HtBuffer;
+		std::vector<std::shared_ptr<Buffer>> m_HtBuffers;
 		VkDescriptorBufferInfo* m_HtBufferDscInfo = VK_NULL_HANDLE;
 
-		std::unique_ptr<Buffer> m_Ht_dmyBuffer;
+		std::vector<std::shared_ptr<Buffer>> m_Ht_dmyBuffers;
 		VkDescriptorBufferInfo* m_Ht_dmyBufferDscInfo = VK_NULL_HANDLE;
 	};
 }

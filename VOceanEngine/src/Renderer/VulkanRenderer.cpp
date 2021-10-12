@@ -194,13 +194,13 @@ namespace voe {
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
 			vkCmdDispatch(m_ComputeCommandBuffers[i], 1, m_OceanThreadsSize, 1);
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetH0Buffer(), m_OceanHeightMap->GetHtBuffer());
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetH0Buffers(i), m_OceanHeightMap->GetHtBuffers(i));
 
 			// 2-1: Calculate FFT in horizontal direction
 			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[i]);
 			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffers(i), m_OceanHeightMap->GetHt_dmyBuffers(i));
 
 			// 2-2: Calculate FFT in vertical direction
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[1], 0, 0);
@@ -225,11 +225,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -246,7 +246,7 @@ namespace voe {
 		}
 	}
 
-	void VulkanRenderer::AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, VkBuffer InputBuffer, VkBuffer OutputBuffer)
+	void VulkanRenderer::AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, const VkBuffer& InputBuffer, const VkBuffer& OutputBuffer)
 	{
 		VkBufferMemoryBarrier bufferBarrier = {};
 		bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -288,11 +288,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
