@@ -105,14 +105,14 @@ namespace voe {
 			m_Device,
 			elementSize,
 			static_cast<uint32_t>(h0Buffer.size()),
-			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, //| VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 		m_Ht_dmyBuffer = std::make_unique<Buffer>(
 			m_Device,
 			elementSize,
 			static_cast<uint32_t>(h0Buffer.size()),
-			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, //| VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 		SetDescriptorBufferInfo(m_H0BufferDscInfo, m_H0Buffer->GetBuffer());
@@ -130,30 +130,6 @@ namespace voe {
 		vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_Ht_dmyBuffer->GetBuffer(), 1, &copyRegion);
 
 		// Execute a transfer barrier to the compute queue, if necessary
-		if (m_Device.GetGraphicsQueueFamily() != m_Device.GetComputeQueueFamily())
-		{
-			/*VkBufferMemoryBarrier buffer_barrier =
-			{
-				VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-				nullptr,
-				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
-				0,
-				graphics.queueFamilyIndex,
-				compute.queueFamilyIndex,
-				compute.storageBuffer.buffer,
-				0,
-				compute.storageBuffer.size
-			};
-
-			vkCmdPipelineBarrier(
-				copyCmd,
-				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				0,
-				0, nullptr,
-				1, &buffer_barrier,
-				0, nullptr);*/
-		}
 
 		m_Device.FlushCommandBuffer(copyCmd, m_CopyComputeQueue, true);
 	}

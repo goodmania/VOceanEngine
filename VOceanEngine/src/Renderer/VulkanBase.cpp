@@ -17,7 +17,7 @@ namespace voe {
 	VulkanBase::~VulkanBase()
 	{
 		DestroyCommandBuffers();
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			vkDestroySemaphore(m_Device->GetVkDevice(), m_RenderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(m_Device->GetVkDevice(), m_ImageAvailableSemaphores[i], nullptr);
@@ -74,7 +74,7 @@ namespace voe {
 		}
 
 		m_IsFrameStarted = false;
-		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanBase::BeginSwapchainRenderPass(VkCommandBuffer commandBuffer)
@@ -200,9 +200,9 @@ namespace voe {
 	void VulkanBase::CreateSyncObjects()
 	{
 		// Create a semaphore used to synchronize image presentation
-		m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+		m_ImageAvailableSemaphores.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+		m_RenderFinishedSemaphores.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+		m_InFlightFences.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 		m_ImagesInFlight.resize(m_Swapchain->GetSwapchainImageCount(), VK_NULL_HANDLE);
 
 		VkSemaphoreCreateInfo semaphoreCreateInfo = {};
@@ -214,7 +214,7 @@ namespace voe {
 		
 		// Ensures that the image is displayed before we start submitting new commands to the queue
 		// Semaphores will stay the same during application lifetime
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			VOE_CHECK_RESULT(vkCreateSemaphore(m_Device->GetVkDevice(), &semaphoreCreateInfo, nullptr, &m_ImageAvailableSemaphores[i]));
 			VOE_CHECK_RESULT(vkCreateSemaphore(m_Device->GetVkDevice(), &semaphoreCreateInfo, nullptr, &m_RenderFinishedSemaphores[i]));

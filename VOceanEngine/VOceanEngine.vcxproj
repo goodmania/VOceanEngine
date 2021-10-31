@@ -165,6 +165,7 @@
     <ClInclude Include="src\PreCompileHeader.h" />
     <ClInclude Include="src\Renderer\Camera.h" />
     <ClInclude Include="src\Renderer\CameraController.h" />
+    <ClInclude Include="src\Renderer\FrameInfo.h" />
     <ClInclude Include="src\Renderer\GameObject.h" />
     <ClInclude Include="src\Renderer\GraphicsPipeline.h" />
     <ClInclude Include="src\Renderer\HeightMap\HeightMap.h" />

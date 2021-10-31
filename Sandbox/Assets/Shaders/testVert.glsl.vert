@@ -35,12 +35,12 @@ vec4 ui_calcPos(uint ui_idx)
 
 	vec2 h = HtBuffers[ui_idx];
 
-	return vec4((1.0 * x - halfN) * dx, h.x, (1.0 * z - halfN) * dz, 1) * 0.001f;
+	return vec4((1.0 * x - halfN) * dx * 0.01, h.x * 0.1, (1.0 * z - halfN) * dz * 0.01, 1);
 }
 
 void main()
 {
-	//gl_Position = push.transform * ui_calcPos(gl_VertexIndex);//HtBuffers[gl_VertexIndex].x
-	gl_Position = push.transform * vec4(pos.x, HtBuffers[gl_VertexIndex].x, pos.z, 1.0);
+	gl_Position = push.transform * ui_calcPos(gl_VertexIndex);//HtBuffers[gl_VertexIndex].x
+	//gl_Position = push.transform * vec4(pos.x, HtBuffers[gl_VertexIndex].x, pos.z, 1.0);
 	fragColor = color;
 }

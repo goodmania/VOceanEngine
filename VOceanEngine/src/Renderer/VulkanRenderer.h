@@ -9,6 +9,7 @@ namespace voe {
     class DescriptorLayoutCache;
     class DescriptorAllocator;
     class HeightMap;
+    class FrameInfo;
 
     class VOE_API VulkanRenderer
     {
@@ -25,10 +26,7 @@ namespace voe {
         VulkanRenderer(const VulkanRenderer&) = delete;
         VulkanRenderer& operator=(const VulkanRenderer&) = delete;
 
-        void RenderGameObjects(
-            VkCommandBuffer commandBuffer,
-            std::vector<GameObject>& gameObjects,
-            const Camera& camera);
+        void RenderGameObjects(FrameInfo frameInfo, std::vector<GameObject>& gameObjects);
 
         bool IsComputeQueueSpecialized() const;
         void OnUpdate(float dt, int frameIndex);
@@ -76,6 +74,7 @@ namespace voe {
  
         std::array<VkDescriptorSet, 3> m_DescriptorSets;
         VkDescriptorSetLayout m_DescriptorSetLayout;
+        VkDescriptorSetLayout m_GraphicsDescriptorSetLayout;
 
         Semaphores m_ComputeSemaphores;
 

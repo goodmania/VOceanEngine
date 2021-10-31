@@ -14,7 +14,7 @@ namespace voe{
 	class VOE_API VulkanBase
 	{
 	public:
-		static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+		
 
 		VulkanBase(std::shared_ptr<Window> window);
 		~VulkanBase();

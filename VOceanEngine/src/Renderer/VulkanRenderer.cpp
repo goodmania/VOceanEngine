@@ -7,6 +7,7 @@
 
 #include "Renderer/Camera.h"
 #include "Renderer/GameObject.h"
+#include "Renderer/FrameInfo.h"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -45,17 +46,14 @@ namespace voe {
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_GraphicsPipelineLayout, nullptr);
 	}
 
-	void VulkanRenderer::RenderGameObjects(
-		VkCommandBuffer commandBuffer,
-		std::vector<GameObject>& gameObjects,
-		const Camera& camera)
+	void VulkanRenderer::RenderGameObjects(FrameInfo frameInfo, std::vector<GameObject>& gameObjects)
 	{
 		// Acquire barrier
-		AddComputeToGraphicsBarriers(commandBuffer);
+		AddComputeToGraphicsBarriers(frameInfo.CommandBuffer);
 
-		m_GraphicsPipeline->Bind(commandBuffer);
+		m_GraphicsPipeline->Bind(frameInfo.CommandBuffer);
 		vkCmdBindDescriptorSets(
-			commandBuffer,
+			frameInfo.CommandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			m_GraphicsPipelineLayout,
 			0,
@@ -64,7 +62,7 @@ namespace voe {
 			0,
 			0);
 
-		auto projectionView = camera.GetProjectionMatrix() * camera.GetViewMatrix();
+		auto projectionView = frameInfo.CameraObj.GetProjectionMatrix() * frameInfo.CameraObj.GetViewMatrix();
 
 		for (auto& obj : gameObjects)
 		{
@@ -74,19 +72,19 @@ namespace voe {
 			push.NormalMatrix = obj.m_Transform.NormalMatrix();
 
 			vkCmdPushConstants(
-				commandBuffer,
+				frameInfo.CommandBuffer,
 				m_GraphicsPipelineLayout,
 				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 				0,
 				sizeof(PushConstantData),
 				&push);
 
-			obj.m_Model->Bind(commandBuffer);
-			obj.m_Model->Draw(commandBuffer);
+			obj.m_Model->Bind(frameInfo.CommandBuffer);
+			obj.m_Model->Draw(frameInfo.CommandBuffer);
 		}
 
 		// Acquire barrier
-		AddGraphicsToComputeBarriers(commandBuffer);
+		AddGraphicsToComputeBarriers(frameInfo.CommandBuffer);
 	}
 
 	void VulkanRenderer::InitOceanHeightMap()
@@ -194,19 +192,20 @@ namespace voe {
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
 			vkCmdDispatch(m_ComputeCommandBuffers[i], 1, m_OceanThreadsSize, 1);
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetH0Buffer(), m_OceanHeightMap->GetHtBuffer());
+			//AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetH0Buffer(), m_OceanHeightMap->GetHtBuffer());
 
 			// 2-1: Calculate FFT in horizontal direction
 			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[i]);
 			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
+			//AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
 
 			// 2-2: Calculate FFT in vertical direction
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[1], 0, 0);
+			//AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
 			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
 
-			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
+			//AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
 
 			VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffers[i]));
 		}
@@ -314,7 +313,7 @@ namespace voe {
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
 			.BindBuffer(0, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(1, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-			.Build(m_DescriptorSets[2], m_DescriptorSetLayout);
+			.Build(m_DescriptorSets[2], m_GraphicsDescriptorSetLayout);
 
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -326,7 +325,7 @@ namespace voe {
 		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = nullptr;
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
+		pipelineLayoutInfo.pSetLayouts = &m_GraphicsDescriptorSetLayout;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 		VOE_CHECK_RESULT(vkCreatePipelineLayout(m_Device.GetVkDevice(), &pipelineLayoutInfo, nullptr, &m_GraphicsPipelineLayout));

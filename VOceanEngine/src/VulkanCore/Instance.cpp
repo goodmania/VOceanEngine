@@ -110,7 +110,7 @@ namespace voe {
 
 	void Instance::SetupDebugMessenger()
 	{
-		if (m_EnableValidationLayers) return;
+		if (!m_EnableValidationLayers) { return; }
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo;
 		PopulateDebugMessengerCreateInfo(DebugUtilsMessengerCreateInfo);
 		VOE_CHECK_RESULT(CreateDebugUtilsMessengerEXT(m_Instance, &DebugUtilsMessengerCreateInfo, nullptr, &m_DebugMessenger));

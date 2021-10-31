@@ -26,7 +26,7 @@ namespace std {
 
 namespace voe {
 
-    Model::Model(Device& device, const Model::Builder& builder) : m_Device{ device } 
+    Model::Model(Device& device, const Model::Builder& builder) : m_Device{ device }
     {
         CreateVertexBuffers(builder.vertices);
         CreateIndexBuffers(builder.indices);
@@ -34,7 +34,7 @@ namespace voe {
 
     Model::~Model() {}
 
-    void Model::CreateVertexBuffers(const std::vector<Vertex>& vertices) 
+    void Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
     {
         m_VertexCount = static_cast<uint32_t>(vertices.size());
         assert(m_VertexCount >= 3 && "Vertex count must be at least 3");
@@ -63,12 +63,12 @@ namespace voe {
         m_Device.CopyBuffer(stagingBuffer.GetBuffer(), m_VertexBuffer->GetBuffer(), bufferSize);
     }
 
-    void Model::CreateIndexBuffers(const std::vector<uint32_t>& indices) 
+    void Model::CreateIndexBuffers(const std::vector<uint32_t>& indices)
     {
         m_IndexCount = static_cast<uint32_t>(indices.size());
         m_HasIndexBuffer = m_IndexCount > 0;
 
-        if (!m_HasIndexBuffer) 
+        if (!m_HasIndexBuffer)
         {
             return;
         }
@@ -97,13 +97,13 @@ namespace voe {
         m_Device.CopyBuffer(stagingBuffer.GetBuffer(), m_IndexBuffer->GetBuffer(), bufferSize);
     }
 
-    void Model::Draw(VkCommandBuffer commandBuffer) 
+    void Model::Draw(VkCommandBuffer commandBuffer)
     {
-        if (m_HasIndexBuffer) 
+        if (m_HasIndexBuffer)
         {
             vkCmdDrawIndexed(commandBuffer, m_IndexCount, 1, 0, 0, 0);
         }
-        else 
+        else
         {
             vkCmdDraw(commandBuffer, m_VertexCount, 1, 0, 0);
         }
@@ -129,13 +129,13 @@ namespace voe {
         VkDeviceSize offsets[] = { 0 };
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
-        if (m_HasIndexBuffer) 
+        if (m_HasIndexBuffer)
         {
             vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
         }
     }
 
-    std::vector<VkVertexInputBindingDescription> Model::Vertex::GetBindingDescriptions() 
+    std::vector<VkVertexInputBindingDescription> Model::Vertex::GetBindingDescriptions()
     {
         std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
         bindingDescriptions[0].binding = 0;
@@ -144,17 +144,17 @@ namespace voe {
         return bindingDescriptions;
     }
 
-    std::vector<VkVertexInputAttributeDescription> Model::Vertex::GetAttributeDescriptions() 
+    std::vector<VkVertexInputAttributeDescription> Model::Vertex::GetAttributeDescriptions()
     {
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(Vertex, position);
 
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
         attributeDescriptions[1].offset = offsetof(Vertex, color);
         return attributeDescriptions;
     }
@@ -181,50 +181,53 @@ namespace voe {
             {
                 Vertex vertex{};
 
-                if (index.vertex_index >= 0) 
+                if (index.vertex_index >= 0)
                 {
-                    vertex.position = 
+                    vertex.position =
                     {
                         attrib.vertices[3 * index.vertex_index + 0],
                         attrib.vertices[3 * index.vertex_index + 1],
                         attrib.vertices[3 * index.vertex_index + 2],
+                        1.f
                     };
 
                     auto colorIndex = 3 * index.vertex_index + 2;
-                    if (colorIndex < attrib.colors.size()) 
+                    if (colorIndex < attrib.colors.size())
                     {
                         vertex.color = {
                             attrib.colors[colorIndex - 2],
                             attrib.colors[colorIndex - 1],
                             attrib.colors[colorIndex - 0],
+                            1.f
                         };
                     }
-                    else 
+                    else
                     {
-                        vertex.color = { 1.f, 1.f, 1.f };  // set default color
+                        vertex.color = { 1.f, 1.f, 1.f, 1.f };  // set default color
                     }
                 }
 
-                if (index.normal_index >= 0) 
+                if (index.normal_index >= 0)
                 {
-                    vertex.normal = 
+                    vertex.normal =
                     {
                         attrib.normals[3 * index.normal_index + 0],
                         attrib.normals[3 * index.normal_index + 1],
                         attrib.normals[3 * index.normal_index + 2],
+                        1.f
                     };
                 }
 
-                if (index.texcoord_index >= 0) 
+                if (index.texcoord_index >= 0)
                 {
-                    vertex.uv = 
+                    vertex.uv =
                     {
                         attrib.texcoords[2 * index.texcoord_index + 0],
                         attrib.texcoords[2 * index.texcoord_index + 1],
                     };
                 }
 
-                if (uniqueVertices.count(vertex) == 0) 
+                if (uniqueVertices.count(vertex) == 0)
                 {
                     uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
                     vertices.push_back(vertex);
@@ -239,45 +242,32 @@ namespace voe {
         vertices.clear();
         indices.clear();
 
-        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+        float dx = w / (w - 1);
+        float dy = h / (h - 1);
+        float du = 1.0f / (w - 1);
+        float dv = 1.0f / (h - 1);
+        vertices.resize(w * h);
+
+        glm::mat4 transM = glm::translate(glm::mat4(1.0f), glm::vec3(-w / 2.0f, -2.0f, -h / 2.0f));
+        for (uint32_t i = 0; i < h; i++)
+        {
+            for (uint32_t j = 0; j < w; j++)
+            {
+                vertices[i + j * h].position = glm::vec4(dx * j, 0.0f, dy * i, 1.0f);
+            }
+        }
 
         // Indices
+        std::vector<uint32_t> indices;
         for (uint32_t y = 0; y < h - 1; y++)
         {
             for (uint32_t x = 0; x < w; x++)
             {
-                indices.push_back((y)*h + x);
                 indices.push_back((y + 1) * w + x);
+                indices.push_back((y)*w + x);
             }
-            // start new strip with degenerate triangle
-            indices.push_back((y + 1) * w + (w - 1));
-            indices.push_back((y + 1) * w);
-        }
-
-        Vertex vertex{};
-
-        for (int y = 0; y < h; y++)
-        {
-            for (int x = 0; x < w; x++)
-            {
-                float u = x / (float)(w - 1);
-                float v = y / (float)(h - 1);
-
-                vertex.position = glm::vec3(
-                    u * 2.0f - 1.0f,
-                    0.0f,
-                    v * 2.0f - 1.0f);
-
-                if (uniqueVertices.count(vertex) == 0)
-                {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-                    vertices.push_back(vertex);
-                }
-                /**pos++ = u * 2.0f - 1.0f;
-                *pos++ = 0.0f;
-                *pos++ = v * 2.0f - 1.0f;
-                *pos++ = 1.0f;*/
-            }
+            // Primitive restart (signaled by special value 0xFFFFFFFF)
+            indices.push_back(0xFFFFFFFF);
         }
     }
 }

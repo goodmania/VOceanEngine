@@ -17,6 +17,8 @@ namespace voe {
 	class VOE_API Swapchain
 	{
 	public:
+		static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
 		Swapchain(Device* device, PhDevice* phDevice, Surface* surface, 
 			VkExtent2D windowExtent, std::shared_ptr<Swapchain> previous);
 

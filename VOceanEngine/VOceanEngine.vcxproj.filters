@@ -1468,6 +1468,7 @@
     <ClInclude Include="src\Renderer\ComputePipeline.h" />
     <ClInclude Include="src\Renderer\Descriptor.h" />
     <ClInclude Include="src\Renderer\Buffer.h" />
+    <ClInclude Include="src\Renderer\FrameInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">

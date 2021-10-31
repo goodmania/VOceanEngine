@@ -4,7 +4,7 @@
 #include "VulkanCore/Surface.h"
 
 namespace voe {
-	
+
 	PhDevice::PhDevice(const Instance* instance, const Surface* surface) : m_Instance(instance), m_Surface(surface)
 	{
 		uint32_t physicalDeviceCount = 0;
@@ -28,7 +28,7 @@ namespace voe {
 		{
 			m_MsaaSamples = GetMaxUsableSampleCount();
 		}
-	
+
 #if defined(VOE_DEBUG)
 		VOE_CORE_INFO("\n Physical Device: {}  \n DeviceID: {}", m_Properties.deviceName, m_Properties.deviceID);
 		//VOE_CORE_INFO("\n Physical Device: {}", m_Properties.limits.minUniformBufferOffsetAlignment);
@@ -104,14 +104,14 @@ namespace voe {
 			}
 
 			// Check for compute support.
-			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) 
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
 				indices.computeFamily = i;
 				indices.computeFamilyHasValue = true;
 			}
 
 			// Check for transfer support.
-			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) 
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
 			{
 				indices.transferFamily = i;
 				indices.transferFamilyHasValue = true;
@@ -154,7 +154,7 @@ namespace voe {
 		uint32_t formatCount;
 		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface->GetVkSurface(), &formatCount, nullptr);
 
-		if (formatCount != 0) 
+		if (formatCount != 0)
 		{
 			details.formats.resize(formatCount);
 			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface->GetVkSurface(), &formatCount, details.formats.data());
@@ -177,18 +177,18 @@ namespace voe {
 	}
 
 	VkFormat PhDevice::FindSupportedFormat(
-		const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) 
+		const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 	{
-		for (VkFormat format : candidates) 
+		for (VkFormat format : candidates)
 		{
 			VkFormatProperties props;
 			vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &props);
 
-			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) 
+			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
 			{
 				return format;
 			}
-			else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) 
+			else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
 			{
 				return format;
 			}
@@ -200,9 +200,9 @@ namespace voe {
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memProperties);
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) 
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
 		{
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) 
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
 			{
 				return i;
 			}
@@ -241,7 +241,7 @@ namespace voe {
 		}
 	}
 
-	VkSampleCountFlagBits PhDevice::GetMaxUsableSampleCount() const 
+	VkSampleCountFlagBits PhDevice::GetMaxUsableSampleCount() const
 	{
 		VkPhysicalDeviceProperties physicalDeviceProperties;
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &physicalDeviceProperties);
@@ -250,7 +250,7 @@ namespace voe {
 			physicalDeviceProperties.limits.framebufferColorSampleCounts,
 			physicalDeviceProperties.limits.framebufferDepthSampleCounts);
 
-		for (const auto& sampleFlag : STAGE_FLAG_BITS) 
+		for (const auto& sampleFlag : STAGE_FLAG_BITS)
 		{
 			if (counts & sampleFlag)
 				return sampleFlag;

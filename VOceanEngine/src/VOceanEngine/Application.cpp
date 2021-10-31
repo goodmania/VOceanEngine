@@ -8,12 +8,21 @@
 #include "VulkanCore/Device.h"
 #include "Renderer/GameObject.h"
 #include "Renderer/CameraController.h"
+#include "Renderer/Buffer.h"
+#include "Renderer/FrameInfo.h"
 
 namespace voe {
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
+	struct GlobalUbo
+	{
+		glm::mat4 ProjectionView{ 1.f };
+		glm::vec3 lightDirection = glm::normalize(glm::vec3(1.f, -3.f, -1.f));
+	};
+
 	Application* Application::s_Instance = nullptr;
+
 
 	Application::Application() : m_Running(true)
 	{
@@ -34,6 +43,19 @@ namespace voe {
 
 	void Application::Run()
 	{
+		std::vector<std::unique_ptr<Buffer>> uboBuffers(Swapchain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < uboBuffers.size(); i++)
+		{
+			uboBuffers[i] = std::make_unique<Buffer>(
+				*(m_VulkanBase->GetDevice()),
+				sizeof(GlobalUbo),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+			uboBuffers[i]->Map();
+		}
+
 		auto viewerObject = GameObject::CreateGameObject();
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		CameraController cameraController;
@@ -59,13 +81,19 @@ namespace voe {
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{
 				int frameIndex = m_VulkanBase->GetFrameIndex();
+				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, m_Camera };
 
 				// update
+				GlobalUbo ubo{};
+				ubo.ProjectionView = m_Camera.GetProjectionMatrix() * m_Camera.GetViewMatrix();
+				uboBuffers[frameIndex]->WriteToBuffer(&ubo);
+				uboBuffers[frameIndex]->Flush();
+
 				m_VulkanBase->GetRenderer().OnUpdate(frameTime, frameIndex);
 
 				// render
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
-				m_VulkanBase->GetRenderer().RenderGameObjects(commandBuffer, m_GameObjects, m_Camera);
+				m_VulkanBase->GetRenderer().RenderGameObjects(frameInfo, m_GameObjects);
 				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->EndFrame();
 			}
