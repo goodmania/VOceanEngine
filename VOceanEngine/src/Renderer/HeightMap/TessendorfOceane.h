@@ -62,8 +62,8 @@ namespace voe
             {
                 for (uint32_t x = 0; x < m_MeshSize; x++)
                 {
-                    float kx = (-(int32_t)m_MeshSize / 2.0f + x) * (2.0f * glm::pi<float>() / m_OceanSizeLx);
-                    float ky = (-(int32_t)m_MeshSize / 2.0f + y) * (2.0f * glm::pi<float>() / m_OceanSizeLz);
+                    float kx = (-(int)m_MeshSize / 2.0f + x) * (2.0f * glm::pi<float>() / m_OceanSizeLx);
+                    float ky = (-(int)m_MeshSize / 2.0f + y) * (2.0f * glm::pi<float>() / m_OceanSizeLz);
                     float P = GeneratePhillipsSpectrum(kx, ky);
 
                     if (kx == 0.0f && ky == 0.0f)

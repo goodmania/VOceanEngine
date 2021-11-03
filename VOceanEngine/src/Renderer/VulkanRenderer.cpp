@@ -90,7 +90,7 @@ namespace voe {
 	void VulkanRenderer::InitOceanHeightMap()
 	{
 		m_OceanHeightMap = std::make_unique<HeightMap>(m_Device, m_Device.GetComputeQueue());
-		m_OceanHeightMap->CreateHeightMap(m_OceanThreadsSize);
+		m_OceanHeightMap->CreateHeightMap(m_GroupSize);
 	}
 
 	void VulkanRenderer::InitDescriptors()
@@ -190,20 +190,20 @@ namespace voe {
 			// 1: Calculate spectrum
 			m_ComputePipeline->Bind(m_ComputeCommandBuffers[i]);
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
-			vkCmdDispatch(m_ComputeCommandBuffers[i], 1, m_OceanThreadsSize, 1);
+			vkCmdDispatch(m_ComputeCommandBuffers[i], 1, m_GroupSize, 1);
 
-			//AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetH0Buffer(), m_OceanHeightMap->GetHtBuffer());
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetH0Buffer(), m_OceanHeightMap->GetHtBuffer());
 
 			// 2-1: Calculate FFT in horizontal direction
 			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[i]);
-			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
+			vkCmdDispatch(m_ComputeCommandBuffers[i], m_GroupSize, 1, 1);
 
-			//AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
 
 			// 2-2: Calculate FFT in vertical direction
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[1], 0, 0);
-			//AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
-			vkCmdDispatch(m_ComputeCommandBuffers[i], m_OceanThreadsSize, 1, 1);
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
+			vkCmdDispatch(m_ComputeCommandBuffers[i], m_GroupSize, 1, 1);
 
 			//AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
 

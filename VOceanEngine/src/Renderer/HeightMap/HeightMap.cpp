@@ -137,7 +137,7 @@ namespace voe {
 	void HeightMap::SetDescriptorBufferInfo(VkDescriptorBufferInfo* info, VkBuffer buffer, VkDeviceSize size, VkDeviceSize offset)
 	{
 		info->buffer = buffer;
-		info->offset = offset;
 		info->range = size;
+		info->offset = offset;
 	}
 }
