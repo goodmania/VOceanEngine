@@ -34,7 +34,8 @@ namespace voe {
 
         Semaphores GetComputeSemaphores() { return m_ComputeSemaphores; }
         std::array<VkCommandBuffer, 2> GetComputeCommandBuffer() { return m_ComputeCommandBuffers; }
-        const uint32_t GetOceanMeshSize() { return m_GroupSize; }
+        const uint32_t GetGridSize() { return m_GroupSize; }
+        const uint32_t GetOceanSize() { return m_GroupSize * 5 / 2; }
 
     private:
         void InitOceanHeightMap();

@@ -18,7 +18,7 @@ namespace voe
 
 		struct ComputeUBO
 		{
-			float deltaT;
+			float deltaT = 0.0f;
 			uint32_t meshSize;
 			uint32_t OceanSizeLx;
 			uint32_t OceanSizeLz;			
@@ -35,9 +35,9 @@ namespace voe
 		void UpdateComputeUniformBuffers(float dt, int frameIndex);
 
 		ComputeUBO GetUBO() { return m_ComputeUBO; }
-		VkBuffer GetH0Buffer() { return m_H0Buffer->GetBuffer(); }
-		VkBuffer GetHtBuffer() { return m_HtBuffer->GetBuffer(); }
-		VkBuffer GetHt_dmyBuffer() { return m_Ht_dmyBuffer->GetBuffer(); }
+		VkBuffer GetH0Buffer(uint32_t index) { return m_H0Buffers[index]->GetBuffer(); }
+		VkBuffer GetHtBuffer(uint32_t index) { return m_HtBuffers[index]->GetBuffer(); }
+		VkBuffer GetHt_dmyBuffer(uint32_t index) { return m_Ht_dmyBuffers[index]->GetBuffer(); }
 		
 		VkDescriptorBufferInfo* GetUniformBufferDscInfo() { return m_UniformBufferDscInfo; }
 		VkDescriptorBufferInfo* GetH0BufferDscInfo() { return m_H0BufferDscInfo; }
@@ -56,17 +56,17 @@ namespace voe
 
 		ComputeUBO m_ComputeUBO;
 
-		std::vector<std::unique_ptr<Buffer>> m_UniformBuffers;
+		std::vector<std::shared_ptr<Buffer>> m_UniformBuffers;
 		VkDescriptorBufferInfo* m_UniformBufferDscInfo = VK_NULL_HANDLE;
 
 		// storage buffers
-		std::unique_ptr<Buffer> m_H0Buffer;
+		std::vector<std::shared_ptr<Buffer>> m_H0Buffers;
 		VkDescriptorBufferInfo* m_H0BufferDscInfo = VK_NULL_HANDLE;
 
-		std::unique_ptr<Buffer> m_HtBuffer;
+		std::vector<std::shared_ptr<Buffer>> m_HtBuffers;
 		VkDescriptorBufferInfo* m_HtBufferDscInfo = VK_NULL_HANDLE;
 
-		std::unique_ptr<Buffer> m_Ht_dmyBuffer;
+		std::vector<std::shared_ptr<Buffer>> m_Ht_dmyBuffers;
 		VkDescriptorBufferInfo* m_Ht_dmyBufferDscInfo = VK_NULL_HANDLE;
 	};
 }

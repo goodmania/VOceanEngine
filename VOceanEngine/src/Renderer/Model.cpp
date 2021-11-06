@@ -116,10 +116,10 @@ namespace voe {
         return std::make_unique<Model>(device, builder);
     }
 
-    std::unique_ptr<Model> Model::CreateXZPlaneModelFromProcedural(Device& device, uint32_t w, uint32_t h)
+    std::unique_ptr<Model> Model::CreateXZPlaneModelFromProcedural(Device& device, uint32_t w, uint32_t h, uint32_t oceanSize)
     {
         Builder builder{};
-        builder.CreateXZPlaneModel(w, h);
+        builder.CreateXZPlaneModel(w, h, oceanSize);
         return std::make_unique<Model>(device, builder);
     }
 
@@ -237,28 +237,33 @@ namespace voe {
         }
     }
 
-    void Model::Builder::CreateXZPlaneModel(uint32_t w, uint32_t h)
+    void Model::Builder::CreateXZPlaneModel(uint32_t w, uint32_t h, uint32_t oceanSize)
     {
         vertices.clear();
         indices.clear();
 
-        float dx = w / (w - 1);
+        /*float dx = w / (w - 1);
         float dy = h / (h - 1);
         float du = 1.0f / (w - 1);
         float dv = 1.0f / (h - 1);
+        glm::mat4 transM = glm::translate(glm::mat4(1.0f), glm::vec3(-w / 2.0f, -2.0f, -h / 2.0f));*/
+
+        float halfN = w * 0.5f; // 256 / 2
+        float dx = 1.0f * oceanSize / w;
+        float dz = 1.0f * oceanSize / h;
+
         vertices.resize(w * h);
 
-        glm::mat4 transM = glm::translate(glm::mat4(1.0f), glm::vec3(-w / 2.0f, -2.0f, -h / 2.0f));
         for (uint32_t i = 0; i < h; i++)
         {
             for (uint32_t j = 0; j < w; j++)
             {
-                vertices[i + j * h].position = glm::vec4(dx * j, 0.0f, dy * i, 1.0f);
+                //vertices[i + j * h].position = glm::vec4(dx * j, 0.0f, dy * i, 1.0f);
+                vertices[i + j * h].position = glm::vec4((1.0 * j) * dx, 0.0f, (1.0 * i) * dz, 1.0f);
             }
         }
 
         // Indices
-        std::vector<uint32_t> indices;
         for (uint32_t y = 0; y < h - 1; y++)
         {
             for (uint32_t x = 0; x < w; x++)

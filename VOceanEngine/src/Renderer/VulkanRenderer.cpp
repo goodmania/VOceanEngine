@@ -182,32 +182,32 @@ namespace voe {
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-		for (uint32_t i = 0; i < 2; i++) 
+		for (uint32_t index = 0; index < 2; index++)
 		{
-			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[i], &cmdBufInfo));
-			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
+			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[index], &cmdBufInfo));
+			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index]);
 
 			// 1: Calculate spectrum
-			m_ComputePipeline->Bind(m_ComputeCommandBuffers[i]);
-			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
-			vkCmdDispatch(m_ComputeCommandBuffers[i], 1, m_GroupSize, 1);
+			m_ComputePipeline->Bind(m_ComputeCommandBuffers[index]);
+			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
+			vkCmdDispatch(m_ComputeCommandBuffers[index], 1, m_GroupSize, 1);
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetH0Buffer(), m_OceanHeightMap->GetHtBuffer());
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetH0Buffer(index), m_OceanHeightMap->GetHtBuffer(index));
 
 			// 2-1: Calculate FFT in horizontal direction
-			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[i]);
-			vkCmdDispatch(m_ComputeCommandBuffers[i], m_GroupSize, 1, 1);
+			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[index]);
+			vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
 
 			// 2-2: Calculate FFT in vertical direction
-			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[i], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[1], 0, 0);
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[i], m_OceanHeightMap->GetHtBuffer(), m_OceanHeightMap->GetHt_dmyBuffer());
-			vkCmdDispatch(m_ComputeCommandBuffers[i], m_GroupSize, 1, 1);
+			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[1], 0, 0);
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
+			vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
 
 			//AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
 
-			VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffers[i]));
+			VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffers[index]));
 		}
 	}
 
@@ -224,11 +224,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -287,11 +287,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
+			//bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(

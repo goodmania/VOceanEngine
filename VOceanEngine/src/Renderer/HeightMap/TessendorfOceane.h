@@ -19,13 +19,27 @@ namespace voe
         // Generates Gaussian random number with mean 0 and standard deviation 1.
         glm::vec2 GaussianRanndomNum()
         {
-            std::default_random_engine engine(seed_gen());
-            std::normal_distribution<float> dist(0.0, 1.0);
+            constexpr double epsilon = std::numeric_limits<double>::epsilon();
+            constexpr double two_pi = 2.0 * glm::pi<double>();
 
-            float val1 = dist(engine);
-            float val2 = dist(engine);
+            //initialize the random uniform number generator (runif) in a range 0 to 1
+            static std::mt19937 rng(std::random_device{}()); // Standard mersenne_twister_engine seeded with rd()
+            static std::uniform_real_distribution<> runif(0.0, 1.0);
 
-            return glm::vec2(val1, val2);
+            //create two random numbers, make sure u1 is greater than epsilon
+            double u1, u2;
+            do
+            {
+                u1 = runif(rng);
+                u2 = runif(rng);
+            } while (u1 <= epsilon);
+
+            //compute z0 and z1
+            auto mag = sqrt(-2.0 * log(u1));
+            auto z0 = mag * cos(two_pi * u2);
+            auto z1 = mag * sin(two_pi * u2);
+
+            return glm::vec2(z0, z1);
         }
 
         // Phillips spectrum
@@ -87,8 +101,6 @@ namespace voe
         const float A = 0.000001f;              
         const float windSpeed = 30.0f;
         const float windDir = glm::pi<float>() * 1.234f; 
-
-        std::random_device seed_gen;
     };
 }
 

@@ -31,7 +31,7 @@ namespace voe
             std::vector<uint32_t> indices{};
 
             void LoadModel(const std::string& filepath);
-            void CreateXZPlaneModel(uint32_t w, uint32_t h);
+            void CreateXZPlaneModel(uint32_t w, uint32_t h, uint32_t oceanSize);
         };
 
         Model(Device& device, const Model::Builder& builder);
@@ -41,7 +41,7 @@ namespace voe
         Model& operator=(const Model&) = delete;
 
         static std::unique_ptr<Model> CreateModelFromFile(Device& device, const std::string& filepath);
-        static std::unique_ptr<Model> CreateXZPlaneModelFromProcedural(Device& device, uint32_t w, uint32_t h);
+        static std::unique_ptr<Model> CreateXZPlaneModelFromProcedural(Device& device, uint32_t w, uint32_t h, uint32_t oceanSize);
         
         void Bind(VkCommandBuffer commandBuffer);
         void Draw(VkCommandBuffer commandBuffer);
