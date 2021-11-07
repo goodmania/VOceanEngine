@@ -128,7 +128,7 @@ namespace voe {
 		std::shared_ptr<Model> model = Model::CreateXZPlaneModelFromProcedural(*device, width, height, oceanSize);
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
-		ocean.m_Transform.Translation = { 0.f, 100.f, 0.f };
+		ocean.m_Transform.Translation = { 0.f, 150.f, 0.f };
 		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f } ;
 		m_GameObjects.push_back(std::move(ocean));
 	}

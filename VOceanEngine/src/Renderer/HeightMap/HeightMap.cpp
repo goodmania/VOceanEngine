@@ -62,7 +62,7 @@ namespace voe {
 
 	void HeightMap::UpdateComputeUniformBuffers(float dt, int frameIndex)
 	{
-		m_ComputeUBO.deltaT += dt;
+		m_ComputeUBO.deltaT += (m_OceanAnimRate * dt);
 		m_UniformBuffers[frameIndex]->WriteToBuffer(&m_ComputeUBO);
 		m_UniformBuffers[frameIndex]->Flush();
 	}

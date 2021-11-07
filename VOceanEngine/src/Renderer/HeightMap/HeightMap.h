@@ -68,5 +68,7 @@ namespace voe
 
 		std::vector<std::shared_ptr<Buffer>> m_Ht_dmyBuffers;
 		VkDescriptorBufferInfo* m_Ht_dmyBufferDscInfo = VK_NULL_HANDLE;
+
+		const float m_OceanAnimRate = 0.0001f;
 	};
 }
