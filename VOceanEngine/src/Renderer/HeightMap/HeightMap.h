@@ -10,10 +10,11 @@ namespace voe
 	public:
 		struct Ocean
 		{
-			glm::vec2 h;
-			glm::vec4 Pos;
-			glm::vec4 UV;
-			glm::vec4 Normal;
+			glm::vec2 H_y;
+			glm::vec2 H_x;
+			glm::vec2 H_z;
+			glm::vec2 Dx;
+			glm::vec2 Dz;
 		};
 
 		struct ComputeUBO

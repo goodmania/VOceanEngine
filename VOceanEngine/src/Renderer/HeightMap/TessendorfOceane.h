@@ -70,7 +70,7 @@ namespace voe
         }
 
         // Generate base heightfield in frequency space
-        void Generate(std::vector<glm::vec2>& oceanBuffer)
+        void Generate(std::vector<HeightMap::Ocean>& oceanBuffer)
         {
             for (uint32_t y = 0; y < m_MeshSize; y++)
             {
@@ -84,7 +84,7 @@ namespace voe
                     {
                         P = 0.0f;
                     }
-                    oceanBuffer[y * m_MeshSize + x] = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
+                    oceanBuffer[y * m_MeshSize + x].H_y = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
                 }
             }
         }

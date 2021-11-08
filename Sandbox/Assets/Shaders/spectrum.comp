@@ -1,19 +1,28 @@
 #version 450
 #define PI 3.14159265358979323846264338327950288
 
+struct Ocean
+{
+	vec2 H_y;
+	vec2 H_x;
+	vec2 H_z;
+	vec2 Dx;
+	vec2 Dz;
+};
+
 layout(std430, binding = 0) buffer H0Buffer
 {
-	vec2 H0Buffers[ ];
+	Ocean H0Buffers[ ];
 };
 
 layout(std430, binding = 1) buffer HtBuffer 
 {
-	vec2 HtBuffers[ ];
+	Ocean HtBuffers[ ];
 };
 
 layout(std430, binding = 2) buffer Ht_dmyBuffer 
 {
-	vec2 Ht_dmyBuffers[ ];
+	Ocean Ht_dmyBuffers[ ];
 };
 
 layout (std140, binding = 3) uniform UBO 
@@ -64,13 +73,27 @@ void main()
 	float k_len = sqrt(k.x * k.x + k.y * k.y);
     float w = sqrt(9.81f * k_len);
 
-	if((id.x < ubo.meshSize ) && (id.y < ubo.meshSize))
+	vec2 h0_k  = H0Buffers[in_index].H_y;
+	vec2 h0_mk = H0Buffers[in_mindex].H_y;
+
+	vec2 htval = AddComplex(
+			MultiplyComplex(h0_k, ComplexExp(w * ubo.deltaT)),				
+			MultiplyComplex(conjugate(h0_mk), ComplexExp(-w * ubo.deltaT)));
+	
+	HtBuffers[out_index].H_y = htval;
+
+	vec2 htival; // i*htval
+	htival.x = -htval.y;
+	htival.y = htval.x;
+	HtBuffers[out_index].H_x = htival * k.x;
+	HtBuffers[out_index].H_z = htival * k.y;
+
+	if (k_len != 0.0) 
 	{
-		vec2 h0_k  = H0Buffers[in_index];
-		vec2 h0_mk = H0Buffers[in_mindex];
-		
-		HtBuffers[out_index] = AddComplex(
-				MultiplyComplex(h0_k, ComplexExp(w * ubo.deltaT)),
-				MultiplyComplex(conjugate(h0_mk), ComplexExp(-w * ubo.deltaT)));
+		k.x /= k_len;
+		k.y /= k_len;
 	}
+	
+	HtBuffers[out_index].Dx = -htival * k.x;
+	HtBuffers[out_index].Dz = -htival * k.y;
 }

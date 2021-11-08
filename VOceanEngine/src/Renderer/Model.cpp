@@ -251,6 +251,7 @@ namespace voe {
         float halfN = w * 0.5f; // 256 / 2
         float dx = 1.0f * oceanSize / w;
         float dz = 1.0f * oceanSize / h;
+        float lamda = -2.0f;
 
         vertices.resize(w * h);
 

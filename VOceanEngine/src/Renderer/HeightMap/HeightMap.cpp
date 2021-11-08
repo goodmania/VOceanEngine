@@ -72,11 +72,11 @@ namespace voe {
 		VOE_CORE_ASSERT(m_Device);
 		VOE_CORE_ASSERT(m_CopyQueue != nullptr);
 
-		std::vector<glm::vec2> h0Buffer(size * size);
+		std::vector<Ocean> h0Buffer(size * size);
 		TessendorfOceane tOceanManeger(size);
 		tOceanManeger.Generate(h0Buffer);
-		VkDeviceSize bufferSize = static_cast<uint32_t>(h0Buffer.size()) * sizeof(glm::vec2);
-		uint32_t elementSize = sizeof(glm::vec2);
+		VkDeviceSize bufferSize = static_cast<uint32_t>(h0Buffer.size()) * sizeof(Ocean);
+		uint32_t elementSize = sizeof(Ocean);
 
 		SetupComputeUniformBuffers(
 			tOceanManeger.m_MeshSize,
