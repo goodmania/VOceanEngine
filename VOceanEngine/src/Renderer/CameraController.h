@@ -12,7 +12,7 @@ namespace voe {
 		void OnUpdate(float dt, GameObject& gameObject);
 
 	private:
-		float m_MoveSpeed{ 3.f };
+		float m_MoveSpeed{ 100.f };
 		float m_LookSpeed{ 1.5f };
 
 		glm::vec2 m_CurrentMousePos{ 0.f, 0.f };

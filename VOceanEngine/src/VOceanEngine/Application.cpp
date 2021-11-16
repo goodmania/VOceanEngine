@@ -15,14 +15,7 @@ namespace voe {
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
-	struct GlobalUbo
-	{
-		glm::mat4 ProjectionView{ 1.f };
-		glm::vec3 lightDirection = glm::normalize(glm::vec3(1.f, -3.f, -1.f));
-	};
-
 	Application* Application::s_Instance = nullptr;
-
 
 	Application::Application() : m_Running(true)
 	{
@@ -43,19 +36,6 @@ namespace voe {
 
 	void Application::Run()
 	{
-		std::vector<std::unique_ptr<Buffer>> uboBuffers(Swapchain::MAX_FRAMES_IN_FLIGHT);
-		for (int i = 0; i < uboBuffers.size(); i++)
-		{
-			uboBuffers[i] = std::make_unique<Buffer>(
-				*(m_VulkanBase->GetDevice()),
-				sizeof(GlobalUbo),
-				1,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-
-			uboBuffers[i]->Map();
-		}
-
 		auto viewerObject = GameObject::CreateGameObject();
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		CameraController cameraController;
@@ -83,13 +63,7 @@ namespace voe {
 				int frameIndex = m_VulkanBase->GetFrameIndex();
 				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, m_Camera };
 
-				// update
-				GlobalUbo ubo{};
-				ubo.ProjectionView = m_Camera.GetProjectionMatrix() * m_Camera.GetViewMatrix();
-				uboBuffers[frameIndex]->WriteToBuffer(&ubo);
-				uboBuffers[frameIndex]->Flush();
-
-				m_VulkanBase->GetRenderer().OnUpdate(frameTime, frameIndex);
+				m_VulkanBase->GetRenderer().OnUpdate(frameTime, frameInfo);
 
 				// render
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
@@ -128,7 +102,7 @@ namespace voe {
 		std::shared_ptr<Model> model = Model::CreateXZPlaneModelFromProcedural(*device, width, height, oceanSize);
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
-		ocean.m_Transform.Translation = { 100.f, 100.f, 100.f };
+		ocean.m_Transform.Translation = { 0.f,100.f, 0.f };
 		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f } ;
 		m_GameObjects.push_back(std::move(ocean));
 	}

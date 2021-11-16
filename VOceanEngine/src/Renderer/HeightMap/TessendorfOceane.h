@@ -19,8 +19,8 @@ namespace voe
         // Generates Gaussian random number with mean 0 and standard deviation 1.
         glm::vec2 GaussianRanndomNum()
         {
-            constexpr double epsilon = std::numeric_limits<double>::epsilon();
-            constexpr double two_pi = 2.0 * glm::pi<double>();
+            constexpr float epsilon = std::numeric_limits<float>::epsilon();
+            constexpr float two_pi = 2.0 * glm::pi<float>();
 
             //initialize the random uniform number generator (runif) in a range 0 to 1
             static std::mt19937 rng(std::random_device{}()); // Standard mersenne_twister_engine seeded with rd()
@@ -98,7 +98,7 @@ namespace voe
         // gravitational constant
         const float G = 9.81f;  
         // wave scale factor  A - constant
-        const float A = 0.000001f;              
+        const float A = 0.00000121f;              
         const float windSpeed = 30.0f;
         const float windDir = glm::pi<float>() * 1.234f; 
     };

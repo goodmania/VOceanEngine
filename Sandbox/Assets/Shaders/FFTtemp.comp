@@ -53,7 +53,7 @@ void main()
         float i1 = block[t1].y;
         float r0 = block[t0].x - r1;
         float i0 = block[t0].y - i1;
-        float rad = PI * ubo.deltaT / dleng;    //inv�Ȃ̂�-���������Ă���
+        float rad = PI * t / dleng;    //inv�Ȃ̂�-���������Ă���
         float fsin = sin(rad);
         float fcos = cos(rad);
 

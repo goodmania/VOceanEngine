@@ -23,7 +23,7 @@ layout(std430, binding = 1) buffer HtBuffer
 	Ocean HtBuffers[ ];
 };
 
-layout(std430, binding = 2) buffer Ht_dmyBuffer 
+layout(std430, binding = 2) buffer Ht_dmyBuffer
 {
 	Ocean Ht_dmyBuffers[ ];
 };
@@ -38,9 +38,7 @@ layout (std140, binding = 3) uniform UBO
 
 layout (local_size_x = N/2) in;
 
-shared vec2 block_y[N];
-shared vec2 block_x[N];
-shared vec2 block_z[N];
+shared Ocean block[N];
 
 void main()
 {
@@ -48,17 +46,8 @@ void main()
     uvec3 grid = gl_WorkGroupID;
     uint gi = gl_LocalInvocationIndex;
 
-    // y
-    block_y[gi * 2] = HtBuffers[grid.x * N + gi * 2].H_y;
-    block_y[gi * 2 + 1] = HtBuffers[grid.x * N + gi * 2 + 1].H_y;
-
-    // x
-    block_x[gi * 2] = HtBuffers[grid.x * N + gi * 2].Dx;
-    block_x[gi * 2 + 1] = HtBuffers[grid.x * N + gi * 2 + 1].Dx;
-
-    // z 
-    block_z[gi * 2] = HtBuffers[grid.x * N + gi * 2].Dz;
-    block_z[gi * 2 + 1] = HtBuffers[grid.x * N + gi * 2 + 1].Dz;
+    block[gi * 2] = HtBuffers[grid.x * N + gi * 2];
+    block[gi * 2 + 1] = HtBuffers[grid.x * N + gi * 2 + 1];
 
     for (int loopidx = 0; loopidx < M; loopidx++)
     {
@@ -67,76 +56,76 @@ void main()
         uint t0 = (gi / dleng) * dleng * 2 + t;
         uint t1 = t0 + dleng;
 
-        groupMemoryBarrier();
-        barrier();
-
         float rad = PI * t / dleng;    
         float fsin = sin(rad);
         float fcos = cos(rad);
+
+        groupMemoryBarrier();
+        barrier();
         
         // y
-        float r1_y = block_y[t1].x;
-        float i1_y = block_y[t1].y;
-        float r0_y = block_y[t0].x - r1_y;
-        float i0_y = block_y[t0].y - i1_y;
+        float r1_y = block[t1].H_y.x;
+        float i1_y = block[t1].H_y.y;
+        float r0_y = block[t0].H_y.x - r1_y;
+        float i0_y = block[t0].H_y.y - i1_y;
 
-        block_y[t0].x += r1_y;
-        block_y[t0].y += i1_y;
-        block_y[t1].x = r0_y * fcos - i0_y * fsin;
-        block_y[t1].y = r0_y * fsin + i0_y * fcos;
-
-        groupMemoryBarrier();
-        barrier();
-
-        // x
-        float r1_x = block_x[t1].x;
-        float i1_x = block_x[t1].y;
-        float r0_x = block_x[t0].x - r1_x;
-        float i0_x = block_x[t0].y - i1_x;
-
-        block_x[t0].x += r1_x;
-        block_x[t0].y += i1_x;
-        block_x[t1].x = r0_x * fcos - i0_x * fsin;
-        block_x[t1].y = r0_x * fsin + i0_x * fcos;
+        block[t0].H_y.x += r1_y;
+        block[t0].H_y.y += i1_y;
+        block[t1].H_y.x = r0_y * fcos - i0_y * fsin;
+        block[t1].H_y.y = r0_y * fsin + i0_y * fcos;
 
         groupMemoryBarrier();
         barrier();
 
-        // z
-        float r1_z = block_z[t1].x;
-        float i1_z = block_z[t1].y;
-        float r0_z = block_z[t0].x - r1_z;
-        float i0_z = block_z[t0].y - i1_z;
+        // Dx
+        float r1_x = block[t1].Dx.x;
+        float i1_x = block[t1].Dx.y;
+        float r0_x = block[t0].Dx.x - r1_x;
+        float i0_x = block[t0].Dx.y - i1_x;
 
-        block_z[t0].x += r1_z;
-        block_z[t0].y += i1_z;
-        block_z[t1].x = r0_z * fcos - i0_z * fsin;
-        block_z[t1].y = r0_z * fsin + i0_z * fcos;
+        block[t0].Dx.x += r1_x;
+        block[t0].Dx.y += i1_x;
+        block[t1].Dx.x = r0_x * fcos - i0_x * fsin;
+        block[t1].Dx.y = r0_x * fsin + i0_x * fcos;
+
+        groupMemoryBarrier();
+        barrier();
+
+        // Dz
+        float r1_z = block[t1].Dz.x;
+        float i1_z = block[t1].Dz.y;
+        float r0_z = block[t0].Dz.x - r1_z;
+        float i0_z = block[t0].Dz.y - i1_z;
+
+        block[t0].Dz.x += r1_z;
+        block[t0].Dz.y += i1_z;
+        block[t1].Dz.x = r0_z * fcos - i0_z * fsin;
+        block[t1].Dz.y = r0_z * fsin + i0_z * fcos;
     }
 
     groupMemoryBarrier();
     barrier();
 
     // y
-    vec2 reim0_y = block_y[bitfieldReverse(gi * 2) >> (32 - M)];    
-    vec2 reim1_y = block_y[bitfieldReverse(gi * 2 + 1) >> (32 - M)];
+    vec2 reim0_y = block[bitfieldReverse(gi * 2) >> (32 - M)].H_y;    
+    vec2 reim1_y = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)].H_y;
     reim1_y = -reim1_y;
+
+    // Dx
+    vec2 reim0_x = block[bitfieldReverse(gi * 2) >> (32 - M)].Dx;    
+    vec2 reim1_x = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)].Dx;
+    reim1_x = -reim1_x;
+
+    // Dz
+    vec2 reim0_z = block[bitfieldReverse(gi * 2) >> (32 - M)].Dz;    
+    vec2 reim1_z = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)].Dz;
+    reim1_z = -reim1_z;
 
     Ht_dmyBuffers[(gi * 2 + N / 2) % N * N + grid.x].H_y = reim0_y;
     Ht_dmyBuffers[(gi * 2 + 1 + N / 2) % N * N + grid.x].H_y = reim1_y;
 
-    // x
-    vec2 reim0_x = block_x[bitfieldReverse(gi * 2) >> (32 - M)];    
-    vec2 reim1_x = block_x[bitfieldReverse(gi * 2 + 1) >> (32 - M)];
-    reim1_x = -reim1_x;
-
     Ht_dmyBuffers[(gi * 2 + N / 2) % N * N + grid.x].Dx = reim0_x;
     Ht_dmyBuffers[(gi * 2 + 1 + N / 2) % N * N + grid.x].Dx = reim1_x;
-
-    // z
-    vec2 reim0_z = block_z[bitfieldReverse(gi * 2) >> (32 - M)];    
-    vec2 reim1_z = block_z[bitfieldReverse(gi * 2 + 1) >> (32 - M)];
-    reim1_z = -reim1_z;
 
     Ht_dmyBuffers[(gi * 2 + N / 2) % N * N + grid.x].Dz = reim0_z;
     Ht_dmyBuffers[(gi * 2 + 1 + N / 2) % N * N + grid.x].Dz = reim1_z;

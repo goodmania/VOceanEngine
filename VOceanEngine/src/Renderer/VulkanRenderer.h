@@ -29,7 +29,7 @@ namespace voe {
         void RenderGameObjects(FrameInfo frameInfo, std::vector<GameObject>& gameObjects);
 
         bool IsComputeQueueSpecialized() const;
-        void OnUpdate(float dt, int frameIndex);
+        void OnUpdate(float dt, FrameInfo& frameInfo);
         void BuildComputeCommandBuffer();
 
         Semaphores GetComputeSemaphores() { return m_ComputeSemaphores; }
@@ -40,6 +40,8 @@ namespace voe {
     private:
         void InitOceanHeightMap();
         void InitDescriptors();
+        void CreateGraphicsUbo();
+        void UpdateGlobalUboBuffers(FrameInfo& frameInfo);
         void SetupFFTOceanComputePipelines();
 
         void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
@@ -53,29 +55,33 @@ namespace voe {
         Device& m_Device;
         bool m_SpecializedComputeQueue = false;
 
-        // pipelines
-        std::unique_ptr<GraphicsPipeline> m_GraphicsPipeline;
-        VkPipelineLayout m_GraphicsPipelineLayout;
+        // 512->256
+        const uint32_t m_GroupSize = 256;
 
+        // ocean params
+        std::unique_ptr<HeightMap> m_OceanHeightMap;
+
+        // pipelines
         std::unique_ptr<ComputePipeline> m_ComputePipeline;
         std::unique_ptr<ComputePipeline> m_FFTComputePipeline;
-        VkPipelineLayout m_ComputePipelineLayout;
-
+        std::unique_ptr<ComputePipeline> m_ComputeNormalPipeline;
+        std::unique_ptr<GraphicsPipeline> m_GraphicsPipeline;
         VkPipelineCache m_PipelineCache;
 
         // descriptor helpers
         DescriptorAllocator* m_DescriptorAllocator;
         DescriptorLayoutCache* m_DescriptorLayoutCache;
 
-        // ocean params
-        std::unique_ptr<HeightMap> m_OceanHeightMap;
-
-        // 512->256
-        const uint32_t m_GroupSize = 256;
- 
+        // pipeline, descriptor layout
+        VkPipelineLayout m_ComputePipelineLayout;
         std::array<VkDescriptorSet, 3> m_DescriptorSets;
-        VkDescriptorSetLayout m_DescriptorSetLayout;
+        std::array<VkDescriptorSetLayout, 2> m_DescriptorSetLayouts;
+
         VkDescriptorSetLayout m_GraphicsDescriptorSetLayout;
+        VkPipelineLayout m_GraphicsPipelineLayout;
+
+        std::vector<std::shared_ptr<Buffer>> m_GlobalUboBuffers;
+        VkDescriptorBufferInfo* m_GlobalUboDscInfo = VK_NULL_HANDLE;
 
         Semaphores m_ComputeSemaphores;
 

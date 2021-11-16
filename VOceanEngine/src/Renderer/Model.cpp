@@ -242,16 +242,8 @@ namespace voe {
         vertices.clear();
         indices.clear();
 
-        /*float dx = w / (w - 1);
-        float dy = h / (h - 1);
-        float du = 1.0f / (w - 1);
-        float dv = 1.0f / (h - 1);
-        glm::mat4 transM = glm::translate(glm::mat4(1.0f), glm::vec3(-w / 2.0f, -2.0f, -h / 2.0f));*/
-
-        float halfN = w * 0.5f; // 256 / 2
         float dx = 1.0f * oceanSize / w;
         float dz = 1.0f * oceanSize / h;
-        float lamda = -2.0f;
 
         vertices.resize(w * h);
 

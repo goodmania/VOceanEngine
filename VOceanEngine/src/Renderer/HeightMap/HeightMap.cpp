@@ -1,13 +1,8 @@
 #include "PreCompileHeader.h"
 
-
 #include "Renderer/Swapchain.h"
 #include "Renderer/HeightMap/HeightMap.h"
 #include "Renderer/HeightMap/TessendorfOceane.h"
-
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 namespace voe {
 
@@ -18,6 +13,12 @@ namespace voe {
 		m_HtBufferDscInfo = new VkDescriptorBufferInfo();
 		m_Ht_dmyBufferDscInfo = new VkDescriptorBufferInfo();
 		m_UniformBufferDscInfo = new VkDescriptorBufferInfo();
+
+		for (uint32_t i = 0; i < m_OceanElementCount; i++)
+		{
+			m_HtBufferDscInfos[i] = new VkDescriptorBufferInfo();
+			m_Ht_dmyBufferDscInfos[i] = new VkDescriptorBufferInfo();
+		}
 	}
 
 	HeightMap::~HeightMap()
@@ -26,6 +27,12 @@ namespace voe {
 		delete m_HtBufferDscInfo;
 		delete m_Ht_dmyBufferDscInfo;
 		delete m_UniformBufferDscInfo;
+
+		for (uint32_t i = 0; i < m_OceanElementCount; i++)
+		{
+			delete m_HtBufferDscInfos[i];
+			delete m_Ht_dmyBufferDscInfos[i];
+		}
 	}
 
 	void HeightMap::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer)
@@ -122,10 +129,6 @@ namespace voe {
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-			SetDescriptorBufferInfo(m_H0BufferDscInfo, m_H0Buffers[i]->GetBuffer());
-			SetDescriptorBufferInfo(m_HtBufferDscInfo, m_HtBuffers[i]->GetBuffer());
-			SetDescriptorBufferInfo(m_Ht_dmyBufferDscInfo, m_Ht_dmyBuffers[i]->GetBuffer());
-
 			// Copy from staging buffer
 			VkCommandBuffer copyCmd = m_Device.CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 			VkBufferCopy copyRegion = {};
@@ -133,8 +136,20 @@ namespace voe {
 
 			// Should also initialize ht and h_dmy with stagingbuffer?
 			vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_H0Buffers[i]->GetBuffer(), 1, &copyRegion);
-			vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_HtBuffers[i]->GetBuffer(), 1, &copyRegion);
-			vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_Ht_dmyBuffers[i]->GetBuffer(), 1, &copyRegion);
+			//vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_HtBuffers[i]->GetBuffer(), 1, &copyRegion);
+			//vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_Ht_dmyBuffers[i]->GetBuffer(), 1, &copyRegion);
+
+			SetDescriptorBufferInfo(m_H0BufferDscInfo, m_H0Buffers[i]->GetBuffer());
+			SetDescriptorBufferInfo(m_HtBufferDscInfo, m_HtBuffers[i]->GetBuffer());
+			SetDescriptorBufferInfo(m_Ht_dmyBufferDscInfo, m_Ht_dmyBuffers[i]->GetBuffer());
+
+			// å„Ç≈ëÃçŸÇêÆÇ¶ÇÈ
+			VkDeviceSize OceanElementSize = static_cast<uint32_t>(h0Buffer.size() * sizeof(glm::vec2));
+			for (uint32_t index = 0; index < m_OceanElementCount; index++)
+			{
+				SetDescriptorBufferInfo(m_HtBufferDscInfos[index], m_HtBuffers[i]->GetBuffer(), OceanElementSize, OceanElementSize * index);
+				SetDescriptorBufferInfo(m_HtBufferDscInfos[index], m_Ht_dmyBuffers[i]->GetBuffer(), OceanElementSize, OceanElementSize * index);
+			}
 
 			// Execute a transfer barrier to the compute queue, if necessary
 			m_Device.FlushCommandBuffer(copyCmd, m_CopyComputeQueue, true);
