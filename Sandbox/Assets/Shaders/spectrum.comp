@@ -1,34 +1,25 @@
 #version 450
 #define PI 3.14159265358979323846264338327950288
 
-struct Ocean
+layout(std430, set = 0, binding = 0) buffer H0Buffer
 {
-	vec2 H_y;
-	vec2 H_x;
-	vec2 H_z;
-	vec2 Dx;
-	vec2 Dz;
+	vec2 H0Buffers[ ];
 };
 
-layout(std430, binding = 0) buffer H0Buffer
+layout(std430, set = 0, binding = 1) buffer HtBuffer 
 {
-	Ocean H0Buffers[ ];
+	vec2 Ht_Buffers[ ];
 };
 
-layout(std430, binding = 1) buffer HtBuffer 
+layout(std430, set = 0, binding = 2) buffer Ht_dmyBuffer 
 {
-	Ocean HtBuffers[ ];
+	vec2 Ht_dmyBuffers[ ];
 };
 
-layout(std430, binding = 2) buffer Ht_dmyBuffer 
-{
-	Ocean Ht_dmyBuffers[ ];
-};
-
-layout (std140, binding = 3) uniform UBO 
+layout (std140, set = 0, binding = 3) uniform UBO 
 {
 	float deltaT;
-	float lamda;
+	float lambda;
 	highp uint meshSize;
 	highp uint OceanSizeLx;
 	highp uint OceanSizeLz;
@@ -67,6 +58,8 @@ void main()
     uint in_mindex = (ubo.meshSize - id.y) % ubo.meshSize * ubo.meshSize + (ubo.meshSize - id.x) % ubo.meshSize; // mirrored
     uint out_index = id.y * ubo.meshSize + id.x;
 
+	uint offset = ubo.meshSize * ubo.meshSize;
+
 	vec2 k;
 	k.x = (-ubo.meshSize / 2.0f + id.x) * (2.0f * PI / ubo.OceanSizeLx);
 	k.y = (-ubo.meshSize / 2.0f + id.y) * (2.0f * PI / ubo.OceanSizeLz);
@@ -74,20 +67,21 @@ void main()
 	float k_len = sqrt(k.x * k.x + k.y * k.y);
     float w = sqrt(9.81f * k_len);
 
-	vec2 h0_k  = H0Buffers[in_index].H_y;
-	vec2 h0_mk = H0Buffers[in_mindex].H_y;
+	vec2 h0_k  = H0Buffers[in_index];
+	vec2 h0_mk = H0Buffers[in_mindex];
 
 	vec2 htval = AddComplex(
 			MultiplyComplex(h0_k, ComplexExp(w * ubo.deltaT)),				
 			MultiplyComplex(conjugate(h0_mk), ComplexExp(-w * ubo.deltaT)));
 	
-	HtBuffers[out_index].H_y = htval;
+	Ht_Buffers[out_index + 0 * offset] = htval;
 
+	// ht_dx, ht_dz
 	vec2 htival; // i*htval
 	htival.x = -htval.y;
 	htival.y = htval.x;
-	HtBuffers[out_index].H_x = htival * k.x;
-	HtBuffers[out_index].H_z = htival * k.y;
+	Ht_Buffers[out_index + 1 * offset] = htival * k.x;
+	Ht_Buffers[out_index + 2 * offset] = htival * k.y;
 
 	if (k_len != 0.0) 
 	{
@@ -95,6 +89,6 @@ void main()
 		k.y /= k_len;
 	}
 	
-	HtBuffers[out_index].Dx = -htival * k.x;
-	HtBuffers[out_index].Dz = -htival * k.y;
+	Ht_Buffers[out_index + 3 * offset] = -htival * k.x;
+	Ht_Buffers[out_index + 4 * offset] = -htival * k.y;
 }

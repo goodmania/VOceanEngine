@@ -4,33 +4,20 @@
 #define M (8)
 #define N (1<<M)
 
-struct Ocean
+layout(std430, set = 1, binding = 0) buffer HtBuffer 
 {
-	vec2 H_y;
-	vec2 H_x;
-	vec2 H_z;
-    vec2 Dx;
-	vec2 Dz;
+	vec2 HtBuffers[ ];
 };
 
-layout(std430, binding = 0) buffer H0Buffer
+layout(std430, set = 1, binding = 1) buffer Ht_dmyBuffer
 {
-	Ocean H0Buffers[ ];
+	vec2 Ht_dmyBuffers[ ];
 };
 
-layout(std430, binding = 1) buffer HtBuffer 
-{
-	Ocean HtBuffers[ ];
-};
-
-layout(std430, binding = 2) buffer Ht_dmyBuffer
-{
-	Ocean Ht_dmyBuffers[ ];
-};
-
-layout (std140, binding = 3) uniform UBO 
+layout (std140, set = 1, binding = 2) uniform UBO 
 {
 	float deltaT;
+    float lambda;
 	highp uint meshSize;
 	highp uint OceanSizeLx;
 	highp uint OceanSizeLz;
@@ -38,7 +25,7 @@ layout (std140, binding = 3) uniform UBO
 
 layout (local_size_x = N/2) in;
 
-shared Ocean block[N];
+shared vec2 block[N];
 
 void main()
 {
@@ -62,71 +49,26 @@ void main()
 
         groupMemoryBarrier();
         barrier();
-        
-        // y
-        float r1_y = block[t1].H_y.x;
-        float i1_y = block[t1].H_y.y;
-        float r0_y = block[t0].H_y.x - r1_y;
-        float i0_y = block[t0].H_y.y - i1_y;
 
-        block[t0].H_y.x += r1_y;
-        block[t0].H_y.y += i1_y;
-        block[t1].H_y.x = r0_y * fcos - i0_y * fsin;
-        block[t1].H_y.y = r0_y * fsin + i0_y * fcos;
+        float r1 = block[t1].x;
+        float i1 = block[t1].y;
+        float r0 = block[t0].x - r1;
+        float i0 = block[t0].y - i1;
 
-        groupMemoryBarrier();
-        barrier();
-
-        // Dx
-        float r1_x = block[t1].Dx.x;
-        float i1_x = block[t1].Dx.y;
-        float r0_x = block[t0].Dx.x - r1_x;
-        float i0_x = block[t0].Dx.y - i1_x;
-
-        block[t0].Dx.x += r1_x;
-        block[t0].Dx.y += i1_x;
-        block[t1].Dx.x = r0_x * fcos - i0_x * fsin;
-        block[t1].Dx.y = r0_x * fsin + i0_x * fcos;
-
-        groupMemoryBarrier();
-        barrier();
-
-        // Dz
-        float r1_z = block[t1].Dz.x;
-        float i1_z = block[t1].Dz.y;
-        float r0_z = block[t0].Dz.x - r1_z;
-        float i0_z = block[t0].Dz.y - i1_z;
-
-        block[t0].Dz.x += r1_z;
-        block[t0].Dz.y += i1_z;
-        block[t1].Dz.x = r0_z * fcos - i0_z * fsin;
-        block[t1].Dz.y = r0_z * fsin + i0_z * fcos;
+        block[t0].x += r1;
+        block[t0].y += i1;
+        block[t1].x = r0 * fcos - i0 * fsin;
+        block[t1].y = r0 * fsin + i0 * fcos;
     }
 
     groupMemoryBarrier();
     barrier();
 
     // y
-    vec2 reim0_y = block[bitfieldReverse(gi * 2) >> (32 - M)].H_y;    
-    vec2 reim1_y = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)].H_y;
-    reim1_y = -reim1_y;
+    vec2 reim0 = block[bitfieldReverse(gi * 2) >> (32 - M)];    
+    vec2 reim1 = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)];
+    reim1 = -reim1;
 
-    // Dx
-    vec2 reim0_x = block[bitfieldReverse(gi * 2) >> (32 - M)].Dx;    
-    vec2 reim1_x = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)].Dx;
-    reim1_x = -reim1_x;
-
-    // Dz
-    vec2 reim0_z = block[bitfieldReverse(gi * 2) >> (32 - M)].Dz;    
-    vec2 reim1_z = block[bitfieldReverse(gi * 2 + 1) >> (32 - M)].Dz;
-    reim1_z = -reim1_z;
-
-    Ht_dmyBuffers[(gi * 2 + N / 2) % N * N + grid.x].H_y = reim0_y;
-    Ht_dmyBuffers[(gi * 2 + 1 + N / 2) % N * N + grid.x].H_y = reim1_y;
-
-    Ht_dmyBuffers[(gi * 2 + N / 2) % N * N + grid.x].Dx = reim0_x;
-    Ht_dmyBuffers[(gi * 2 + 1 + N / 2) % N * N + grid.x].Dx = reim1_x;
-
-    Ht_dmyBuffers[(gi * 2 + N / 2) % N * N + grid.x].Dz = reim0_z;
-    Ht_dmyBuffers[(gi * 2 + 1 + N / 2) % N * N + grid.x].Dz = reim1_z;
+    Ht_dmyBuffers[(gi * 2 + N / 2) % N * N + grid.x] = reim0;
+    Ht_dmyBuffers[(gi * 2 + 1 + N / 2) % N * N + grid.x] = reim1;
 }

@@ -40,6 +40,7 @@ namespace voe {
     private:
         void InitOceanHeightMap();
         void InitDescriptors();
+        void CreateDescriptorSets();
         void CreateGraphicsUbo();
         void UpdateGlobalUboBuffers(FrameInfo& frameInfo);
         void SetupFFTOceanComputePipelines();
@@ -74,12 +75,13 @@ namespace voe {
 
         // pipeline, descriptor layout
         VkPipelineLayout m_ComputePipelineLayout;
-        std::array<VkDescriptorSet, 3> m_DescriptorSets;
-        std::array<VkDescriptorSetLayout, 2> m_DescriptorSetLayouts;
+        std::vector<VkDescriptorSet> m_DescriptorSets;
+        std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts;
 
-        VkDescriptorSetLayout m_GraphicsDescriptorSetLayout;
         VkPipelineLayout m_GraphicsPipelineLayout;
-
+        VkDescriptorSet  m_GraphicsDescriptorSet;
+        VkDescriptorSetLayout m_GraphicsDescriptorSetLayout;
+        
         std::vector<std::shared_ptr<Buffer>> m_GlobalUboBuffers;
         VkDescriptorBufferInfo* m_GlobalUboDscInfo = VK_NULL_HANDLE;
 

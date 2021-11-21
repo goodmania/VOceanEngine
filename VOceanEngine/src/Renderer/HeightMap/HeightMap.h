@@ -10,7 +10,7 @@ namespace voe
 	public:
 
 		// Number of elements in the structure Ocean
-		static const uint32_t m_OceanElementCount = 3;
+		static const uint32_t m_OceanElementCount = 5;
 
 		// When changing the number of elements in the structure Ocean,
 		// don't forget to change m_OceanElementCount.
@@ -26,7 +26,7 @@ namespace voe
 		struct ComputeUBO
 		{
 			float deltaT = 0.0f;
-			float lamda = -2.0f;
+			float lamda = -1.0f;
 			uint32_t meshSize;
 			uint32_t OceanSizeLx;
 			uint32_t OceanSizeLz;			
@@ -51,6 +51,7 @@ namespace voe
 		VkDescriptorBufferInfo* GetH0BufferDscInfo() { return m_H0BufferDscInfo; }
 		VkDescriptorBufferInfo* GetHtBufferDscInfo() { return m_HtBufferDscInfo; }
 		VkDescriptorBufferInfo* GetHt_dmyBufferDscInfo() { return m_Ht_dmyBufferDscInfo; }
+		VkDescriptorBufferInfo* GetOceanNormalBufferDscInfo() { return m_OceanNormalBufferDscInfo; }
 
 		// å„Ç≈ëÃçŸÇêÆÇ¶ÇÈ
 		VkDescriptorBufferInfo* GetHtBufferDscInfos(uint32_t index) { return m_HtBufferDscInfos[index]; }
@@ -80,6 +81,9 @@ namespace voe
 
 		std::vector<std::shared_ptr<Buffer>> m_Ht_dmyBuffers;
 		VkDescriptorBufferInfo* m_Ht_dmyBufferDscInfo = VK_NULL_HANDLE;
+
+		std::vector<std::shared_ptr<Buffer>> m_OceanNormalBuffers;
+		VkDescriptorBufferInfo* m_OceanNormalBufferDscInfo = VK_NULL_HANDLE;
 
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_HtBufferDscInfos;
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_Ht_dmyBufferDscInfos;

@@ -71,7 +71,7 @@ namespace voe {
 			m_GraphicsPipelineLayout,
 			0,
 			1,
-			&m_DescriptorSets[2],
+			&m_GraphicsDescriptorSet,
 			0,
 			0);
 
@@ -151,28 +151,60 @@ namespace voe {
 		UpdateGlobalUboBuffers(frameInfo);
 	}
 
-	void VulkanRenderer::SetupFFTOceanComputePipelines()
+	void VulkanRenderer::CreateDescriptorSets()
 	{
-		auto device = m_Device.GetVkDevice();
-		m_SpecializedComputeQueue = IsComputeQueueSpecialized();
+		m_DescriptorSets.resize(11);
+		m_DescriptorSetLayouts.resize(11);
+		uint32_t descriptorIndex = 0;
 
-		// create and build ocean descriptorsets
-		InitOceanHeightMap();
-
+		// m_DescriptorSets[0]
+		// for spectrum.comp (Calculate Phillips spectrum, partial derivative, and displacement in x,y direction)
+		// and oceanNormal.comp
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
 			.BindBuffer(0, m_OceanHeightMap->GetH0BufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(1, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(2, m_OceanHeightMap->GetHt_dmyBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(3, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.Build(m_DescriptorSets[0], m_DescriptorSetLayouts[0]);
+			.BindBuffer(4, m_OceanHeightMap->GetOceanNormalBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.Build(m_DescriptorSets[descriptorIndex], m_DescriptorSetLayouts[descriptorIndex]);
 
-		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
-			.BindBuffer(0, m_OceanHeightMap->GetH0BufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(1, m_OceanHeightMap->GetHt_dmyBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(2, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(3, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.Build(m_DescriptorSets[1], m_DescriptorSetLayouts[1]);
+		++descriptorIndex;
 
+		// for FFT calculations. Specify individual elements of the Ocean structure.
+		for (uint32_t index = 0; index < HeightMap::m_OceanElementCount; index++)
+		{
+			// m_DescriptorSets - H_y [1], H_dx [3], H_dz [5], dx [7], dy [9]
+			assert(descriptorIndex < m_DescriptorSets.size());
+			DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
+				.BindBuffer(0, m_OceanHeightMap->GetHtBufferDscInfos(index), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.BindBuffer(1, m_OceanHeightMap->GetHt_dmyBufferDscInfos(index), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.BindBuffer(2, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.Build(m_DescriptorSets[descriptorIndex], m_DescriptorSetLayouts[descriptorIndex]);
+
+			++descriptorIndex;
+
+			// m_DescriptorSets - Hdmy_y [2], H_dmydx [4], H_dmydz [6], dmydx [8], dmydy [10]
+			assert(descriptorIndex < m_DescriptorSets.size());
+			DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
+				.BindBuffer(0, m_OceanHeightMap->GetHt_dmyBufferDscInfos(index), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.BindBuffer(1, m_OceanHeightMap->GetHtBufferDscInfos(index), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.BindBuffer(2, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.Build(m_DescriptorSets[descriptorIndex], m_DescriptorSetLayouts[descriptorIndex]);
+
+			++descriptorIndex;		
+		}
+	}
+
+	void VulkanRenderer::SetupFFTOceanComputePipelines()
+	{
+		auto device = m_Device.GetVkDevice();
+		m_SpecializedComputeQueue = IsComputeQueueSpecialized();
+
+		InitOceanHeightMap();
+
+		// create and build ocean descriptorsets
+		CreateDescriptorSets();
+		
 		// create pipeline layout
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -195,7 +227,7 @@ namespace voe {
 
 		m_ComputeNormalPipeline = std::make_unique<ComputePipeline>(
 			m_Device,
-			"Assets/Shaders/FFT.spv",
+			"Assets/Shaders/oceanNormal.spv",
 			m_ComputePipelineLayout,
 			m_PipelineCache);
 
@@ -235,24 +267,37 @@ namespace voe {
 			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[index], &cmdBufInfo));
 			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index]);
 
-			// 1: Calculate spectrum
+			// 1: Calculate philips spectrum
 			m_ComputePipeline->Bind(m_ComputeCommandBuffers[index]);
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
 			vkCmdDispatch(m_ComputeCommandBuffers[index], 1, m_GroupSize, 1);
 
 			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetH0Buffer(index), m_OceanHeightMap->GetHtBuffer(index));
 
-			// 2-1: Calculate FFT in horizontal direction
 			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[index]);
-			vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
+			
+			// Calculate wave heights(H_y), displacements(dx, dz), and partial derivatives(H_x,H_z) with FFT
+			for (uint32_t descriptorIndex = 1; descriptorIndex < m_DescriptorSets.size();)
+			{
+				// 2-1: Calculate FFT in horizontal direction
+				vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 1, 1, &m_DescriptorSets[descriptorIndex], 0, 0);
+				vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
+				++descriptorIndex;
+
+				AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
+
+				// 2-2: Calculate FFT in vertical direction
+				vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 1, 1, &m_DescriptorSets[descriptorIndex], 0, 0);
+				vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
+				++descriptorIndex;
+			}
 
 			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
 
-			// 2-2: Calculate FFT in vertical direction
-			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[1], 0, 0);
-			vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
-
-			//AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[i]);
+			// 3: Calculate NormalMap
+			m_ComputeNormalPipeline->Bind(m_ComputeCommandBuffers[index]);
+			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
+			vkCmdDispatch(m_ComputeCommandBuffers[index], 1, m_GroupSize, 1);
 
 			VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffers[index]));
 		}
@@ -262,7 +307,7 @@ namespace voe {
 	{
 		if (m_SpecializedComputeQueue) 
 		{
-			VkBufferMemoryBarrier bufferBarrier = {};
+			/*VkBufferMemoryBarrier bufferBarrier = {};
 			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 			bufferBarrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 			bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
@@ -271,11 +316,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			//bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
 			bufferBarriers.push_back(bufferBarrier);
-			//bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
 			bufferBarriers.push_back(bufferBarrier);
-			//bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -288,7 +333,7 @@ namespace voe {
 				static_cast<uint32_t>(bufferBarriers.size()),
 				bufferBarriers.data(),
 				0,
-				nullptr);
+				nullptr);*/
 		}
 	}
 
@@ -325,7 +370,7 @@ namespace voe {
 	{
 		if (m_SpecializedComputeQueue) 
 		{
-			VkBufferMemoryBarrier bufferBarrier = {};
+			/*VkBufferMemoryBarrier bufferBarrier = {};
 			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 			bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 			bufferBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
@@ -334,11 +379,11 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			//bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
 			bufferBarriers.push_back(bufferBarrier);
-			//bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
 			bufferBarriers.push_back(bufferBarrier);
-			//bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -351,7 +396,7 @@ namespace voe {
 				static_cast<uint32_t>(bufferBarriers.size()),
 				bufferBarriers.data(),
 				0,
-				nullptr);
+				nullptr);*/
 		}
 	}
 
@@ -361,7 +406,8 @@ namespace voe {
 			.BindBuffer(0, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(1, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(2, m_GlobalUboDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-			.Build(m_DescriptorSets[2], m_GraphicsDescriptorSetLayout);
+			.BindBuffer(3, m_OceanHeightMap->GetOceanNormalBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+			.Build(m_GraphicsDescriptorSet, m_GraphicsDescriptorSetLayout);
 
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -388,7 +434,6 @@ namespace voe {
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = m_GraphicsPipelineLayout;
 
-		// auto device = const_cast<Device&>(m_Device);
 		m_GraphicsPipeline = std::make_unique<GraphicsPipeline>(
 			m_Device,
 			"Assets/Shaders/testVert.spv",
@@ -403,4 +448,3 @@ namespace voe {
 		VOE_CHECK_RESULT(vkCreatePipelineCache(m_Device.GetVkDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
 	}
 }
-

@@ -12,6 +12,7 @@ namespace voe {
 		m_H0BufferDscInfo  = new VkDescriptorBufferInfo();
 		m_HtBufferDscInfo = new VkDescriptorBufferInfo();
 		m_Ht_dmyBufferDscInfo = new VkDescriptorBufferInfo();
+		m_OceanNormalBufferDscInfo = new VkDescriptorBufferInfo();
 		m_UniformBufferDscInfo = new VkDescriptorBufferInfo();
 
 		for (uint32_t i = 0; i < m_OceanElementCount; i++)
@@ -27,6 +28,7 @@ namespace voe {
 		delete m_HtBufferDscInfo;
 		delete m_Ht_dmyBufferDscInfo;
 		delete m_UniformBufferDscInfo;
+		delete m_OceanNormalBufferDscInfo;
 
 		for (uint32_t i = 0; i < m_OceanElementCount; i++)
 		{
@@ -79,11 +81,15 @@ namespace voe {
 		VOE_CORE_ASSERT(m_Device);
 		VOE_CORE_ASSERT(m_CopyQueue != nullptr);
 
-		std::vector<Ocean> h0Buffer(size * size);
+		std::vector<glm::vec2> h0Buffer(size * size);
+		std::vector<glm::vec2> htBuffer(size * size * m_OceanElementCount);
+
 		TessendorfOceane tOceanManeger(size);
 		tOceanManeger.Generate(h0Buffer);
-		VkDeviceSize bufferSize = static_cast<uint32_t>(h0Buffer.size()) * sizeof(Ocean);
-		uint32_t elementSize = sizeof(Ocean);
+
+		VkDeviceSize h0BufferSize = static_cast<uint32_t>(h0Buffer.size()) * sizeof(glm::vec2);
+		uint32_t elementSize = sizeof(glm::vec2);
+		uint32_t normalElementSize = sizeof(glm::vec4);
 
 		SetupComputeUniformBuffers(
 			tOceanManeger.m_MeshSize,
@@ -105,6 +111,7 @@ namespace voe {
 		m_H0Buffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 		m_HtBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 		m_Ht_dmyBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+		m_OceanNormalBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 
 		for (int i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -118,37 +125,42 @@ namespace voe {
 			m_HtBuffers[i] = std::make_shared<Buffer>(
 				m_Device,
 				elementSize,
-				static_cast<uint32_t>(h0Buffer.size()),
+				static_cast<uint32_t>(htBuffer.size()),
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 			m_Ht_dmyBuffers[i] = std::make_shared<Buffer>(
 				m_Device,
 				elementSize,
-				static_cast<uint32_t>(h0Buffer.size()),
+				static_cast<uint32_t>(htBuffer.size()),
+				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+			m_OceanNormalBuffers[i] = std::make_shared<Buffer>(
+				m_Device,
+				normalElementSize,
+				static_cast<uint32_t>(htBuffer.size()),
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 			// Copy from staging buffer
 			VkCommandBuffer copyCmd = m_Device.CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 			VkBufferCopy copyRegion = {};
-			copyRegion.size = bufferSize;
+			copyRegion.size = h0BufferSize;
 
-			// Should also initialize ht and h_dmy with stagingbuffer?
 			vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_H0Buffers[i]->GetBuffer(), 1, &copyRegion);
-			//vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_HtBuffers[i]->GetBuffer(), 1, &copyRegion);
-			//vkCmdCopyBuffer(copyCmd, stagingBuffer.GetBuffer(), m_Ht_dmyBuffers[i]->GetBuffer(), 1, &copyRegion);
 
 			SetDescriptorBufferInfo(m_H0BufferDscInfo, m_H0Buffers[i]->GetBuffer());
 			SetDescriptorBufferInfo(m_HtBufferDscInfo, m_HtBuffers[i]->GetBuffer());
 			SetDescriptorBufferInfo(m_Ht_dmyBufferDscInfo, m_Ht_dmyBuffers[i]->GetBuffer());
+			SetDescriptorBufferInfo(m_OceanNormalBufferDscInfo, m_OceanNormalBuffers[i]->GetBuffer());
 
 			// å„Ç≈ëÃçŸÇêÆÇ¶ÇÈ
-			VkDeviceSize OceanElementSize = static_cast<uint32_t>(h0Buffer.size() * sizeof(glm::vec2));
+			VkDeviceSize OceanElementBufferSize = static_cast<uint32_t>(h0Buffer.size() * sizeof(glm::vec2));
 			for (uint32_t index = 0; index < m_OceanElementCount; index++)
 			{
-				SetDescriptorBufferInfo(m_HtBufferDscInfos[index], m_HtBuffers[i]->GetBuffer(), OceanElementSize, OceanElementSize * index);
-				SetDescriptorBufferInfo(m_HtBufferDscInfos[index], m_Ht_dmyBuffers[i]->GetBuffer(), OceanElementSize, OceanElementSize * index);
+				SetDescriptorBufferInfo(m_HtBufferDscInfos[index], m_HtBuffers[i]->GetBuffer(), OceanElementBufferSize, OceanElementBufferSize * index);
+				SetDescriptorBufferInfo(m_Ht_dmyBufferDscInfos[index], m_Ht_dmyBuffers[i]->GetBuffer(), OceanElementBufferSize, OceanElementBufferSize * index);
 			}
 
 			// Execute a transfer barrier to the compute queue, if necessary

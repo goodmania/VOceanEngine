@@ -70,7 +70,7 @@ namespace voe
         }
 
         // Generate base heightfield in frequency space
-        void Generate(std::vector<HeightMap::Ocean>& oceanBuffer)
+        void Generate(std::vector<glm::vec2>& h0Buffer)
         {
             for (uint32_t y = 0; y < m_MeshSize; y++)
             {
@@ -84,7 +84,7 @@ namespace voe
                     {
                         P = 0.0f;
                     }
-                    oceanBuffer[y * m_MeshSize + x].H_y = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
+                    h0Buffer[y * m_MeshSize + x] = glm::sqrt(P * 0.5f) * GaussianRanndomNum();
                 }
             }
         }
@@ -99,7 +99,7 @@ namespace voe
         const float G = 9.81f;  
         // wave scale factor  A - constant
         const float A = 0.00000121f;              
-        const float windSpeed = 30.0f;
+        const float windSpeed = 20.0f;
         const float windDir = glm::pi<float>() * 1.234f; 
     };
 }
