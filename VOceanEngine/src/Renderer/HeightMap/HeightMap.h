@@ -46,6 +46,7 @@ namespace voe
 		VkBuffer GetH0Buffer(uint32_t index) { return m_H0Buffers[index]->GetBuffer(); }
 		VkBuffer GetHtBuffer(uint32_t index) { return m_HtBuffers[index]->GetBuffer(); }
 		VkBuffer GetHt_dmyBuffer(uint32_t index) { return m_Ht_dmyBuffers[index]->GetBuffer(); }
+		VkBuffer GetOceanNormalBuffer(uint32_t index) { return m_OceanNormalBuffers[index]->GetBuffer(); }
 		
 		VkDescriptorBufferInfo* GetUniformBufferDscInfo() { return m_UniformBufferDscInfo; }
 		VkDescriptorBufferInfo* GetH0BufferDscInfo() { return m_H0BufferDscInfo; }

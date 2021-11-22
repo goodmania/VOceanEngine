@@ -45,9 +45,9 @@ namespace voe {
         void UpdateGlobalUboBuffers(FrameInfo& frameInfo);
         void SetupFFTOceanComputePipelines();
 
-        void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer);
+        void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer, uint32_t index);
         void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, VkBuffer InputBuffer, VkBuffer OutputBuffer);
-        void AddComputeToGraphicsBarriers(VkCommandBuffer commandBuffer);
+        void AddComputeToGraphicsBarriers(VkCommandBuffer commandBuffer, uint32_t index);
 
         void CreatePipelineLayout();
         void CreatePipeline(VkRenderPass renderPass);

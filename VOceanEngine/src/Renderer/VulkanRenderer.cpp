@@ -24,10 +24,14 @@ namespace voe {
 		glm::mat4 NormalMatrix{ 1.f };
 	};
 
-	struct GlobalUbo
+	struct GlobalUbo               
 	{
 		glm::mat4 ProjectionView{ 1.f };
 		glm::vec3 lightDirection = glm::normalize(glm::vec3(1.f, -3.f, -1.f));
+		alignas(16) glm::vec3 SeaBaseColor{ 0.11f, 0.22f, 0.30f };
+		float BaseColorStrength{ 1.5f };
+		glm::vec3 SeaShallowColor{ 0.29f, 0.35f, 0.14f };
+		float ColorHightOffset{ 0.15f };
 	};
 
 	VulkanRenderer::VulkanRenderer(Device& device, VkRenderPass renderPass) : m_Device{ device } 
@@ -61,7 +65,7 @@ namespace voe {
 	void VulkanRenderer::RenderGameObjects(FrameInfo frameInfo, std::vector<GameObject>& gameObjects)
 	{
 		// Acquire barrier
-		AddComputeToGraphicsBarriers(frameInfo.CommandBuffer);
+		AddComputeToGraphicsBarriers(frameInfo.CommandBuffer, frameInfo.FrameIndex);
 
 		m_GraphicsPipeline->Bind(frameInfo.CommandBuffer);
 
@@ -94,7 +98,7 @@ namespace voe {
 		}
 
 		// Acquire barrier
-		AddGraphicsToComputeBarriers(frameInfo.CommandBuffer);
+		AddGraphicsToComputeBarriers(frameInfo.CommandBuffer, frameInfo.FrameIndex);
 	}
 
 	void VulkanRenderer::InitOceanHeightMap()
@@ -265,7 +269,7 @@ namespace voe {
 		for (uint32_t index = 0; index < 2; index++)
 		{
 			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[index], &cmdBufInfo));
-			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index]);
+			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index], index);
 
 			// 1: Calculate philips spectrum
 			m_ComputePipeline->Bind(m_ComputeCommandBuffers[index]);
@@ -292,22 +296,24 @@ namespace voe {
 				++descriptorIndex;
 			}
 
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
+			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetOceanNormalBuffer(index));
 
 			// 3: Calculate NormalMap
 			m_ComputeNormalPipeline->Bind(m_ComputeCommandBuffers[index]);
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
 			vkCmdDispatch(m_ComputeCommandBuffers[index], 1, m_GroupSize, 1);
 
+			AddComputeToGraphicsBarriers(m_ComputeCommandBuffers[index], index);
+
 			VOE_CHECK_RESULT(vkEndCommandBuffer(m_ComputeCommandBuffers[index]));
 		}
 	}
 
-	void VulkanRenderer::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer)
+	void VulkanRenderer::AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer, uint32_t index)
 	{
 		if (m_SpecializedComputeQueue) 
 		{
-			/*VkBufferMemoryBarrier bufferBarrier = {};
+			VkBufferMemoryBarrier bufferBarrier = {};
 			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 			bufferBarrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 			bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
@@ -316,11 +322,9 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer(index);
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
-			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetOceanNormalBuffer(index);
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -333,7 +337,7 @@ namespace voe {
 				static_cast<uint32_t>(bufferBarriers.size()),
 				bufferBarriers.data(),
 				0,
-				nullptr);*/
+				nullptr);
 		}
 	}
 
@@ -366,11 +370,11 @@ namespace voe {
 			nullptr);
 	}
 
-	void VulkanRenderer::AddComputeToGraphicsBarriers(VkCommandBuffer commandBuffer)
+	void VulkanRenderer::AddComputeToGraphicsBarriers(VkCommandBuffer commandBuffer, uint32_t index)
 	{
 		if (m_SpecializedComputeQueue) 
 		{
-			/*VkBufferMemoryBarrier bufferBarrier = {};
+			VkBufferMemoryBarrier bufferBarrier = {};
 			bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 			bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 			bufferBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
@@ -379,11 +383,9 @@ namespace voe {
 			bufferBarrier.size = VK_WHOLE_SIZE;
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
-			bufferBarrier.buffer = m_OceanHeightMap->GetH0Buffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer(index);
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer();
-			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetHt_dmyBuffer();
+			bufferBarrier.buffer = m_OceanHeightMap->GetOceanNormalBuffer(index);
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -396,7 +398,7 @@ namespace voe {
 				static_cast<uint32_t>(bufferBarriers.size()),
 				bufferBarriers.data(),
 				0,
-				nullptr);*/
+				nullptr);
 		}
 	}
 
@@ -405,7 +407,7 @@ namespace voe {
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
 			.BindBuffer(0, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(1, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-			.BindBuffer(2, m_GlobalUboDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.BindBuffer(2, m_GlobalUboDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.BindBuffer(3, m_OceanHeightMap->GetOceanNormalBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build(m_GraphicsDescriptorSet, m_GraphicsDescriptorSetLayout);
 

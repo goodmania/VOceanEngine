@@ -51,8 +51,8 @@ void main()
     float subz = HtBuffers[id.x + id.y * N].H_z.x;
 
     //displaceXZ‚¾‚¯’è‹`“_‚ªˆÚ“®‚·‚é‚±‚Æ‚ğl‚¦‚±‚±‚ÅŒX‚«‚ğ‚³‚ç‚É‚¢‚¶‚é
-    subx *= 2.0 * dx / ((HtBuffers[x1 + id.y * N].Dx.x - HtBuffers[x0 + id.y * N].Dx.x) * ubo.lambda + 2.0 * dx);
-    subz *= 2.0 * dz / ((HtBuffers[id.x + y1 * N].Dz.x - HtBuffers[id.x + y0 * N].Dz.x) * ubo.lambda + 2.0 * dz);
+    subx *= 2.0 * dx / ((HtBuffers[x1 + id.y * N].Dx.y - HtBuffers[x0 + id.y * N].Dx.y) * ubo.lambda + 2.0 * dx);
+    subz *= 2.0 * dz / ((HtBuffers[id.x + y1 * N].Dz.y - HtBuffers[id.x + y0 * N].Dz.y) * ubo.lambda + 2.0 * dz);
     vec3 Normarized = normalize(vec3(-subx, 1.0, -subz));
     vec4 out4 = (Normarized, 1.0f)
 
