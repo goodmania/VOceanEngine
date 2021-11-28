@@ -26,7 +26,7 @@ namespace voe
 		struct ComputeUBO
 		{
 			float deltaT = 0.0f;
-			float lamda = -1.0f;
+			float lamda = -2.0f;
 			uint32_t meshSize;
 			uint32_t OceanSizeLx;
 			uint32_t OceanSizeLz;			
@@ -89,6 +89,6 @@ namespace voe
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_HtBufferDscInfos;
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_Ht_dmyBufferDscInfos;
 
-		const float m_OceanAnimRate = 0.0002f;
+		const float m_OceanAnimRate = 0.0001f;
 	};
 }

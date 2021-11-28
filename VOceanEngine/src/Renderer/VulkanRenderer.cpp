@@ -27,11 +27,13 @@ namespace voe {
 	struct GlobalUbo               
 	{
 		glm::mat4 ProjectionView{ 1.f };
-		glm::vec3 lightDirection = glm::normalize(glm::vec3(1.f, -3.f, -1.f));
-		alignas(16) glm::vec3 SeaBaseColor{ 0.11f, 0.22f, 0.30f };
-		float BaseColorStrength{ 1.5f };
-		glm::vec3 SeaShallowColor{ 0.29f, 0.35f, 0.14f };
+		glm::vec3 lightDirection = glm::normalize(glm::vec3(0.15f, -0.45f, 0.6f));
+		//glm::vec3 lightDirection = glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f));
+		alignas(16) glm::vec3 SeaBaseColor = glm::normalize(glm::vec3(38.0f, 102.0f, 145.0f));
+		float BaseColorStrength{ 1.2f };
+		glm::vec3 SeaShallowColor = glm::normalize(glm::vec3(138.0f, 241.0f, 254.0f));
 		float ColorHightOffset{ 0.15f };
+		glm::vec3 CameraPos;
 	};
 
 	VulkanRenderer::VulkanRenderer(Device& device, VkRenderPass renderPass) : m_Device{ device } 
@@ -140,6 +142,7 @@ namespace voe {
 		// update
 		GlobalUbo ubo{};
 		ubo.ProjectionView = frameInfo.CameraObj.GetProjectionMatrix() * frameInfo.CameraObj.GetViewMatrix();
+		ubo.CameraPos = frameInfo.CameraObj.GetCameraPos();
 		m_GlobalUboBuffers[frameInfo.FrameIndex]->WriteToBuffer(&ubo);
 		m_GlobalUboBuffers[frameInfo.FrameIndex]->Flush();
 	}

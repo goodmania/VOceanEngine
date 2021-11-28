@@ -56,7 +56,7 @@ namespace voe {
 			// m_Camera OnUpdate 
 			float aspect = m_VulkanBase->GetAspectRatio();
 			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
-			m_Camera.SetFrustumProjectionMatrix(glm::radians(45.f), aspect, 0.1f, 100.f);
+			m_Camera.SetFrustumProjectionMatrix(glm::radians(45.f), aspect, 0.1f, 150.f);
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{
@@ -102,7 +102,7 @@ namespace voe {
 		std::shared_ptr<Model> model = Model::CreateXZPlaneModelFromProcedural(*device, width, height, oceanSize);
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
-		ocean.m_Transform.Translation = { 0.f,100.f, 0.f };
+		ocean.m_Transform.Translation = { 0.f, 100.f, 0.f };
 		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f } ;
 		m_GameObjects.push_back(std::move(ocean));
 	}
