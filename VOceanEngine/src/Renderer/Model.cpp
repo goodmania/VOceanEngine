@@ -159,7 +159,7 @@ namespace voe {
 
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
-        attributeDescriptions[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[2].offset = offsetof(Vertex, normal);
         return attributeDescriptions;
     }
@@ -219,7 +219,6 @@ namespace voe {
                         attrib.normals[3 * index.normal_index + 0],
                         attrib.normals[3 * index.normal_index + 1],
                         attrib.normals[3 * index.normal_index + 2],
-                        1.f
                     };
                 }
 

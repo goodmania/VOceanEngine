@@ -29,7 +29,6 @@ namespace voe {
 		uint32_t GetTransferQueueFamily() const { return m_Indices.transferFamily; }
 		uint32_t GetMinUniformBufferOffsetAlignment() { return m_PhDevice->GetProperties().limits.minUniformBufferOffsetAlignment; }
 
-		// Buffer Helper Functions
 		void CreateBuffer(
 			VkDeviceSize size,
 			VkBufferUsageFlags usage,
@@ -39,7 +38,6 @@ namespace voe {
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
 
-		// Command Buffer Helper Functions
 		VkCommandBuffer CreateCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin);
 		VkCommandBuffer CreateCommandBuffer(VkCommandBufferLevel level, bool begin);
 		void FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free);

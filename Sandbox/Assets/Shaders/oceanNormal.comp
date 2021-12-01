@@ -24,7 +24,7 @@ layout (std140, set = 0, binding = 3) uniform UBO
 	highp uint OceanSizeLz;
 } ubo;
 
-layout(std430, set = 0, binding = 4) buffer OceanNormalBuffer
+layout(std140, set = 0, binding = 4) buffer OceanNormalBuffer
 {
 	vec4 OceanNormalBuffers[ ];
 };
@@ -50,7 +50,11 @@ void main()
     //displaceXZ‚¾‚¯’è‹`“_‚ªˆÚ“®‚·‚é‚±‚Æ‚ğl‚¦‚±‚±‚ÅŒX‚«‚ğ‚³‚ç‚É‚¢‚¶‚é
     subx *= 2.0 * dx / ((HtBuffers[x1 + id.y * N + 3 * offset].y - HtBuffers[x0 + id.y * N + 3 * offset].y) * ubo.lambda + 2.0 * dx);
     subz *= 2.0 * dz / ((HtBuffers[id.x + y1 * N + 4 * offset].y - HtBuffers[id.x + y0 * N + 4 * offset].y) * ubo.lambda + 2.0 * dz);
-    vec3 Normarized = normalize(vec3(-subx, 1.0f, -subz));
+    
+	//subx *= 2.0 * dx / ((HtBuffers[x0 + id.y * N + 3 * offset].y) * ubo.lambda + 2.0 * dx);
+    //subz *= 2.0 * dz / ((HtBuffers[id.x + y0 * N + 4 * offset].y) * ubo.lambda + 2.0 * dz);
+   
+	vec3 Normarized = normalize(vec3(-subx, 1.0f, -subz));
 
-    OceanNormalBuffers[id.y * N + id.x] = vec4(Normarized, 1.0f);
+    OceanNormalBuffers[id.x + id.y * N] = vec4(Normarized, 1.0f);
 }
