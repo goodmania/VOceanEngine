@@ -28,12 +28,12 @@ namespace voe {
 	{
 		glm::mat4 ProjectionView{ 1.f };
 		glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 1.0f);
-		//alignas(16) glm::vec3 SeaBaseColor = glm::normalize(glm::vec3(38.0f, 102.0f, 145.0f));
-		alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.0f, 0.1f, 0.4f);
-		float BaseColorStrength{ 1.5f };
-		//glm::vec3 SeaShallowColor = glm::normalize(glm::vec3(138.0f, 241.0f, 254.0f));
-		glm::vec3 SeaShallowColor = glm::vec3(0.1f, 0.3f, 0.3f);
-		float ColorHightOffset{ 0.10f };
+		alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.0f, 0.1f, 0.6f);
+		//alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.01f, 0.13f, 0.15f);
+		float BaseColorStrength{ 1.0f };
+		glm::vec3 SeaShallowColor = glm::vec3(75.f / 256.f, 89.f / 256.f, 35.f / 256.f);
+		//glm::vec3 SeaShallowColor = glm::vec3(0.1f, 0.3f, 0.3f);
+		float ColorHightOffset{ 0.05f };
 		glm::vec3 CameraPos;
 	};
 
@@ -174,6 +174,7 @@ namespace voe {
 			.BindBuffer(2, m_OceanHeightMap->GetHt_dmyBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(3, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(4, m_OceanHeightMap->GetOceanNormalBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindBuffer(5, m_OceanHeightMap->GetOceanBubbleBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.Build(m_DescriptorSets[descriptorIndex], m_DescriptorSetLayouts[descriptorIndex]);
 
 		++descriptorIndex;
@@ -413,6 +414,7 @@ namespace voe {
 			.BindBuffer(1, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(2, m_GlobalUboDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.BindBuffer(3, m_OceanHeightMap->GetOceanNormalBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+			.BindBuffer(4, m_OceanHeightMap->GetOceanBubbleBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build(m_GraphicsDescriptorSet, m_GraphicsDescriptorSetLayout);
 
 		VkPushConstantRange pushConstantRange = {};

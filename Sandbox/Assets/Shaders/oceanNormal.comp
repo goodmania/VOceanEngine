@@ -37,24 +37,36 @@ void main()
 	float dz = 1.0f * ubo.OceanSizeLx / ubo.meshSize;
 
 	uint N = ubo.meshSize;
-	uint offset = N * N; // 0 ht_y, 1 ht_x, 2 ht_z, 3 dx 4 dz
+	uint offset = N * N; // 0 ht_y, 1 ht_dx, 2 ht_dz, 3 dx 4 dz
 	uvec3 id = gl_GlobalInvocationID;
     uint x0 = (id.x - 1 + N) % N;
     uint x1 = (id.x + 1) % N;
     uint y0 = (id.y - 1 + N) % N;
     uint y1 = (id.y + 1) % N;
 
-    float subx = HtBuffers[id.x + id.y * N + 1 * offset].y;
-    float subz = HtBuffers[id.x + id.y * N + 2 * offset].y;
+	float dDxdx = 0.5 * (HtBuffers[x1 + id.y * N + 3 * offset].y - HtBuffers[x0 + id.y * N + 3 * offset].y);//中心差分
+    float dDzdz = 0.5 * (HtBuffers[id.x + y1 * N + 4 * offset].y - HtBuffers[id.x + y0 * N + 4 * offset].y);//中心差分
+    float dDxdz = 0.5 * (HtBuffers[id.x + y1 * N + 3 * offset].y - HtBuffers[id.x + y0 * N + 3 * offset].y);//中心差分
+    float dDzdx = 0.5 * (HtBuffers[x1 + id.y * N + 4 * offset].y - HtBuffers[x0 + id.y * N + 4 * offset].y);//中心差分
+
+    float gradx = HtBuffers[id.x + id.y * N + 1 * offset].y;
+    float gradz = HtBuffers[id.x + id.y * N + 2 * offset].y;
 
     //displaceXZだけ定義点が移動することを考えここで傾きをさらにいじる
-    subx *= 2.0 * dx / ((HtBuffers[x1 + id.y * N + 3 * offset].y - HtBuffers[x0 + id.y * N + 3 * offset].y) * ubo.lambda + 2.0 * dx);
-    subz *= 2.0 * dz / ((HtBuffers[id.x + y1 * N + 4 * offset].y - HtBuffers[id.x + y0 * N + 4 * offset].y) * ubo.lambda + 2.0 * dz);
-    
-	//subx *= 2.0 * dx / ((HtBuffers[x0 + id.y * N + 3 * offset].y) * ubo.lambda + 2.0 * dx);
-    //subz *= 2.0 * dz / ((HtBuffers[id.x + y0 * N + 4 * offset].y) * ubo.lambda + 2.0 * dz);
+    gradx *= dx / (dDxdx * ubo.lambda + dx);
+    gradz *= dz / (dDzdz * ubo.lambda + dz);
    
-	vec3 Normarized = normalize(vec3(-subx, 1.0f, -subz));
+	vec3 Normarized = normalize(vec3(-gradx, 1.0f, -gradz));
 
     OceanNormalBuffers[id.x + id.y * N] = vec4(Normarized, 1.0f);
+
+	 //Jの計算
+    float Jxx = 1.0 + dDxdx * ubo.lambda;
+    float Jzz = 1.0 + dDzdz * ubo.lambda;
+    float Jxz = dDxdz * ubo.lambda;
+    float Jzx = dDzdx * ubo.lambda;
+
+    float J = Jxx * Jzz - Jxz * Jzx;//J<0なら面が裏返しになってる
+
+
 }

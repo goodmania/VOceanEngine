@@ -98,9 +98,9 @@ namespace voe
         // gravitational constant
         const float G = 9.81f;  
         // wave scale factor  A - constant
-        const float A = 0.00000121f;
+        const float A = 0.00000161f;
         const float windSpeed = 30.0f;
-        const float windDir = glm::pi<float>() / 3;// *1.234f;
+        const float windDir = glm::pi<float>() / 3.0f;// *1.234f;
     };
 }
 

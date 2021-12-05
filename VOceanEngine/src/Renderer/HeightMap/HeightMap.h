@@ -53,6 +53,7 @@ namespace voe
 		VkDescriptorBufferInfo* GetHtBufferDscInfo() { return m_HtBufferDscInfo; }
 		VkDescriptorBufferInfo* GetHt_dmyBufferDscInfo() { return m_Ht_dmyBufferDscInfo; }
 		VkDescriptorBufferInfo* GetOceanNormalBufferDscInfo() { return m_OceanNormalBufferDscInfo; }
+		VkDescriptorBufferInfo* GetOceanBubbleBufferDscInfo() { return m_OceanBubbleBufferDscInfo; }
 
 		// å„Ç≈ëÃçŸÇêÆÇ¶ÇÈ
 		VkDescriptorBufferInfo* GetHtBufferDscInfos(uint32_t index) { return m_HtBufferDscInfos[index]; }
@@ -86,9 +87,12 @@ namespace voe
 		std::vector<std::shared_ptr<Buffer>> m_OceanNormalBuffers;
 		VkDescriptorBufferInfo* m_OceanNormalBufferDscInfo = VK_NULL_HANDLE;
 
+		std::vector<std::shared_ptr<Buffer>> m_OceanBubbleBuffers;
+		VkDescriptorBufferInfo* m_OceanBubbleBufferDscInfo = VK_NULL_HANDLE;
+
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_HtBufferDscInfos;
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_Ht_dmyBufferDscInfos;
 
-		const float m_OceanAnimRate = 0.0001f;
+		const float m_OceanAnimRate = 0.00015f;
 	};
 }

@@ -13,6 +13,7 @@ namespace voe {
 		m_HtBufferDscInfo = new VkDescriptorBufferInfo();
 		m_Ht_dmyBufferDscInfo = new VkDescriptorBufferInfo();
 		m_OceanNormalBufferDscInfo = new VkDescriptorBufferInfo();
+		m_OceanBubbleBufferDscInfo = new VkDescriptorBufferInfo();
 		m_UniformBufferDscInfo = new VkDescriptorBufferInfo();
 
 		for (uint32_t i = 0; i < m_OceanElementCount; i++)
@@ -27,8 +28,9 @@ namespace voe {
 		delete m_H0BufferDscInfo;
 		delete m_HtBufferDscInfo;
 		delete m_Ht_dmyBufferDscInfo;
-		delete m_UniformBufferDscInfo;
 		delete m_OceanNormalBufferDscInfo;
+		delete m_OceanBubbleBufferDscInfo;
+		delete m_UniformBufferDscInfo;
 
 		for (uint32_t i = 0; i < m_OceanElementCount; i++)
 		{
@@ -112,6 +114,7 @@ namespace voe {
 		m_HtBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 		m_Ht_dmyBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 		m_OceanNormalBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+		m_OceanBubbleBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 
 		for (int i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -143,6 +146,13 @@ namespace voe {
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
+			m_OceanBubbleBuffers[i] = std::make_shared<Buffer>(
+				m_Device,
+				elementSize,
+				static_cast<uint32_t>(h0Buffer.size()),
+				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
 			// Copy from staging buffer
 			VkCommandBuffer copyCmd = m_Device.CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 			VkBufferCopy copyRegion = {};
@@ -154,6 +164,7 @@ namespace voe {
 			SetDescriptorBufferInfo(m_HtBufferDscInfo, m_HtBuffers[i]->GetBuffer());
 			SetDescriptorBufferInfo(m_Ht_dmyBufferDscInfo, m_Ht_dmyBuffers[i]->GetBuffer());
 			SetDescriptorBufferInfo(m_OceanNormalBufferDscInfo, m_OceanNormalBuffers[i]->GetBuffer());
+			SetDescriptorBufferInfo(m_OceanBubbleBufferDscInfo, m_OceanBubbleBuffers[i]->GetBuffer());
 
 			// å„Ç≈ëÃçŸÇêÆÇ¶ÇÈ
 			VkDeviceSize OceanElementBufferSize = static_cast<uint32_t>(h0Buffer.size() * sizeof(glm::vec2));

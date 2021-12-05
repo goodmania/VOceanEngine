@@ -18,7 +18,7 @@ namespace std {
         size_t operator()(voe::Model::Vertex const& vertex) const 
         {
             size_t seed = 0;
-            voe::Utils::HashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            voe::Utils::HashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
             return seed;
         }
     };
@@ -224,7 +224,7 @@ namespace voe {
 
                 if (index.texcoord_index >= 0)
                 {
-                    vertex.uv =
+                    vertex.texCoord =
                     {
                         attrib.texcoords[2 * index.texcoord_index + 0],
                         attrib.texcoords[2 * index.texcoord_index + 1],

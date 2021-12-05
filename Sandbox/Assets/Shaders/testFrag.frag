@@ -28,8 +28,6 @@ layout(std430, set = 0, binding = 3) buffer OceanNormalBuffer
 	vec3 OceanNormalBuffers[];
 };
 
-const float AMBIENT = 0.02f;
-
 vec3 GetSkyColor(vec3 refrectDir, vec3 skyColor)
 {;
 	refrectDir.y = max(0.0, refrectDir.y);
@@ -40,20 +38,19 @@ void main()
 {
 	//float lightIntensity = AMBIENT + max(dot(normalize(fragWorldNormal.xyz), normalize(globalUbo.LightDirection)), 0);
 	vec3 normal = normalize(fragWorldNormal);
-	vec3 viewNormal = normalize(fragWorldNormal);
 	vec3 viewDir = normalize(globalUbo.CameraPos.xyz - fragWorldPos.xyz);
-	vec3 reflectDir = reflect(viewDir, normal.xyz);
-	vec3 skyColor = vec3(1.0f, 1.0f, 1.0f);
+	vec3 reflectDir = reflect(-viewDir, normal.xyz);
+	//vec3 skyColor = vec3(1.0f, 1.0f, 1.0f);
+	vec3 skyColor = vec3(105.0f / 256, 133.0f / 256, 184.0f/ 256);
 	vec3 oceanReflectColor = GetSkyColor(reflectDir, skyColor);
 
 	//fresnel
 	float r = 0.02f;
-	float facing = clamp(1.0 - dot(normal, viewDir), 0.0f, 1.0f);
-	float fresnel = r + (1.0 - r) * pow(facing, 5.0);
+	float facing = clamp(1.0f + dot(normal.xyz, viewDir), 0.0f, 1.0f);
+	float fresnel = r + (1.0f - r) * pow(facing, 5.0f);
 
-	//float diffuse = max(dot(normal.xzy, normalize(globalUbo.LightDirection)), 0.0f);
-	float diffuse = clamp(dot(normal.xyz, normalize(globalUbo.LightDirection)), 0.0f,  1.0f);
-	float heightOffset = (fragWorldPos.y  * 0.01f) * globalUbo.ColorHeightOffset;
+	float diffuse = clamp(dot(normal.xyz, normalize(globalUbo.LightDirection)), 0.0f, 1.0f);
+	float heightOffset = (fragWorldPos.y  * 0.01f + 0.2f) * globalUbo.ColorHeightOffset;
 
 	vec3 oceanBaseColor = globalUbo.SeaBaseColor * diffuse * globalUbo.BaseColorStrength;
 	vec3 waterColor = mix(oceanBaseColor, oceanReflectColor, fresnel);
