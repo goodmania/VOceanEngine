@@ -11,6 +11,15 @@
 
 namespace voe {
 
+	Texture::Texture()
+	{
+
+	}
+
+	Texture::~Texture()
+	{
+
+	}
 	void Texture::UpdateDescriptor()
 	{
 		m_Descriptor.sampler = m_Sampler;
@@ -20,13 +29,13 @@ namespace voe {
 
 	void Texture::Destroy()
 	{
-		vkDestroyImageView(m_Device.GetVkDevice(), m_View, nullptr);
-		vkDestroyImage(m_Device.GetVkDevice(), m_Image, nullptr);
+		vkDestroyImageView(m_Device->GetVkDevice(), m_View, nullptr);
+		vkDestroyImage(m_Device->GetVkDevice(), m_Image, nullptr);
 		if (m_Sampler)
 		{
-			vkDestroySampler(m_Device.GetVkDevice(), m_Sampler, nullptr);
+			vkDestroySampler(m_Device->GetVkDevice(), m_Sampler, nullptr);
 		}
-		vkFreeMemory(m_Device.GetVkDevice(), m_DeviceMemory, nullptr);
+		vkFreeMemory(m_Device->GetVkDevice(), m_DeviceMemory, nullptr);
 	}
 
 	/*
@@ -45,7 +54,17 @@ namespace voe {
 	* @param (Optional) imageLayout Usage layout for the texture (defaults VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	*/
 
-	void Texture2D::FromBuffer(
+	Texture2D::Texture2D()
+	{
+
+	}
+
+	Texture2D::~Texture2D()
+	{
+
+	}
+
+	void Texture2D::CreateTextureFromBuffer(
 		void* buffer,
 		VkDeviceSize bufferSize,
 		VkFormat format,
@@ -58,16 +77,14 @@ namespace voe {
 		VkImageUsageFlags imageUsageFlags,
 		VkImageLayout imageLayout)
 	{
-		VOE_CORE_ASSERT(buffer);
-
-		m_Device = device;
+		m_Device = &device;
 		m_Width = texWidth;
 		m_Height = texHeight;
 		m_MipLevels = 1;
 
 		VkMemoryAllocateInfo memAllocInfo = {};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		VkMemoryRequirements memReqs;
+		VkMemoryRequirements memReqs = {};
 
 		// Use a separate command buffer for texture loading
 		VkCommandBuffer copyCmd = device.CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);

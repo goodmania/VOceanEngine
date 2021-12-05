@@ -2,9 +2,11 @@
 
 #include "VulkanCore/Device.h"
 #include "Renderer/Buffer.h"
+#include "Renderer/Texture.h"
 
 namespace voe
 {
+	class Texture2D;
 	class VOE_API HeightMap
 	{
 	public:
@@ -27,7 +29,7 @@ namespace voe
 		{
 			float deltaT = 0.0f;
 			float lamda = -1.0f;
-			uint32_t meshSize;
+			uint32_t meshSize = 256;
 			uint32_t OceanSizeLx;
 			uint32_t OceanSizeLz;			
 		};
@@ -53,7 +55,7 @@ namespace voe
 		VkDescriptorBufferInfo* GetHtBufferDscInfo() { return m_HtBufferDscInfo; }
 		VkDescriptorBufferInfo* GetHt_dmyBufferDscInfo() { return m_Ht_dmyBufferDscInfo; }
 		VkDescriptorBufferInfo* GetOceanNormalBufferDscInfo() { return m_OceanNormalBufferDscInfo; }
-		VkDescriptorBufferInfo* GetOceanBubbleBufferDscInfo() { return m_OceanBubbleBufferDscInfo; }
+		VkDescriptorImageInfo* GetOceanBubbleTextureDscInfo() { return m_OceanBubbleTextures[0]->GetDescriptorImageInfo(); }
 
 		// å„Ç≈ëÃçŸÇêÆÇ¶ÇÈ
 		VkDescriptorBufferInfo* GetHtBufferDscInfos(uint32_t index) { return m_HtBufferDscInfos[index]; }
@@ -87,8 +89,8 @@ namespace voe
 		std::vector<std::shared_ptr<Buffer>> m_OceanNormalBuffers;
 		VkDescriptorBufferInfo* m_OceanNormalBufferDscInfo = VK_NULL_HANDLE;
 
-		std::vector<std::shared_ptr<Buffer>> m_OceanBubbleBuffers;
-		VkDescriptorBufferInfo* m_OceanBubbleBufferDscInfo = VK_NULL_HANDLE;
+		std::vector<std::shared_ptr<Texture2D>> m_OceanBubbleTextures;
+		// VkDescriptorBufferInfo* m_OceanBubbleTextureDscInfo = VK_NULL_HANDLE;
 
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_HtBufferDscInfos;
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_Ht_dmyBufferDscInfos;

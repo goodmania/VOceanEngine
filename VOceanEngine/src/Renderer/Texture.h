@@ -13,11 +13,15 @@ namespace voe {
 
 	class Texture
 	{	
+	public:
+		Texture();
+		~Texture();
+
 	protected:
 		void UpdateDescriptor();
 		void Destroy();
 
-		Device&					m_Device;
+		Device*					m_Device;
 		VkImage					m_Image;
 		VkImageLayout			m_ImageLayout;
 		VkDeviceMemory			m_DeviceMemory;
@@ -32,7 +36,12 @@ namespace voe {
 	class Texture2D : public Texture
 	{
 	public:
-		void FromBuffer(
+		Texture2D();
+		~Texture2D();
+
+		VkDescriptorImageInfo* GetDescriptorImageInfo() { return &m_Descriptor; }
+
+		void CreateTextureFromBuffer(
 			void*				buffer,
 			VkDeviceSize		bufferSize,
 			VkFormat			format,

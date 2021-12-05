@@ -29,6 +29,8 @@ layout(std140, set = 0, binding = 4) buffer OceanNormalBuffer
 	vec4 OceanNormalBuffers[ ];
 };
 
+layout(binding = 5, r32f) uniform writeonly image2D OceanBubbleImage;
+
 layout (local_size_x = 256) in;
 
 void main()
@@ -38,7 +40,7 @@ void main()
 
 	uint N = ubo.meshSize;
 	uint offset = N * N; // 0 ht_y, 1 ht_dx, 2 ht_dz, 3 dx 4 dz
-	uvec3 id = gl_GlobalInvocationID;
+    ivec2 id = ivec2(gl_GlobalInvocationID.xy);
     uint x0 = (id.x - 1 + N) % N;
     uint x1 = (id.x + 1) % N;
     uint y0 = (id.y - 1 + N) % N;
@@ -66,7 +68,7 @@ void main()
     float Jxz = dDxdz * ubo.lambda;
     float Jzx = dDzdx * ubo.lambda;
 
-    float J = Jxx * Jzz - Jxz * Jzx;//J<0‚È‚ç–Ê‚ª— •Ô‚µ‚É‚È‚Á‚Ä‚é
+    float J = Jxx * Jzz - Jxz * Jzx; //J<0‚È‚ç–Ê‚ª— •Ô‚µ‚É‚È‚Á‚Ä‚é
 
-
+    imageStore(OceanBubbleImage, id, vec4(J));
 }

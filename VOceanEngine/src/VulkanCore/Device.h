@@ -16,6 +16,7 @@ namespace voe {
 		~Device();
 
 		const VkDevice& GetVkDevice() const { return m_Device; }
+		PhDevice& GetPhDevice() const{ return *m_PhDevice; }
 		const VkCommandPool& GetCommandPool() const{ return m_CommandPool; }
 
 		const VkQueue& GetGraphicsQueue() const { return m_GraphicsQueue; }
@@ -35,6 +36,7 @@ namespace voe {
 			VkMemoryPropertyFlags properties,
 			VkBuffer& buffer,
 			VkDeviceMemory& bufferMemory);
+
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
 
