@@ -3,6 +3,7 @@
 layout(location = 0) in vec4 fragWorldPos;
 layout(location = 1) in vec4 fragColor;
 layout(location = 2) in vec3 fragWorldNormal;
+layout(location = 3) in vec2 fragTexCoords;
 
 layout (location = 0) out vec4 outColor;
 
@@ -28,8 +29,10 @@ layout(std430, set = 0, binding = 3) buffer OceanNormalBuffer
 	vec3 OceanNormalBuffers[];
 };
 
+//layout(binding = 4, r32f) uniform readonly image2D OceanBubbleImage;
+
 vec3 GetSkyColor(vec3 refrectDir, vec3 skyColor)
-{;
+{
 	refrectDir.y = max(0.0, refrectDir.y);
 	return (1.0 - skyColor) * (1.0 - refrectDir.y) + skyColor;
 }
@@ -55,6 +58,16 @@ void main()
 	vec3 oceanBaseColor = globalUbo.SeaBaseColor * diffuse * globalUbo.BaseColorStrength;
 	vec3 waterColor = mix(oceanBaseColor, oceanReflectColor, fresnel);
 	vec3 oceanColor = waterColor + globalUbo.SeaShallowColor * heightOffset;
+
+	ivec2 texCoords = ivec2(fragTexCoords.xy);
+
+	/*vec4 bubble = imageLoad(OceanBubbleImage, texCoords);
+
+	if (bubble.x < -0.3f)
+	{
+		bubble.x = min(-bubble.x * 0.4, 1);
+		oceanColor = bubble.x * vec3(1.0f, 1.0f, 1.0f) + (1.0f - bubble.x) * oceanColor;
+	}*/
 
 	outColor = vec4(oceanColor, 1.0f);
 }

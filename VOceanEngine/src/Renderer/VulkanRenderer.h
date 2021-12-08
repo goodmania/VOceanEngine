@@ -30,10 +30,13 @@ namespace voe {
 
         bool IsComputeQueueSpecialized() const;
         void OnUpdate(float dt, FrameInfo& frameInfo);
-        void BuildComputeCommandBuffer();
 
         Semaphores GetComputeSemaphores() { return m_ComputeSemaphores; }
         std::array<VkCommandBuffer, 2> GetComputeCommandBuffer() { return m_ComputeCommandBuffers; }
+
+        Semaphores GetImageTransitionSemaphores() { return m_ComputeSemaphores; }
+        std::array<VkCommandBuffer, 2> GetImageTransitionCommandBuffer() { return m_ImageTransitionCommandBuffers; }
+
         const uint32_t GetGridSize() { return m_GroupSize; }
         const uint32_t GetOceanSize() { return m_GroupSize * 5 / 2; }
 
@@ -44,6 +47,7 @@ namespace voe {
         void CreateGraphicsUbo();
         void UpdateGlobalUboBuffers(FrameInfo& frameInfo);
         void SetupFFTOceanComputePipelines();
+        void SetupImageTransitionCommand();
 
         void AddGraphicsToComputeBarriers(VkCommandBuffer commandBuffer, uint32_t index);
         void AddComputeToComputeBarriers(VkCommandBuffer commandBuffer, VkBuffer InputBuffer, VkBuffer OutputBuffer);
@@ -52,6 +56,9 @@ namespace voe {
         void CreatePipelineLayout();
         void CreatePipeline(VkRenderPass renderPass);
         void CreatePipelineCache();
+
+        void BuildComputeCommandBuffer();
+        void BuildImageTransitionCommand();
 
         Device& m_Device;
         bool m_SpecializedComputeQueue = false;
@@ -86,9 +93,14 @@ namespace voe {
         VkDescriptorBufferInfo* m_GlobalUboDscInfo = VK_NULL_HANDLE;
 
         Semaphores m_ComputeSemaphores;
+        Semaphores m_ImageTransitionSemaphores;
 
         // maybe the following variables should be moved to a Device class ?
         VkCommandPool m_ComputeCommandPool;
         std::array<VkCommandBuffer, 2> m_ComputeCommandBuffers;
+
+        // Command buffer for image transitions
+        VkCommandPool m_ImageTransitionCommandPool;
+        std::array<VkCommandBuffer, 2> m_ImageTransitionCommandBuffers;
     };
 }  

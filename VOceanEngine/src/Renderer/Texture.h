@@ -40,6 +40,8 @@ namespace voe {
 		~Texture2D();
 
 		VkDescriptorImageInfo* GetDescriptorImageInfo() { return &m_Descriptor; }
+		const VkImage GetImage() const { return m_Image; }
+		const VkImageLayout GetCurrentImageLayout() const{ return m_ImageLayout; }
 
 		void CreateTextureFromBuffer(
 			void*				buffer,

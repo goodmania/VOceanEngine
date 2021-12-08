@@ -54,6 +54,13 @@ namespace voe{
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 
+		VkSubmitInfo CreateSubmitInfo(
+			VkSemaphore& ready,
+			VkSemaphore& compleate,
+			VkCommandBuffer& commandBuffer,
+			VkPipelineStageFlags pipelineStageFlag,
+			bool firstDraw);
+
 		void DestroyCommandBuffers();
 		
 		std::shared_ptr<Window> m_Window;
@@ -77,6 +84,8 @@ namespace voe{
 		uint32_t m_CurrentImageIndex = 0;
 		size_t m_CurrentFrameIndex = 0;
 		bool m_IsFrameStarted = false;
+
+		bool m_FirstDraw = true;
 	};
 }
 

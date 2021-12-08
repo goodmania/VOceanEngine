@@ -222,6 +222,30 @@ namespace voe {
 		}
 	}
 
+	VkSubmitInfo VulkanBase::CreateSubmitInfo(
+		VkSemaphore& waitSemaphore,
+		VkSemaphore& signalSemaphore,
+		VkCommandBuffer& commandBuffer,
+		VkPipelineStageFlags pipelineStageFlag,
+		bool firstDraw)
+	{
+		VkSubmitInfo SubmitInfo = {};
+		SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		if (!firstDraw)
+		{
+			SubmitInfo.waitSemaphoreCount = 1;
+			SubmitInfo.pWaitSemaphores = &waitSemaphore;
+			SubmitInfo.pWaitDstStageMask = &pipelineStageFlag;
+		}
+		SubmitInfo.signalSemaphoreCount = 1;
+		SubmitInfo.pSignalSemaphores = &signalSemaphore;
+		SubmitInfo.commandBufferCount = 1;
+		SubmitInfo.pCommandBuffers = &commandBuffer;
+
+		return SubmitInfo;
+	}
+
 	VkResult VulkanBase::SubmitCommandBuffers()
 	{
 		if (m_ImagesInFlight[m_CurrentImageIndex] != VK_NULL_HANDLE) 
@@ -231,31 +255,31 @@ namespace voe {
 
 		m_ImagesInFlight[m_CurrentImageIndex] = m_InFlightFences[m_CurrentFrameIndex];
 
-		static bool firstDraw = true;
+		
 		VkSemaphore compReadySemaphore = m_Renderer->GetComputeSemaphores().Ready;
 		VkSemaphore compCompleteSemaphore = m_Renderer->GetComputeSemaphores().Complete;
 		std::array<VkCommandBuffer, 2> compCmbs = m_Renderer->GetComputeCommandBuffer();
 
-		VkSubmitInfo computeSubmitInfo = {};
-		computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		VkSubmitInfo computeSubmitInfo = CreateSubmitInfo(
+			compReadySemaphore,
+			compCompleteSemaphore,
+			compCmbs[m_CurrentFrameIndex],
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			m_FirstDraw);
 
-		VkPipelineStageFlags computeWaitDstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		if (!firstDraw) 
-		{
-			computeSubmitInfo.waitSemaphoreCount = 1;
-			computeSubmitInfo.pWaitSemaphores = &compReadySemaphore;
-			computeSubmitInfo.pWaitDstStageMask = &computeWaitDstStageMask;
-		}
-		else 
-		{
-			firstDraw = false;
-		}
-		computeSubmitInfo.signalSemaphoreCount = 1;
-		computeSubmitInfo.pSignalSemaphores = &compCompleteSemaphore;
-		computeSubmitInfo.commandBufferCount = 1;
-		computeSubmitInfo.pCommandBuffers = &compCmbs[m_CurrentFrameIndex];
+		VkSemaphore imageTransCompleteSemaphore = m_Renderer->GetImageTransitionSemaphores().Complete;
+		std::array<VkCommandBuffer, 2> imageTransCmbs = m_Renderer->GetImageTransitionCommandBuffer();
+
+		VkSubmitInfo imageTransSubmitInfo = CreateSubmitInfo(
+			compCompleteSemaphore,
+			imageTransCompleteSemaphore,
+			imageTransCmbs[m_CurrentFrameIndex],
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			false);
 
 		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetComputeQueue(), 1, &computeSubmitInfo, VK_NULL_HANDLE));
+		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetComputeQueue(), 1, &imageTransSubmitInfo, VK_NULL_HANDLE));
+		m_FirstDraw = false;
 
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 

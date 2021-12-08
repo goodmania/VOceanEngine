@@ -3,10 +3,12 @@
 layout(location = 0) in vec4 pos;
 layout(location = 1) in vec4 color;
 layout(location = 2) in vec3 normal;
+layout(location = 3) in vec2 texCoords;
 
 layout(location = 0) out vec4 fragWorldPos;
 layout(location = 1) out vec4 fragColor;
 layout(location = 2) out vec3 fragWorldNormal;
+layout(location = 3) out vec2 fragTexCoords;
 
 layout(push_constant) uniform Push 
 {
@@ -60,4 +62,5 @@ void main()
 	fragWorldPos = positionWorld;
 	fragWorldNormal = normalize(mat3(push.NormalMatrix) * normalBuffer);
 	fragColor = color;
+	fragTexCoords = texCoords;
 }

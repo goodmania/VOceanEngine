@@ -163,7 +163,7 @@ namespace voe {
         attributeDescriptions[2].offset = offsetof(Vertex, normal);
 
         attributeDescriptions[3].binding = 0;
-        attributeDescriptions[3].location = 2;
+        attributeDescriptions[3].location = 3;
         attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
         attributeDescriptions[3].offset = offsetof(Vertex, texCoord);
         return attributeDescriptions;
@@ -264,7 +264,7 @@ namespace voe {
             {
                 //vertices[i + j * h].position = glm::vec4(dx * j, 0.0f, dy * i, 1.0f);
                 vertices[i + j * h].position = glm::vec4((1.0 * j) * dx, 0.0f, (1.0 * i) * dz, 1.0f);
-                vertices[i + j * h].texCoord = glm::vec2((1.0 * j) * dx)
+                vertices[i + j * h].texCoord = glm::vec2(1.0f - du * i, dv * j);
             }
         }
 

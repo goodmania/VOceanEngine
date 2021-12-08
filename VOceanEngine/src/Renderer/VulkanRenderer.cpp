@@ -43,6 +43,7 @@ namespace voe {
 		CreateGraphicsUbo();
 		CreatePipelineCache();
 		SetupFFTOceanComputePipelines();
+		SetupImageTransitionCommand();
 		CreatePipelineLayout();
 		CreatePipeline(renderPass);
 	}
@@ -55,12 +56,18 @@ namespace voe {
 
 		vkDestroySemaphore(m_Device.GetVkDevice(), m_ComputeSemaphores.Ready, nullptr);
 		vkDestroySemaphore(m_Device.GetVkDevice(), m_ComputeSemaphores.Complete, nullptr);
+
+		vkDestroySemaphore(m_Device.GetVkDevice(), m_ImageTransitionSemaphores.Ready, nullptr);
+		vkDestroySemaphore(m_Device.GetVkDevice(), m_ImageTransitionSemaphores.Complete, nullptr);
+
 		for (uint32_t i = 0; i < m_DescriptorSetLayouts.size(); i++)
 		{
 			vkDestroyDescriptorSetLayout(m_Device.GetVkDevice(), m_DescriptorSetLayouts[i], nullptr);
 		}
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_ComputePipelineLayout, nullptr);
 		vkDestroyCommandPool(m_Device.GetVkDevice(), m_ComputeCommandPool, nullptr);
+		vkDestroyCommandPool(m_Device.GetVkDevice(), m_ImageTransitionCommandPool, nullptr);
+
 		vkDestroyPipelineCache(m_Device.GetVkDevice(), m_PipelineCache, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_GraphicsPipelineLayout, nullptr);
 	}
@@ -265,6 +272,57 @@ namespace voe {
 		BuildComputeCommandBuffer();
 	}
 
+	void VulkanRenderer::SetupImageTransitionCommand()
+	{
+		auto device = m_Device.GetVkDevice();
+
+		// Separate command pool as queue family for compute may be different than graphics
+		VkCommandPoolCreateInfo cmdPoolInfo = {};
+		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		cmdPoolInfo.queueFamilyIndex = m_Device.GetComputeQueueFamily();
+		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		VOE_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &m_ImageTransitionCommandPool));
+
+		// Create a command buffer for compute operations
+		VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		commandBufferAllocateInfo.commandPool = m_ImageTransitionCommandPool;
+		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		commandBufferAllocateInfo.commandBufferCount = m_ImageTransitionCommandBuffers.size();
+		VOE_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_ImageTransitionCommandBuffers[0]));
+
+		// Semaphores for graphics / compute synchronization
+		VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		VOE_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ImageTransitionSemaphores.Ready));
+		VOE_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ImageTransitionSemaphores.Complete));
+
+		BuildImageTransitionCommand();
+	}
+
+	void VulkanRenderer::BuildImageTransitionCommand()
+	{
+		VkCommandBufferBeginInfo cmdBufInfo = {};
+		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
+		for (uint32_t index = 0; index < 2; index++)
+		{
+			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ImageTransitionCommandBuffers[index], &cmdBufInfo));
+
+			tools::setImageLayout(
+				m_ImageTransitionCommandBuffers[index],
+				m_OceanHeightMap->GetOceanBubbleImage(index),
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_GENERAL,
+				{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 },
+				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+
+			VOE_CHECK_RESULT(vkEndCommandBuffer(m_ImageTransitionCommandBuffers[index]));
+		}
+	}
+
 	void VulkanRenderer::BuildComputeCommandBuffer()
 	{
 		VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -274,13 +332,13 @@ namespace voe {
 		for (uint32_t index = 0; index < 2; index++)
 		{
 			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[index], &cmdBufInfo));
+
 			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index], index);
 
 			// 1: Calculate philips spectrum
 			m_ComputePipeline->Bind(m_ComputeCommandBuffers[index]);
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
 			vkCmdDispatch(m_ComputeCommandBuffers[index], 1, m_GroupSize, 1);
-
 			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetH0Buffer(index), m_OceanHeightMap->GetHtBuffer(index));
 
 			m_FFTComputePipeline->Bind(m_ComputeCommandBuffers[index]);
@@ -293,7 +351,7 @@ namespace voe {
 				vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
 				++descriptorIndex;
 
-				AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
+				//AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
 
 				// 2-2: Calculate FFT in vertical direction
 				vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 1, 1, &m_DescriptorSets[descriptorIndex], 0, 0);
@@ -303,10 +361,18 @@ namespace voe {
 
 			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetOceanNormalBuffer(index));
 
+
 			// 3: Calculate NormalMap
 			m_ComputeNormalPipeline->Bind(m_ComputeCommandBuffers[index]);
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
 			vkCmdDispatch(m_ComputeCommandBuffers[index], 1, m_GroupSize, 1);
+
+			tools::setImageLayout(
+				m_ComputeCommandBuffers[index],
+				m_OceanHeightMap->GetOceanBubbleImage(index),
+				VK_IMAGE_LAYOUT_GENERAL,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
 			AddComputeToGraphicsBarriers(m_ComputeCommandBuffers[index], index);
 
@@ -414,7 +480,7 @@ namespace voe {
 			.BindBuffer(1, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(2, m_GlobalUboDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.BindBuffer(3, m_OceanHeightMap->GetOceanNormalBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-			.BindImage(4, m_OceanHeightMap->GetOceanBubbleTextureDscInfo(), VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+			.BindImage(4, m_OceanHeightMap->GetOceanBubbleTextureDscInfo(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build(m_GraphicsDescriptorSet, m_GraphicsDescriptorSetLayout);
 
 		VkPushConstantRange pushConstantRange = {};
@@ -435,7 +501,7 @@ namespace voe {
 
 	void VulkanRenderer::CreatePipeline(VkRenderPass renderPass)
 	{
-		VOE_CORE_ASSERT(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
+		assert(m_GraphicsPipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		PipelineConfigInfo pipelineConfig = {};
 		GraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
