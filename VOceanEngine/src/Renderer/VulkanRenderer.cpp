@@ -315,9 +315,7 @@ namespace voe {
 				m_OceanHeightMap->GetOceanBubbleImage(index),
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_GENERAL,
-				{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 },
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+				{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
 			VOE_CHECK_RESULT(vkEndCommandBuffer(m_ImageTransitionCommandBuffers[index]));
 		}
@@ -332,6 +330,8 @@ namespace voe {
 		for (uint32_t index = 0; index < 2; index++)
 		{
 			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[index], &cmdBufInfo));
+
+			
 
 			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index], index);
 
@@ -360,6 +360,7 @@ namespace voe {
 			}
 
 			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetOceanNormalBuffer(index));
+
 
 
 			// 3: Calculate NormalMap
