@@ -29,7 +29,7 @@ layout(std430, set = 0, binding = 3) buffer OceanNormalBuffer
 	vec3 OceanNormalBuffers[];
 };
 
-layout(binding = 4) uniform sampler OceanBubbleImage;
+layout(binding = 4, r32f) uniform readonly image2D OceanBubbleImage;
 
 vec3 GetSkyColor(vec3 refrectDir, vec3 skyColor)
 {
@@ -61,13 +61,13 @@ void main()
 
 	ivec2 texCoords = ivec2(fragTexCoords.xy);
 
-	//vec4 bubble = imageLoad(OceanBubbleImage, texCoords);
+	vec4 bubble = imageLoad(OceanBubbleImage, texCoords);
 
-	/*if (bubble.x < -0.3f)
+	if (bubble.x < -0.3f)
 	{
 		bubble.x = min(-bubble.x * 0.4, 1);
 		oceanColor = bubble.x * vec3(1.0f, 1.0f, 1.0f) + (1.0f - bubble.x) * oceanColor;
-	}*/
+	}
 
 	outColor = vec4(oceanColor, 1.0f);
 }

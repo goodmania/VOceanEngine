@@ -254,34 +254,57 @@ namespace voe {
 		}
 
 		m_ImagesInFlight[m_CurrentImageIndex] = m_InFlightFences[m_CurrentFrameIndex];
-
 		
 		VkSemaphore compReadySemaphore = m_Renderer->GetComputeSemaphores().Ready;
 		VkSemaphore compCompleteSemaphore = m_Renderer->GetComputeSemaphores().Complete;
 		std::array<VkCommandBuffer, 2> compCmbs = m_Renderer->GetComputeCommandBuffer();
 
-		VkSubmitInfo computeSubmitInfo = CreateSubmitInfo(
-			compReadySemaphore,
-			compCompleteSemaphore,
-			compCmbs[m_CurrentFrameIndex],
-			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-			m_FirstDraw);
-
 		VkSemaphore imageTransCompleteSemaphore = m_Renderer->GetImageTransitionSemaphores().Complete;
+		VkSemaphore imageTransReadySemaphore = m_Renderer->GetImageTransitionSemaphores().Ready;
 		std::array<VkCommandBuffer, 2> imageTransCmbs = m_Renderer->GetImageTransitionCommandBuffer();
 
-		VkSubmitInfo imageTransSubmitInfo = CreateSubmitInfo(
-			compCompleteSemaphore,
-			imageTransCompleteSemaphore,
-			imageTransCmbs[m_CurrentFrameIndex],
-			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-			false);
+		VkSemaphore computeWaitSemaphores[]	=	{ compReadySemaphore, /*imageTransCompleteSemaphore*/ };
+		VkSemaphore computeSignalSemaphores[] = { compCompleteSemaphore, /*imageTransReadySemaphore*/ };
 
+		static bool firstDraw = true;
+		
+		VkPipelineStageFlags computeWaitDstStageMask[] = { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+		
+		// first draw
+		VkSubmitInfo imageTransSubmitInfo = {};
+		imageTransSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		imageTransSubmitInfo.commandBufferCount = 1;
+		imageTransSubmitInfo.pCommandBuffers = &imageTransCmbs[m_CurrentFrameIndex];
+		
+		// first draw
+		VkSubmitInfo computeSubmitInfo = {};
+		computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		computeSubmitInfo.signalSemaphoreCount = 1;
+		computeSubmitInfo.pSignalSemaphores = &compCompleteSemaphore;
+		computeSubmitInfo.commandBufferCount = 1;
+		computeSubmitInfo.pCommandBuffers = &compCmbs[m_CurrentFrameIndex];
+
+		if (!firstDraw)
+		{
+			computeSubmitInfo.waitSemaphoreCount = 1;
+			computeSubmitInfo.pWaitSemaphores = computeWaitSemaphores;
+			computeSubmitInfo.pWaitDstStageMask = computeWaitDstStageMask;
+
+			/*VkPipelineStageFlags imageWaitStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			imageTransSubmitInfo.pWaitDstStageMask = &imageWaitStageMask;
+			imageTransSubmitInfo.waitSemaphoreCount = 0;
+			imageTransSubmitInfo.pWaitSemaphores = 0;
+			imageTransSubmitInfo.signalSemaphoreCount = 1;
+			imageTransSubmitInfo.pSignalSemaphores = &imageTransCompleteSemaphore;	*/	
+		}
+		else
+		{
+			firstDraw = false;
+		}
+
+		// submit order is imageTrans->Compute	
+		//VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetComputeQueue(), 1, &imageTransSubmitInfo, VK_NULL_HANDLE));
 		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetComputeQueue(), 1, &computeSubmitInfo, VK_NULL_HANDLE));
-		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetComputeQueue(), 1, &imageTransSubmitInfo, VK_NULL_HANDLE));
-		m_FirstDraw = false;
-
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
 		VkPipelineStageFlags waitDstStageMask[2] = {
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT
@@ -291,10 +314,7 @@ namespace voe {
 			m_ImageAvailableSemaphores[m_CurrentFrameIndex], compCompleteSemaphore
 		};
 
-		VkSemaphore signalSemaphores[2] = {
-			m_RenderFinishedSemaphores[m_CurrentFrameIndex], compReadySemaphore
-		};
-
+		VkSemaphore signalSemaphores[2] = { m_RenderFinishedSemaphores[m_CurrentFrameIndex], compReadySemaphore };
 		auto currentCmdBuffer = GetCurrentCommandBuffer();
 
 		VkSubmitInfo submitInfo = {};
@@ -309,7 +329,7 @@ namespace voe {
 
 		vkResetFences(m_Device->GetVkDevice(), 1, &m_InFlightFences[m_CurrentFrameIndex]);
 		VOE_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrameIndex]));
-		
+				
 		VkSwapchainKHR swapChains[] = { m_Swapchain->GetSwapchain() };
 
 		VkPresentInfoKHR presentInfo = {};

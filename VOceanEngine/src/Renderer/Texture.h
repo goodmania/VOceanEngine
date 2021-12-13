@@ -16,9 +16,9 @@ namespace voe {
 	public:
 		Texture();
 		~Texture();
+		virtual void UpdateDescriptor();
 
 	protected:
-		void UpdateDescriptor();
 		void Destroy();
 
 		Device*					m_Device;
@@ -38,6 +38,8 @@ namespace voe {
 	public:
 		Texture2D();
 		~Texture2D();
+
+		void UpdateDescriptorImageLayout(VkImageLayout newImageLayout);
 
 		VkDescriptorImageInfo* GetDescriptorImageInfo() { return &m_Descriptor; }
 		const VkImage GetImage() const { return m_Image; }

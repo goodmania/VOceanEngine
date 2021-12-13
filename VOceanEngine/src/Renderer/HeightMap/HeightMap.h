@@ -49,6 +49,8 @@ namespace voe
 		VkBuffer GetHtBuffer(uint32_t index) { return m_HtBuffers[index]->GetBuffer(); }
 		VkBuffer GetHt_dmyBuffer(uint32_t index) { return m_Ht_dmyBuffers[index]->GetBuffer(); }
 		VkBuffer GetOceanNormalBuffer(uint32_t index) { return m_OceanNormalBuffers[index]->GetBuffer(); }
+
+		Texture2D& GetOceanBubbleTexture(uint32_t index) { return *m_OceanBubbleTextures[index]; }
 		VkImage GetOceanBubbleImage(uint32_t index) { return m_OceanBubbleTextures[index]->GetImage(); }
 		VkImageLayout GetOceanBubbleImageLayout(uint32_t index) { return m_OceanBubbleTextures[index]->GetCurrentImageLayout(); }
 		

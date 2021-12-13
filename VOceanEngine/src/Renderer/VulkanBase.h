@@ -55,8 +55,8 @@ namespace voe{
 		void CreateSyncObjects();
 
 		VkSubmitInfo CreateSubmitInfo(
-			VkSemaphore& ready,
-			VkSemaphore& compleate,
+			VkSemaphore& waitSemaphore,
+			VkSemaphore& signalSemaphore,
 			VkCommandBuffer& commandBuffer,
 			VkPipelineStageFlags pipelineStageFlag,
 			bool firstDraw);
@@ -84,8 +84,6 @@ namespace voe{
 		uint32_t m_CurrentImageIndex = 0;
 		size_t m_CurrentFrameIndex = 0;
 		bool m_IsFrameStarted = false;
-
-		bool m_FirstDraw = true;
 	};
 }
 

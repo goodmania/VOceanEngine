@@ -64,6 +64,11 @@ namespace voe {
 
 	}
 
+	void Texture2D::UpdateDescriptorImageLayout(VkImageLayout newImageLayout)
+	{
+		m_Descriptor.imageLayout = newImageLayout;
+	}
+
 	void Texture2D::CreateTextureFromBuffer(
 		void* buffer,
 		VkDeviceSize bufferSize,
