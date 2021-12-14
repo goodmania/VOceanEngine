@@ -31,8 +31,7 @@ namespace voe {
 		VOE_ASSERT(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
 		const float g = 1.0f / glm::tan(fovy * 0.5f); // Distance from camera to projection plane
 		const float k = f / (f - n);
-
-		
+	
 		m_ProjectionMatrix = glm::mat4{ 0.0f };
 		m_ProjectionMatrix = glm::mat4{
 			g / aspect,	0.0f,	0.0f,		0.0f,

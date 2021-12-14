@@ -3,7 +3,7 @@
 layout(location = 0) in vec4 pos;
 layout(location = 1) in vec4 color;
 layout(location = 2) in vec3 normal;
-layout(location = 3) in vec2 texCoords;
+layout(location = 3) in vec2 vertTexCoords;
 
 layout(location = 0) out vec4 fragWorldPos;
 layout(location = 1) out vec4 fragColor;
@@ -41,10 +41,7 @@ layout(std140, set = 0, binding = 2) uniform GlobalUBO
 	vec3 CameraPos;
 } globalUbo;
 
-layout(std430, set = 0, binding = 3) buffer OceanNormalBuffer
-{
-	vec4 OceanNormalBuffers[];
-};
+layout(binding = 3, rgba32f) uniform readonly image2D OceanNormalImage;
 
 void main()
 {
@@ -56,11 +53,13 @@ void main()
 		pos.z + (HtBuffers[gl_VertexIndex + offset * 4].y * ubo.lambda),	// dz
 		1.0);
 
-	vec3 normalBuffer = abs(OceanNormalBuffers[gl_VertexIndex].xyz);
+	ivec2 texCoords = ivec2(vertTexCoords.x * 255, vertTexCoords.y * 255);
+
+	vec4 normalImage = imageLoad(OceanNormalImage, texCoords);
 
 	gl_Position = globalUbo.ProjectionView * positionWorld;
 	fragWorldPos = positionWorld;
-	fragWorldNormal = normalize(mat3(push.NormalMatrix) * normalBuffer);
+	fragWorldNormal = normalize(mat3(push.NormalMatrix) * normalImage.xyz);
 	fragColor = color;
 	fragTexCoords = texCoords;
 }

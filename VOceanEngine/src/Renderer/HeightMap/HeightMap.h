@@ -48,18 +48,20 @@ namespace voe
 		VkBuffer GetH0Buffer(uint32_t index) { return m_H0Buffers[index]->GetBuffer(); }
 		VkBuffer GetHtBuffer(uint32_t index) { return m_HtBuffers[index]->GetBuffer(); }
 		VkBuffer GetHt_dmyBuffer(uint32_t index) { return m_Ht_dmyBuffers[index]->GetBuffer(); }
-		VkBuffer GetOceanNormalBuffer(uint32_t index) { return m_OceanNormalBuffers[index]->GetBuffer(); }
 
 		Texture2D& GetOceanBubbleTexture(uint32_t index) { return *m_OceanBubbleTextures[index]; }
 		VkImage GetOceanBubbleImage(uint32_t index) { return m_OceanBubbleTextures[index]->GetImage(); }
 		VkImageLayout GetOceanBubbleImageLayout(uint32_t index) { return m_OceanBubbleTextures[index]->GetCurrentImageLayout(); }
+
+		VkImage GetOceanNormalImage(uint32_t index) { return m_OceanNormalTextures[index]->GetImage(); }
 		
 		VkDescriptorBufferInfo* GetUniformBufferDscInfo() { return m_UniformBufferDscInfo; }
 		VkDescriptorBufferInfo* GetH0BufferDscInfo() { return m_H0BufferDscInfo; }
 		VkDescriptorBufferInfo* GetHtBufferDscInfo() { return m_HtBufferDscInfo; }
 		VkDescriptorBufferInfo* GetHt_dmyBufferDscInfo() { return m_Ht_dmyBufferDscInfo; }
-		VkDescriptorBufferInfo* GetOceanNormalBufferDscInfo() { return m_OceanNormalBufferDscInfo; }
+
 		VkDescriptorImageInfo* GetOceanBubbleTextureDscInfo() { return m_OceanBubbleTextures[0]->GetDescriptorImageInfo(); }
+		VkDescriptorImageInfo* GetOceanNormalTextureDscInfo() { return m_OceanNormalTextures[0]->GetDescriptorImageInfo(); }
 
 		// å„Ç≈ëÃçŸÇêÆÇ¶ÇÈ
 		VkDescriptorBufferInfo* GetHtBufferDscInfos(uint32_t index) { return m_HtBufferDscInfos[index]; }
@@ -90,12 +92,9 @@ namespace voe
 		std::vector<std::shared_ptr<Buffer>> m_Ht_dmyBuffers;
 		VkDescriptorBufferInfo* m_Ht_dmyBufferDscInfo = VK_NULL_HANDLE;
 
-		std::vector<std::shared_ptr<Buffer>> m_OceanNormalBuffers;
-		VkDescriptorBufferInfo* m_OceanNormalBufferDscInfo = VK_NULL_HANDLE;
-
 		std::vector<std::shared_ptr<Texture2D>> m_OceanBubbleTextures;
-		// VkDescriptorBufferInfo* m_OceanBubbleTextureDscInfo = VK_NULL_HANDLE;
-
+		std::vector<std::shared_ptr<Texture2D>> m_OceanNormalTextures;
+		
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_HtBufferDscInfos;
 		std::array<VkDescriptorBufferInfo*, m_OceanElementCount> m_Ht_dmyBufferDscInfos;
 

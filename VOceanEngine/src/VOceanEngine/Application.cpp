@@ -56,7 +56,7 @@ namespace voe {
 			// m_Camera OnUpdate 
 			float aspect = m_VulkanBase->GetAspectRatio();
 			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
-			m_Camera.SetFrustumProjectionMatrix(glm::radians(45.f), aspect, 0.1f, 150.f);
+			m_Camera.SetFrustumProjectionMatrix(glm::radians(45.f), aspect, 0.1f, 300.f);
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{

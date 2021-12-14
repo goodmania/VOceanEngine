@@ -24,10 +24,7 @@ layout(std140, set = 0, binding = 2) uniform GlobalUBO
 	vec3 CameraPos;
 } globalUbo;
 
-layout(std430, set = 0, binding = 3) buffer OceanNormalBuffer
-{
-	vec3 OceanNormalBuffers[];
-};
+layout(binding = 3, rgba32f) uniform readonly image2D OceanNormalImage;
 
 layout(binding = 4, r32f) uniform readonly image2D OceanBubbleImage;
 
@@ -57,7 +54,7 @@ void main()
 
 	vec3 oceanBaseColor = globalUbo.SeaBaseColor * diffuse * globalUbo.BaseColorStrength;
 	vec3 waterColor = mix(oceanBaseColor, oceanReflectColor, fresnel);
-	vec3 oceanColor = waterColor + globalUbo.SeaShallowColor * heightOffset;
+	vec3 oceanColor = waterColor /*+ globalUbo.SeaShallowColor * heightOffset*/;
 
 	ivec2 texCoords = ivec2(fragTexCoords.xy);
 

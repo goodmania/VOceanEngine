@@ -24,10 +24,7 @@ layout (std140, set = 0, binding = 3) uniform UBO
 	highp uint OceanSizeLz;
 } ubo;
 
-layout(std140, set = 0, binding = 4) buffer OceanNormalBuffer
-{
-	vec4 OceanNormalBuffers[ ];
-};
+layout(binding = 4, rgba32f) uniform writeonly image2D OceanNormalImage;
 
 layout(binding = 5, r32f) uniform writeonly image2D OceanBubbleImage;
 
@@ -59,8 +56,9 @@ void main()
     gradz *= dz / (dDzdz * ubo.lambda + dz);
    
 	vec3 Normarized = normalize(vec3(-gradx, 1.0f, -gradz));
+    vec3 absNormarized = vec3(abs(Normarized.x), abs(Normarized.y), abs(Normarized.z));
 
-    OceanNormalBuffers[id.x + id.y * N] = vec4(Normarized, 1.0f);
+    imageStore(OceanNormalImage, id, vec4(absNormarized, 1.0f));
 
 	 //J‚ÌŒvŽZ
     float Jxx = 1.0 + dDxdx * ubo.lambda;

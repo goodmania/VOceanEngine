@@ -180,7 +180,7 @@ namespace voe {
 			.BindBuffer(1, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(2, m_OceanHeightMap->GetHt_dmyBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindBuffer(3, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-			.BindBuffer(4, m_OceanHeightMap->GetOceanNormalBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.BindImage(4, m_OceanHeightMap->GetOceanNormalTextureDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
 			.BindImage(5, m_OceanHeightMap->GetOceanBubbleTextureDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
 			.Build(m_DescriptorSets[descriptorIndex], m_DescriptorSetLayouts[descriptorIndex]);
 
@@ -360,6 +360,17 @@ namespace voe {
 			imageMemoryBarrier.image = m_OceanHeightMap->GetOceanBubbleImage(index);
 			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
+			VkImageMemoryBarrier imageNormalMemoryBarrier{};
+			imageNormalMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageNormalMemoryBarrier.srcQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			imageNormalMemoryBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			imageNormalMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			imageNormalMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			imageNormalMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageNormalMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageNormalMemoryBarrier.image = m_OceanHeightMap->GetOceanNormalImage(index);
+			imageNormalMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
 			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index], index);
 
 			// 1: Calculate philips spectrum
@@ -385,8 +396,6 @@ namespace voe {
 				vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
 				++descriptorIndex;
 			}
-
-			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetOceanNormalBuffer(index));
 		
 			vkCmdPipelineBarrier(
 				m_ComputeCommandBuffers[index],
@@ -396,6 +405,15 @@ namespace voe {
 				0, nullptr,
 				0, nullptr,
 				1, &imageMemoryBarrier);
+
+			vkCmdPipelineBarrier(
+				m_ComputeCommandBuffers[index],
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &imageNormalMemoryBarrier);
 
 			// 3: Calculate NormalMap
 			m_ComputeNormalPipeline->Bind(m_ComputeCommandBuffers[index]);
@@ -422,8 +440,6 @@ namespace voe {
 
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
 			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer(index);
-			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetOceanNormalBuffer(index);
 			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
@@ -484,8 +500,6 @@ namespace voe {
 			std::vector<VkBufferMemoryBarrier> bufferBarriers;
 			bufferBarrier.buffer = m_OceanHeightMap->GetHtBuffer(index);
 			bufferBarriers.push_back(bufferBarrier);
-			bufferBarrier.buffer = m_OceanHeightMap->GetOceanNormalBuffer(index);
-			bufferBarriers.push_back(bufferBarrier);
 
 			vkCmdPipelineBarrier(
 				commandBuffer,
@@ -503,12 +517,11 @@ namespace voe {
 
 	void VulkanRenderer::CreatePipelineLayout()
 	{
-
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
 			.BindBuffer(0, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(1, m_OceanHeightMap->GetUniformBufferDscInfo(), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.BindBuffer(2, m_GlobalUboDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-			.BindBuffer(3, m_OceanHeightMap->GetOceanNormalBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+			.BindImage(3, m_OceanHeightMap->GetOceanNormalTextureDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.BindImage(4, m_OceanHeightMap->GetOceanBubbleTextureDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build(m_GraphicsDescriptorSet, m_GraphicsDescriptorSetLayout);
 
