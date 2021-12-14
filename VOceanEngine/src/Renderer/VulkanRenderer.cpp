@@ -348,6 +348,18 @@ namespace voe {
 		{
 			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[index], &cmdBufInfo));
 
+			// Create an image barrier object
+			VkImageMemoryBarrier imageMemoryBarrier{};
+			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier.srcQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			imageMemoryBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageMemoryBarrier.image = m_OceanHeightMap->GetOceanBubbleImage(index);
+			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
 			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index], index);
 
 			// 1: Calculate philips spectrum
@@ -366,7 +378,7 @@ namespace voe {
 				vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
 				++descriptorIndex;
 
-				//AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
+				AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
 
 				// 2-2: Calculate FFT in vertical direction
 				vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 1, 1, &m_DescriptorSets[descriptorIndex], 0, 0);
@@ -375,53 +387,20 @@ namespace voe {
 			}
 
 			AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetOceanNormalBuffer(index));
-
-			// Create an image barrier object
-			/*VkImageMemoryBarrier imageMemoryBarrierOPTtoGEN = {};
-			imageMemoryBarrierOPTtoGEN.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			imageMemoryBarrierOPTtoGEN.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrierOPTtoGEN.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrierOPTtoGEN.srcAccessMask = 0;
-			imageMemoryBarrierOPTtoGEN.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-			imageMemoryBarrierOPTtoGEN.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			imageMemoryBarrierOPTtoGEN.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-			imageMemoryBarrierOPTtoGEN.image = m_OceanHeightMap->GetOceanBubbleImage(index);
-			imageMemoryBarrierOPTtoGEN.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
+		
 			vkCmdPipelineBarrier(
 				m_ComputeCommandBuffers[index],
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
 				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
 				0,
 				0, nullptr,
 				0, nullptr,
-				1, &imageMemoryBarrierOPTtoGEN);*/
+				1, &imageMemoryBarrier);
 
 			// 3: Calculate NormalMap
 			m_ComputeNormalPipeline->Bind(m_ComputeCommandBuffers[index]);
 			vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &m_DescriptorSets[0], 0, 0);
 			vkCmdDispatch(m_ComputeCommandBuffers[index], 1, m_GroupSize, 1);
-
-			// Create an image barrier object
-			/*VkImageMemoryBarrier imageMemoryBarrier{};
-			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageMemoryBarrier.image = m_OceanHeightMap->GetOceanBubbleImage(index);
-			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-			vkCmdPipelineBarrier(
-				m_ComputeCommandBuffers[index],
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				0,
-				0, nullptr,
-				0, nullptr,
-				1, &imageMemoryBarrier);*/
 
 			AddComputeToGraphicsBarriers(m_ComputeCommandBuffers[index], index);
 
@@ -524,8 +503,6 @@ namespace voe {
 
 	void VulkanRenderer::CreatePipelineLayout()
 	{
-		/*m_OceanHeightMap->GetOceanBubbleTexture(0).UpdateDescriptorImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		m_OceanHeightMap->GetOceanBubbleTexture(1).UpdateDescriptorImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
 
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
 			.BindBuffer(0, m_OceanHeightMap->GetHtBufferDscInfo(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
@@ -543,7 +520,6 @@ namespace voe {
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pSetLayouts = &m_GraphicsDescriptorSetLayout;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
