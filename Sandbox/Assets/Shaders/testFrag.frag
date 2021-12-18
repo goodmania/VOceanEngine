@@ -26,7 +26,7 @@ layout(std140, set = 0, binding = 2) uniform GlobalUBO
 
 layout(binding = 3, rgba32f) uniform readonly image2D OceanNormalImage;
 
-layout(binding = 4, r32f) uniform readonly image2D OceanBubbleImage;
+layout(binding = 4) uniform sampler2D OceanBubbleImage;
 
 vec3 GetSkyColor(vec3 refrectDir, vec3 skyColor)
 {
@@ -58,7 +58,7 @@ void main()
 
 	ivec2 texCoords = ivec2(fragTexCoords.xy);
 
-	vec4 bubble = imageLoad(OceanBubbleImage, texCoords);
+	vec4 bubble = texture(OceanBubbleImage, texCoords);
 
 	if (bubble.x < -0.3f)
 	{

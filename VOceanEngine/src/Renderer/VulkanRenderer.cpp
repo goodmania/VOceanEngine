@@ -27,9 +27,9 @@ namespace voe {
 	struct GlobalUbo               
 	{
 		glm::mat4 ProjectionView{ 1.f };
-		glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 1.0f);
-		alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.0f, 0.1f, 0.6f);
-		//alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.01f, 0.13f, 0.15f);
+		glm::vec3 lightDirection = glm::vec3(0.0f, -1.0f, 1.0f);
+		//alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.0f, 0.1f, 0.6f);
+		alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.01f, 0.13f, 0.15f);
 		float BaseColorStrength{ 1.0f };
 		glm::vec3 SeaShallowColor = glm::vec3(75.f / 256.f, 89.f / 256.f, 35.f / 256.f);
 		//glm::vec3 SeaShallowColor = glm::vec3(0.1f, 0.3f, 0.3f);
@@ -395,6 +395,8 @@ namespace voe {
 				vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 1, 1, &m_DescriptorSets[descriptorIndex], 0, 0);
 				vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
 				++descriptorIndex;
+
+				AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
 			}
 		
 			vkCmdPipelineBarrier(

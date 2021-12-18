@@ -27,7 +27,7 @@ namespace voe {
 	private:
 		glm::vec3 m_CameraPos = { 0.0f, 0.0f, 0.0f };
 
-		glm::mat4 m_ViewMatrix;
-		glm::mat4 m_ProjectionMatrix;
+		glm::mat4 m_ViewMatrix{1.f};
+		glm::mat4 m_ProjectionMatrix{ 1.f };
 	};
 }

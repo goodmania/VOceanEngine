@@ -47,7 +47,7 @@ namespace voe {
 		const glm::vec3 zAxis(glm::normalize(dir));
 		const glm::vec3 xAxis(glm::normalize(cross(zAxis, up)));
 		const glm::vec3 yAxis(glm::normalize(cross(zAxis, xAxis)));
-
+		 
 		return glm::mat4{
 			xAxis.x,	xAxis.y,	xAxis.z,	-glm::dot(xAxis, pos),
 			yAxis.x,	yAxis.y,	yAxis.z,	-glm::dot(yAxis, pos),
