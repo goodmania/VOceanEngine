@@ -36,9 +36,11 @@ namespace voe {
 
 	void Application::Run()
 	{
-		auto viewerObject = GameObject::CreateGameObject();
 		auto currentTime = std::chrono::high_resolution_clock::now();
-		CameraController cameraController;
+
+		auto viewerObject = GameObject::CreateGameObject();
+		viewerObject.m_Transform.Translation.z = -2.5f;
+		CameraController cameraController{};
 
 		while (m_Running)
 		{
@@ -56,7 +58,8 @@ namespace voe {
 			// m_Camera OnUpdate 
 			float aspect = m_VulkanBase->GetAspectRatio();
 			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
-			m_Camera.SetFrustumProjectionMatrix(glm::radians(45.f), aspect, 0.1f, 300.f);
+			m_Camera.SetPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 1000.f);
+			m_Camera.SetCameraPos(viewerObject.m_Transform.Translation);
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{

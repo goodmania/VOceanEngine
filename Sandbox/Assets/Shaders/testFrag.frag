@@ -54,7 +54,7 @@ void main()
 
 	vec3 oceanBaseColor = globalUbo.SeaBaseColor * diffuse * globalUbo.BaseColorStrength;
 	vec3 waterColor = mix(oceanBaseColor, oceanReflectColor, fresnel);
-	vec3 oceanColor = waterColor /*+ globalUbo.SeaShallowColor * heightOffset*/;
+	vec3 oceanColor = waterColor/* + globalUbo.SeaShallowColor * heightOffset*/;
 
 	ivec2 texCoords = ivec2(fragTexCoords.xy);
 

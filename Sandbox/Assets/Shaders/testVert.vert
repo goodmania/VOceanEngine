@@ -43,7 +43,7 @@ layout(std140, set = 0, binding = 2) uniform GlobalUBO
 
 layout(binding = 3) uniform sampler2D OceanNormalImage;
 
-const float heightScale = 1.0f;
+const float heightScale = 0.5f;
 
 void main()
 {
