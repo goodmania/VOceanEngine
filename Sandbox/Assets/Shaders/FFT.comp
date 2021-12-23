@@ -1,8 +1,4 @@
 #version 450
-#define PI 3.14159265358979323846264338327950288
-
-#define M (8)
-#define N (1<<M)
 
 layout(std430, set = 1, binding = 0) buffer HtBuffer 
 {
@@ -22,6 +18,10 @@ layout (std140, set = 1, binding = 2) uniform UBO
 	highp uint OceanSizeLx;
 	highp uint OceanSizeLz;
 } ubo;
+
+const float PI = 3.14159265358979323846264338327950288;
+const uint M = 8;
+const uint N = 1<<M;
 
 layout (local_size_x = N/2) in;
 

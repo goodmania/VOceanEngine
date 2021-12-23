@@ -104,7 +104,7 @@ namespace voe {
 		}
 		else 
 		{
-			clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+			clearValues[0].color = { { 105.0f / 255, 133.0f / 255, 184.0f / 255, 1.0f } };
 			clearValues[1].depthStencil = { 1.0f, 0 };
 		}
 

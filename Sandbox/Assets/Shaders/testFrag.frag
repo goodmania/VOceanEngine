@@ -26,7 +26,7 @@ layout(std140, set = 0, binding = 2) uniform GlobalUBO
 
 layout(binding = 3, rgba32f) uniform readonly image2D OceanNormalImage;
 
-layout(binding = 4) uniform sampler2D OceanBubbleImage;
+layout(binding = 4, r32f) uniform readonly image2D OceanBubbleImage;
 
 vec3 GetSkyColor(vec3 refrectDir, vec3 skyColor)
 {
@@ -37,16 +37,15 @@ vec3 GetSkyColor(vec3 refrectDir, vec3 skyColor)
 void main()
 {
 	//float lightIntensity = AMBIENT + max(dot(normalize(fragWorldNormal.xyz), normalize(globalUbo.LightDirection)), 0);
-	vec3 normal = normalize(fragWorldNormal);
-	vec3 viewDir = normalize(globalUbo.CameraPos.xyz - fragWorldPos.xyz);
+	vec3 normal = normalize(fragWorldNormal) * -1.f;
+	vec3 viewDir = normalize(normalize(globalUbo.CameraPos.xyz) - normalize(fragWorldPos.xyz));
 	vec3 reflectDir = reflect(-viewDir, normal.xyz);
-	//vec3 skyColor = vec3(1.0f, 1.0f, 1.0f);
-	vec3 skyColor = vec3(105.0f / 256, 133.0f / 256, 184.0f/ 256);
+	vec3 skyColor = normalize(vec3(105.0f, 133.0f, 184.0f));
 	vec3 oceanReflectColor = GetSkyColor(reflectDir, skyColor);
 
 	//fresnel
 	float r = 0.02f;
-	float facing = clamp(1.0f + dot(normal.xyz, viewDir), 0.0f, 1.0f);
+	float facing = clamp(1.0 - dot(normal.xyz, viewDir), 0.0f, 1.0f);
 	float fresnel = r + (1.0f - r) * pow(facing, 5.0f);
 
 	float diffuse = clamp(dot(normal.xyz, normalize(globalUbo.LightDirection)), 0.0f, 1.0f);
@@ -58,7 +57,7 @@ void main()
 
 	ivec2 texCoords = ivec2(fragTexCoords.xy);
 
-	vec4 bubble = texture(OceanBubbleImage, texCoords);
+	vec4 bubble = imageLoad(OceanBubbleImage, texCoords);
 
 	if (bubble.x < -0.3f)
 	{

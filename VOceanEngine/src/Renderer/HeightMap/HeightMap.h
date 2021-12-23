@@ -28,7 +28,7 @@ namespace voe
 		struct ComputeUBO
 		{
 			float deltaT = 0.0f;
-			float lamda = -1.0f;
+			float lamda = 2.0f;
 			uint32_t meshSize = 256;
 			uint32_t OceanSizeLx;
 			uint32_t OceanSizeLz;			

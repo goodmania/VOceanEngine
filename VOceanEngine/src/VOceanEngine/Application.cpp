@@ -58,7 +58,7 @@ namespace voe {
 			// m_Camera OnUpdate 
 			float aspect = m_VulkanBase->GetAspectRatio();
 			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
-			m_Camera.SetPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 1000.f);
+			m_Camera.SetPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 2000.f);
 			m_Camera.SetCameraPos(viewerObject.m_Transform.Translation);
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
@@ -103,11 +103,31 @@ namespace voe {
 		uint32_t oceanSize = m_VulkanBase->GetRenderer().GetOceanSize();
 
 		std::shared_ptr<Model> model = Model::CreateXZPlaneModelFromProcedural(*device, width, height, oceanSize);
+		
+		// ìÆçÏämîFÇÃÇΩÇﬂ!!!!
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
 		ocean.m_Transform.Translation = { 0.f, 300.f, 0.f };
 		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f } ;
 		m_GameObjects.push_back(std::move(ocean));
+
+		/*auto ocean2 = GameObject::CreateGameObject();
+		ocean2.m_Model = model;
+		ocean2.m_Transform.Translation = { oceanSize, 300.f, oceanSize };
+		ocean2.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
+		m_GameObjects.push_back(std::move(ocean2));
+
+		auto ocean3 = GameObject::CreateGameObject();
+		ocean3.m_Model = model;
+		ocean3.m_Transform.Translation = { 0.0f, 300.f, oceanSize };
+		ocean3.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
+		m_GameObjects.push_back(std::move(ocean3));
+
+		auto ocean4 = GameObject::CreateGameObject();
+		ocean4.m_Model = model;
+		ocean4.m_Transform.Translation = { oceanSize, 300.f, 0.0f };
+		ocean4.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
+		m_GameObjects.push_back(std::move(ocean4));*/
 	}
 
 	void Application::OnEvent(Event& e)
