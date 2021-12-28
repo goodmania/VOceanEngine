@@ -107,7 +107,7 @@ namespace voe {
 		// ìÆçÏämîFÇÃÇΩÇﬂ!!!!
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
-		ocean.m_Transform.Translation = { 0.f, 300.f, 0.f };
+		ocean.m_Transform.Translation = { 100.f, 300.f, 100.f };
 		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f } ;
 		m_GameObjects.push_back(std::move(ocean));
 

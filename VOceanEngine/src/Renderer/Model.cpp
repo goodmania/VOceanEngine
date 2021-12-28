@@ -274,7 +274,7 @@ namespace voe {
             for (uint32_t x = 0; x < w; x++)
             {
                 indices.push_back((y + 1) * w + x);
-                indices.push_back((y)*w + x);
+                indices.push_back((y) * w + x);
             }
             // Primitive restart (signaled by special value 0xFFFFFFFF)
             indices.push_back(0xFFFFFFFF);

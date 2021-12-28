@@ -50,9 +50,9 @@ void main()
 	uint offset = ubo.meshSize * ubo.meshSize;
 
 	vec4 positionWorld = push.ModelMatrix * vec4(
-		pos.x + (HtBuffers[gl_VertexIndex + offset * 3].y * ubo.lambda),	// dx
+		pos.x + (HtBuffers[gl_VertexIndex + offset * 3].x * ubo.lambda),	// dx
 		pos.y + (HtBuffers[gl_VertexIndex + offset * 0].x),	// ht_y
-		pos.z + (HtBuffers[gl_VertexIndex + offset * 4].y * ubo.lambda),	// dz
+		pos.z + (HtBuffers[gl_VertexIndex + offset * 4].x * ubo.lambda),	// dz
 		1.0);
 
 	ivec2 texCoords = ivec2(vertTexCoords.x * 255, vertTexCoords.y * 255);

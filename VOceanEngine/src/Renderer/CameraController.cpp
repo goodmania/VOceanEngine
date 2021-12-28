@@ -47,6 +47,10 @@ namespace voe {
 
 		if (Input::IsKeyPressed(Key::D)) moveDir += rightDir;
 		else if (Input::IsKeyPressed(Key::A)) moveDir -= rightDir;
+
+		if (Input::IsKeyPressed(Key::E)) moveDir += upDir;
+		else if (Input::IsKeyPressed(Key::F)) moveDir -= upDir;
+
 		
 		if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
 		{
