@@ -20,7 +20,7 @@ layout(std140, set = 0, binding = 2) uniform GlobalUBO
 	vec3 SeaBaseColor;
 	float BaseColorStrength;
 	vec3 SeaShallowColor;
-	float ColorHeightOffset;
+	float SeaShallowColorStrength;
 	vec3 CameraPos;
 } globalUbo;
 
@@ -30,31 +30,42 @@ layout(binding = 4, r32f) uniform readonly image2D OceanBubbleImage;
 
 vec3 GetSkyColor(vec3 refrectDir, vec3 skyColor)
 {
-	refrectDir.y = max(0.0, refrectDir.y);
-	return (1.0 - skyColor) * (1.0 - refrectDir.y) + skyColor;
+	refrectDir.y = max(0.0, -refrectDir.y);
+	float et = 1.0 - refrectDir.y;
+	return (vec3(1.0f, 1.0f, 1.0f) - skyColor) * et + skyColor;
 }
 
 void main()
 {
-	//float lightIntensity = AMBIENT + max(dot(normalize(fragWorldNormal.xyz), normalize(globalUbo.LightDirection)), 0);
 	vec3 normal = normalize(fragWorldNormal);
-	vec3 viewDir = normalize(globalUbo.CameraPos.xyz - fragWorldPos.xyz);
+	vec3 fragPos = normalize(fragWorldPos.xyz / fragWorldPos.w);
+	float waveHeight = fragPos.y;
+	const float COLOR_HEIGHT_OFFSET = 0.15f;
+
+	vec3 cameraPos = normalize(vec3(globalUbo.CameraPos.x, globalUbo.CameraPos.y, globalUbo.CameraPos.z));
+	vec3 viewDir = normalize(-fragPos + cameraPos);
 	vec3 reflectDir = reflect(-viewDir, normal.xyz);
-	//vec3 skyColor = vec3(1.0f, 1.0f, 1.0f);
-	vec3 skyColor = vec3(105.0f / 256, 133.0f / 256, 184.0f/ 256);
-	vec3 oceanReflectColor = GetSkyColor(reflectDir, skyColor);
 
-	//fresnel
+	vec3 skyColor = vec3(0.0f / 255.0f, 104.f / 255.0f, 255.f / 255.0f);
+	//vec3 skyColor =vec3(1.0f, 1.0f, 1.0f);
+
+	// fresnel
 	float r = 0.02f;
-	float facing = clamp(1.0f + dot(normal.xyz, viewDir), 0.0f, 1.0f);
-	float fresnel = r + (1.0f - r) * pow(facing, 5.0f);
+	float facing = clamp(dot(normal, viewDir), 0.0f, 1.0f);
+	float fresnel = r + (1.0f - r) * pow(1.0f - facing, 5.0f);
 
+	// diffuse
 	float diffuse = clamp(dot(normal.xyz, normalize(globalUbo.LightDirection)), 0.0f, 1.0f);
-	float heightOffset = (fragWorldPos.y  * 0.01f + 0.2f) * globalUbo.ColorHeightOffset;
 
-	vec3 oceanBaseColor = globalUbo.SeaBaseColor * diffuse * globalUbo.BaseColorStrength;
+	// height offset(Change the ocean color based on the height).
+	float heightOffset = (-waveHeight * 0.5f + 0.2f) * COLOR_HEIGHT_OFFSET;
+
+	vec3 oceanReflectColor = GetSkyColor(reflectDir, skyColor);
+	vec3 oceanBaseColor = globalUbo.SeaBaseColor * diffuse * globalUbo.BaseColorStrength
+		+ mix(globalUbo.SeaBaseColor, globalUbo.SeaShallowColor * globalUbo.SeaShallowColorStrength, diffuse);
+
 	vec3 waterColor = mix(oceanBaseColor, oceanReflectColor, fresnel);
-	vec3 oceanColor = waterColor /*+ globalUbo.SeaShallowColor * heightOffset*/;
+	vec3 oceanColor = waterColor + globalUbo.SeaShallowColor * heightOffset;
 
 	ivec2 texCoords = ivec2(fragTexCoords.xy);
 
@@ -62,9 +73,8 @@ void main()
 
 	if (bubble.x < -0.3f)
 	{
-		bubble.x = min(-bubble.x * 0.4, 1);
+		bubble.x = min(-bubble.x * 0.4f, 1.0f);
 		oceanColor = bubble.x * vec3(1.0f, 1.0f, 1.0f) + (1.0f - bubble.x) * oceanColor;
 	}
-
-	outColor = vec4(oceanColor, 1.0f);
+	outColor = vec4(waterColor, 1.0f);
 }

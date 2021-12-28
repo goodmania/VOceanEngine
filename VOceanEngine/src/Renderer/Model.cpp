@@ -264,7 +264,7 @@ namespace voe {
             {
                 //vertices[i + j * h].position = glm::vec4(dx * j, 0.0f, dy * i, 1.0f);
                 vertices[i + j * h].position = glm::vec4((1.0 * j) * dx, 0.0f, (1.0 * i) * dz, 1.0f);
-                vertices[i + j * h].texCoord = glm::vec2(1.0f - du * i, 1.0f - dv * j);
+                vertices[i + j * h].texCoord = glm::vec2(du * i,dv * j);
             }
         }
 
@@ -274,7 +274,7 @@ namespace voe {
             for (uint32_t x = 0; x < w; x++)
             {
                 indices.push_back((y + 1) * w + x);
-                indices.push_back((y)*w + x);
+                indices.push_back((y) * w + x);
             }
             // Primitive restart (signaled by special value 0xFFFFFFFF)
             indices.push_back(0xFFFFFFFF);

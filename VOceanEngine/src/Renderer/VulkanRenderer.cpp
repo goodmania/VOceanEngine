@@ -24,17 +24,16 @@ namespace voe {
 		glm::mat4 NormalMatrix{ 1.f };
 	};
 
-	struct GlobalUbo               
+	struct GlobalUbo
 	{
 		glm::mat4 ProjectionView{ 1.f };
-		glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 1.0f);
-		alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.0f, 0.1f, 0.6f);
-		//alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.01f, 0.13f, 0.15f);
+		glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, -1.0f);
+		//alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.0f, 0.1f, 0.6f);
+		alignas(16) glm::vec3 SeaBaseColor = glm::vec3(10.0f / 255.f, 57.0f / 255.f, 77.0f / 255.f);
 		float BaseColorStrength{ 1.0f };
-		glm::vec3 SeaShallowColor = glm::vec3(75.f / 256.f, 89.f / 256.f, 35.f / 256.f);
-		//glm::vec3 SeaShallowColor = glm::vec3(0.1f, 0.3f, 0.3f);
-		float ColorHightOffset{ 0.05f };
-		glm::vec3 CameraPos;
+		glm::vec3 SeaShallowColor = glm::vec3(75.0f / 255.f, 89.0f / 255.f, 35.0f / 255.f);
+		float SeaShallowColorStrength{ 0.35f };
+		glm::vec3 CameraPos{ 0.0f, 0.0f, 0.0f };
 	};
 
 	VulkanRenderer::VulkanRenderer(Device& device, VkRenderPass renderPass) : m_Device{ device } 
@@ -149,7 +148,7 @@ namespace voe {
 	{
 		// update
 		GlobalUbo ubo{};
-		ubo.ProjectionView = frameInfo.CameraObj.GetProjectionMatrix() * frameInfo.CameraObj.GetViewMatrix();
+		ubo.ProjectionView = frameInfo.CameraObj.GetProjection() * frameInfo.CameraObj.GetView();
 		ubo.CameraPos = frameInfo.CameraObj.GetCameraPos();
 		m_GlobalUboBuffers[frameInfo.FrameIndex]->WriteToBuffer(&ubo);
 		m_GlobalUboBuffers[frameInfo.FrameIndex]->Flush();
@@ -348,29 +347,35 @@ namespace voe {
 		{
 			VOE_CHECK_RESULT(vkBeginCommandBuffer(m_ComputeCommandBuffers[index], &cmdBufInfo));
 
+			std::vector<VkImageMemoryBarrier> imageMemoryBarriers;
+
 			// Create an image barrier object
-			VkImageMemoryBarrier imageMemoryBarrier{};
-			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			imageMemoryBarrier.srcQueueFamilyIndex = m_Device.GetComputeQueueFamily();
-			imageMemoryBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-			imageMemoryBarrier.image = m_OceanHeightMap->GetOceanBubbleImage(index);
-			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+			VkImageMemoryBarrier bubbleImageMemoryBarrier = {};
+			bubbleImageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			bubbleImageMemoryBarrier.srcQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			bubbleImageMemoryBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			bubbleImageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			bubbleImageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			bubbleImageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+			bubbleImageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			bubbleImageMemoryBarrier.image = m_OceanHeightMap->GetOceanBubbleImage(index);
+			bubbleImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-			VkImageMemoryBarrier imageNormalMemoryBarrier{};
-			imageNormalMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			imageNormalMemoryBarrier.srcQueueFamilyIndex = m_Device.GetComputeQueueFamily();
-			imageNormalMemoryBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
-			imageNormalMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			imageNormalMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-			imageNormalMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-			imageNormalMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-			imageNormalMemoryBarrier.image = m_OceanHeightMap->GetOceanNormalImage(index);
-			imageNormalMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+			imageMemoryBarriers.push_back(bubbleImageMemoryBarrier);
 
+			VkImageMemoryBarrier NormalImageMemoryBarrier = {};
+			NormalImageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			NormalImageMemoryBarrier.srcQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			NormalImageMemoryBarrier.dstQueueFamilyIndex = m_Device.GetComputeQueueFamily();
+			NormalImageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			NormalImageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			NormalImageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+			NormalImageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			NormalImageMemoryBarrier.image = m_OceanHeightMap->GetOceanNormalImage(index);
+			NormalImageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+			imageMemoryBarriers.push_back(NormalImageMemoryBarrier);
+			
 			AddGraphicsToComputeBarriers(m_ComputeCommandBuffers[index], index);
 
 			// 1: Calculate philips spectrum
@@ -395,6 +400,8 @@ namespace voe {
 				vkCmdBindDescriptorSets(m_ComputeCommandBuffers[index], VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 1, 1, &m_DescriptorSets[descriptorIndex], 0, 0);
 				vkCmdDispatch(m_ComputeCommandBuffers[index], m_GroupSize, 1, 1);
 				++descriptorIndex;
+
+				AddComputeToComputeBarriers(m_ComputeCommandBuffers[index], m_OceanHeightMap->GetHtBuffer(index), m_OceanHeightMap->GetHt_dmyBuffer(index));
 			}
 		
 			vkCmdPipelineBarrier(
@@ -404,16 +411,7 @@ namespace voe {
 				0,
 				0, nullptr,
 				0, nullptr,
-				1, &imageMemoryBarrier);
-
-			vkCmdPipelineBarrier(
-				m_ComputeCommandBuffers[index],
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				0,
-				0, nullptr,
-				0, nullptr,
-				1, &imageNormalMemoryBarrier);
+				2, imageMemoryBarriers.data());
 
 			// 3: Calculate NormalMap
 			m_ComputeNormalPipeline->Bind(m_ComputeCommandBuffers[index]);
