@@ -264,7 +264,7 @@ namespace voe {
             {
                 //vertices[i + j * h].position = glm::vec4(dx * j, 0.0f, dy * i, 1.0f);
                 vertices[i + j * h].position = glm::vec4((1.0 * j) * dx, 0.0f, (1.0 * i) * dz, 1.0f);
-                vertices[i + j * h].texCoord = glm::vec2(du * i, dv * j);
+                vertices[i + j * h].texCoord = glm::vec2(du * i,dv * j);
             }
         }
 

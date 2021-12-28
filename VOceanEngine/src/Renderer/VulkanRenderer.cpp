@@ -24,16 +24,15 @@ namespace voe {
 		glm::mat4 NormalMatrix{ 1.f };
 	};
 
-	struct GlobalUbo               
+	struct GlobalUbo
 	{
 		glm::mat4 ProjectionView{ 1.f };
-		glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 0.0f);
-		alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.0f, 0.1f, 0.6f);
-		//alignas(16) glm::vec3 SeaBaseColor = normalize(glm::vec3(27.0f, 57.0f, 77.0f));
-		float BaseColorStrength{ 1.5f };
-		glm::vec3 SeaShallowColor = glm::vec3(75.f / 256.f, 89.f / 256.f, 35.f / 256.f);
-		//glm::vec3 SeaShallowColor = glm::vec3(0.1f, 0.3f, 0.3f);
-		float ColorHightOffset{ 0.05f };
+		glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, -1.0f);
+		//alignas(16) glm::vec3 SeaBaseColor = glm::vec3(0.0f, 0.1f, 0.6f);
+		alignas(16) glm::vec3 SeaBaseColor = glm::vec3(10.0f / 255.f, 57.0f / 255.f, 77.0f / 255.f);
+		float BaseColorStrength{ 1.0f };
+		glm::vec3 SeaShallowColor = glm::vec3(75.0f / 255.f, 89.0f / 255.f, 35.0f / 255.f);
+		float SeaShallowColorStrength{ 0.35f };
 		glm::vec3 CameraPos{ 0.0f, 0.0f, 0.0f };
 	};
 
