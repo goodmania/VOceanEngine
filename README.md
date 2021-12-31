@@ -1,2 +1,4 @@
 # VOceanEngine
-VOcean engine
+VOcean engine\n
+
+premakeファイルの場所をGenerateProjectと同じディレクトリにしなきゃかも
