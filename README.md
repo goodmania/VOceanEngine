@@ -1,4 +1,4 @@
 # VOceanEngine
 VOcean engine
 
-premakeファイルの場所をGenerateProjectと同じディレクトリにしなきゃかも
+premake.exeをvender\bin\premakeに保存する
