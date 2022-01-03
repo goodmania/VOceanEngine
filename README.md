@@ -7,7 +7,7 @@
    
 # DEMO
  
-You can generate an ocean like the one in the image.
+You can generate oceans like the following image.
  
 ![FFTOcean](https://user-images.githubusercontent.com/63941325/147940555-e55b60e1-26a8-4b9b-aa76-d399b58bde6e.gif)
  
