@@ -7,12 +7,9 @@
    
 # DEMO
  
-You can learn how to making cute physics simulations (looks retro game).
+You can generate an ocean like the one in the image.
  
 ![FFTOcean](https://user-images.githubusercontent.com/63941325/147940555-e55b60e1-26a8-4b9b-aa76-d399b58bde6e.gif)
- 
-This animation is a "Cat playing on trampoline"!
-You can get basic skills for making physics simulations.
  
 # Features
  
