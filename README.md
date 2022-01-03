@@ -1,6 +1,6 @@
 # VOceanEngine
 
- "VOceanEngine" is a tutorial of physics simulations with Python.
+ VOceanEngine is an FFT ocean simulation that uses Vulkan.
  
 # DEMO
  
