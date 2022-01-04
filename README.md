@@ -7,21 +7,11 @@
 You can generate oceans like the following image.
  
 ![FFTOcean](https://user-images.githubusercontent.com/63941325/147940555-e55b60e1-26a8-4b9b-aa76-d399b58bde6e.gif)
- 
-# Features
- 
-Physics_Sim_Py used [pyxel](https://github.com/kitao/pyxel) only.
- 
-```python
-import pyxel
-```
-[Pyxel](https://github.com/kitao/pyxel) is a retro game engine for Python.
-You can feel free to enjoy making pixel art style physics simulations.
- 
+  
 # Requirement
  
-* Python 3.6.5
-* pyxel 1.0.2
+* c++17
+* vulkan SDK
  
 Environments under [Anaconda for Windows](https://www.anaconda.com/distribution/) is tested.
  
