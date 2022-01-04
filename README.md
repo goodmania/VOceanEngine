@@ -1,6 +1,6 @@
 # VOceanEngine
 
- VOceanEngine is an FFT ocean simulation that uses Vulkan.  
+ VOceanEngine is an FFT ocean simulation that uses Vulkan and C++.  
    
 # DEMO
  
@@ -10,18 +10,22 @@ You can generate oceans like the following image.
   
 # Requirement
  
-* c++17
+* C++17
 * vulkan SDK
 * Windows environment  
 
 # Installation
  
-Install VOceanEngine with git command.
+1. Install VOceanEngine with git clone command.
  
 ```bash
-$ git clone --recursive https://github.com/goodmania/VOceanEngine.git
+git clone --recursive https://github.com/goodmania/VOceanEngine.git
 ```
- 
+
+2. Install the latest version of [Vulkan SDK.](https://vulkan.lunarg.com/sdk/home)
+
+3.  
+
 # Usage
  
 Please create python code named "demo.py".
