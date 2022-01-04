@@ -11,8 +11,6 @@ public:
 	void OnUpdate() override
 	{
 		VOE_INFO("ExampleLayer::Update");
-		if (voe::Input::IsKeyPressed(voe::Key::Tab))
-			VOE_CORE_TRACE("TAB is Pressed");
 	}
 
 	void OnEvent(voe::Event& event) override
