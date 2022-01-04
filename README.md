@@ -31,6 +31,8 @@ git clone --recursive https://github.com/goodmania/VOceanEngine.git
 VOceanEngine\vender
 ```
 
+4. Run "GenerateProject.bat"
+
 # Usage
  
 Please create python code named "demo.py".
@@ -54,7 +56,4 @@ python demo.py
  
 "VOceanEngine" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
  
-Enjoy making cute physics simulations!
- 
-Thank you!
 
