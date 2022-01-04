@@ -39,7 +39,7 @@ namespace voe {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
 		auto viewerObject = GameObject::CreateGameObject();
-		viewerObject.m_Transform.Translation.z = -2.5f;
+		viewerObject.m_Transform.Translation = { 320.0f ,-200.0f, 0.0f };
 		CameraController cameraController{};
 
 		while (m_Running)
