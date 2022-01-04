@@ -13,7 +13,7 @@ You can generate oceans like the following image.
 * C++17
 * vulkan SDK
 * Windows environment
-* visual stdio
+* visual stdio 2019
 
 # Installation
  
@@ -35,14 +35,9 @@ VOceanEngine\vender
 
 # Usage
  
-Please create python code named "demo.py".
-And copy &amp; paste [Day4 tutorial code](https://cpp-learning.com/pyxel_physical_sim4/).
- 
-Run "demo.py"
- 
-```bash
-python demo.py
-```
+* `W`, `A`, `S`, `D` horizontal movement.
+* `E`, `F` Vertical movement.
+* `Mouse Movement` Camera rotation.
  
 # Note
  
