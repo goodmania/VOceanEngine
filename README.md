@@ -42,6 +42,16 @@ VOceanEngine\vender
 # Note
  
 * This application will only work in a Windows environment.
+
+# Reference
+* Engine
+  * [Hazel](https://github.com/TheCherno/Hazel)
+  * [littleVulkanEngine](https://github.com/blurrypiano/littleVulkanEngine)
+  * [acid](https://github.com/EQMG/Acid/tree/master/Sources)
+
+* FFT Ocean Theory
+  * [Jerry Tessendorf(2001) Simulating Ocean Water](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.161.9102&rep=rep1&type=pdf)
+  * [[Unity] 海洋シミュレーションFFT Oceanを実装したい](https://qiita.com/Red_Black_GPGPU/items/2652f5bfd6d311d2034b) 
  
 # Author
  
@@ -51,4 +61,3 @@ VOceanEngine\vender
  
 "VOceanEngine" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
  
-
