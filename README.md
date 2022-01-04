@@ -19,7 +19,7 @@ You can generate oceans like the following image.
 Install Pyxel with pip command.
  
 ```bash
-git clone 
+git clone --recursive https://github.com/goodmania/VOceanEngine.git
 ```
  
 # Usage
