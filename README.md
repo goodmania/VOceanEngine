@@ -50,7 +50,7 @@ VOceanEngine\vender
   * [acid](https://github.com/EQMG/Acid/tree/master/Sources)
 
 * FFT Ocean Theory
-  * [Jerry Tessendorf(2001) Simulating Ocean Water](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.161.9102&rep=rep1&type=pdf)
+  * [Jerry Tessendorf(2001). Simulating Ocean Water](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.161.9102&rep=rep1&type=pdf)
   * [[Unity] 海洋シミュレーションFFT Oceanを実装したい](https://qiita.com/Red_Black_GPGPU/items/2652f5bfd6d311d2034b) 
  
 # Author
