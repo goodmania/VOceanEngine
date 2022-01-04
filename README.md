@@ -12,20 +12,14 @@ You can generate oceans like the following image.
  
 * c++17
 * vulkan SDK
- 
-Environments under [Anaconda for Windows](https://www.anaconda.com/distribution/) is tested.
- 
-```bash
-conda create -n pyxel pip python=3.6 Anaconda
-activate pyxel
-```
- 
+* Windows environment  
+
 # Installation
  
 Install Pyxel with pip command.
  
 ```bash
-pip install pyxel
+git clone 
 ```
  
 # Usage
