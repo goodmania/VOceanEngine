@@ -16,10 +16,10 @@ You can generate oceans like the following image.
 
 # Installation
  
-Install Pyxel with pip command.
+Install VOceanEngine with git command.
  
 ```bash
-git clone --recursive https://github.com/goodmania/VOceanEngine.git
+$ git clone --recursive https://github.com/goodmania/VOceanEngine.git
 ```
  
 # Usage
