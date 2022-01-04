@@ -12,7 +12,8 @@ You can generate oceans like the following image.
  
 * C++17
 * vulkan SDK
-* Windows environment  
+* Windows environment
+* visual stdio
 
 # Installation
  
@@ -24,7 +25,11 @@ git clone --recursive https://github.com/goodmania/VOceanEngine.git
 
 2. Install the latest version of [Vulkan SDK.](https://vulkan.lunarg.com/sdk/home)
 
-3.  
+3. Save the vulkanSDK folder in the following location.
+
+```bash
+VOceanEngine\vender
+```
 
 # Usage
  
@@ -39,21 +44,17 @@ python demo.py
  
 # Note
  
-I don't test environments under Linux and Mac.
+* This application will only work in a Windows environment.
  
 # Author
  
-* Hayabusa
-* R&D Center
-* Twitter : https://twitter.com/Cpp_Learning
+* goodmania
  
 # License
  
-"Physics_Sim_Py" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
+"VOceanEngine" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
  
 Enjoy making cute physics simulations!
  
 Thank you!
-・premake.exeをvender\bin\premakeに保存する。  
-・tyni_obj_loaderのリンクを修正する。  
-・vulkanSDKをインストールし、VOceanEngine\vender\VulkanSDKにIncludeフォルダ、LIBフォルダをコピーする。  
+
