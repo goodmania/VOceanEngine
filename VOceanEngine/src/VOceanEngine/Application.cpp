@@ -72,6 +72,7 @@ namespace voe {
 				// render
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->GetRenderer().RenderGameObjects(frameInfo, m_GameObjects);
+				// imgui renderer
 				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->EndFrame();
 			}

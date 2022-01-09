@@ -8,7 +8,7 @@
 
 namespace voe {
 
-	ImguiPipeline::ImguiPipeline(Device& device, const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo) : m_Device{ device }
+	ImguiPipeline::ImguiPipeline(Device& device, const std::string& vertFilepath, const std::string& fragFilepath, const ImguiPipelineConfigInfo& configInfo) : m_Device{ device }
 	{
 		CreateImguiPipeline(vertFilepath, fragFilepath, configInfo);
 	}
@@ -25,7 +25,7 @@ namespace voe {
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_ImguiPipeline);
     }
 
-    void ImguiPipeline::ImguiPipelineConfigInfo(PipelineConfigInfo& configInfo)
+    void ImguiPipeline::ImguiPipelineConfig(ImguiPipelineConfigInfo& configInfo)
 	{
         configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -114,7 +114,7 @@ namespace voe {
         return buffer;
     }
 
-    void ImguiPipeline::CreateImguiPipeline(const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo)
+    void ImguiPipeline::CreateImguiPipeline(const std::string& vertFilepath, const std::string& fragFilepath, const ImguiPipelineConfigInfo& configInfo)
 	{
         assert(
             configInfo.pipelineLayout != VK_NULL_HANDLE &&

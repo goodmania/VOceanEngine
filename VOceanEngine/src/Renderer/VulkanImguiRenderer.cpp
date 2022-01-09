@@ -150,6 +150,7 @@ namespace voe {
 	void VulkanImguiRenderer::OnUpdate(float dt, FrameInfo& frameInfo)
 	{
 		m_Imgui->UpdateBuffers();
+		// todo update mouse movement
 	}
 
 	void VulkanImguiRenderer::CreateDescriptorSets()
@@ -182,8 +183,8 @@ namespace voe {
 	{
 		assert(m_PipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-		PipelineConfigInfo pipelineConfig = {};
-		ImguiPipeline::ImguiPipelineConfigInfo(pipelineConfig);
+		ImguiPipelineConfigInfo pipelineConfig = {};
+		ImguiPipeline::ImguiPipelineConfig(pipelineConfig);
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = m_PipelineLayout;
 

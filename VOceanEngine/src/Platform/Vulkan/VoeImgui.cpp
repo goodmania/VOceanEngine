@@ -33,6 +33,7 @@ namespace voe {
 		vkDestroyImageView(m_Device.GetVkDevice(), m_FontView, nullptr);
 		vkFreeMemory(m_Device.GetVkDevice(), m_FontMemory, nullptr);
 		vkDestroySampler(m_Device.GetVkDevice(), m_Sampler, nullptr);
+		delete m_FontDescriptor;
 	}
 
 	void ImGUI::Init(float width, float height)
@@ -48,6 +49,8 @@ namespace voe {
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2(width, height);
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+		//Descriptor
+		m_FontDescriptor = new VkDescriptorImageInfo();
 	}
 
 	void ImGUI::InitResources(VkQueue copyQueue)

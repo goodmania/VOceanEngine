@@ -4,10 +4,10 @@ namespace voe {
 
 	class Device;
 
-	struct PipelineConfigInfo
+	struct ImguiPipelineConfigInfo
 	{
-		PipelineConfigInfo(const PipelineConfigInfo&) = delete;
-		PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
+		ImguiPipelineConfigInfo(const ImguiPipelineConfigInfo&) = delete;
+		ImguiPipelineConfigInfo& operator=(const ImguiPipelineConfigInfo&) = delete;
 
 		VkPipelineViewportStateCreateInfo viewportInfo;
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
@@ -30,14 +30,14 @@ namespace voe {
 			Device& device,
 			const std::string& vertFilepath,
 			const std::string& fragFilepath,
-			const PipelineConfigInfo& configInfo);
+			const ImguiPipelineConfigInfo& configInfo);
 		~ImguiPipeline();
 
 		ImguiPipeline(const ImguiPipeline&) = delete;
 		ImguiPipeline& operator=(const ImguiPipeline&) = delete;
 
 		void Bind(VkCommandBuffer commandBuffer);
-		static void ImguiPipelineConfigInfo(PipelineConfigInfo& configInfo);
+		static void ImguiPipelineConfig(ImguiPipelineConfigInfo& configInfo);
 
 	private:
 
@@ -46,7 +46,7 @@ namespace voe {
 		void CreateImguiPipeline(
 			const std::string& vertFilepath,
 			const std::string& fragFilepath,
-			const PipelineConfigInfo& configInfo);
+			const ImguiPipelineConfigInfo& configInfo);
 
 		void CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 

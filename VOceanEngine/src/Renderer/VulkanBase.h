@@ -10,6 +10,7 @@ namespace voe{
 	class PhDevice;
 	class Surface;
 	class Device;
+	class VulkanImguiRenderer;
 
 	class VOE_API VulkanBase
 	{
@@ -48,6 +49,7 @@ namespace voe{
 		void InitVulkanDevice();
 		void CreateSwapchain();
 		void CreateVulkanRenderer();
+		void CreateImguiRenderer();
 		void RecreateSwapChain();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
@@ -72,6 +74,7 @@ namespace voe{
 
 		std::unique_ptr<Swapchain>  m_Swapchain;
 		std::unique_ptr<VulkanRenderer> m_Renderer;
+		std::unique_ptr<VulkanImguiRenderer> m_ImguiRenderer;
 
 		// syncs
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
