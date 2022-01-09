@@ -59,7 +59,8 @@ namespace voe {
 
 	}
 
-	void VulkanImguiRenderer::RenderImgui(FrameInfo frameInfo, std::vector<GameObject>& gameObjects)
+	// todo コメントアウトを消す
+	void VulkanImguiRenderer::RenderImgui(FrameInfo frameInfo/*, std::vector<GameObject>& gameObjects*/)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
@@ -77,7 +78,7 @@ namespace voe {
 		// UI scale and translate via push constants
 		PushConstBlock.Scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
 		PushConstBlock.Translate = glm::vec2(-1.0f);
-		vkCmdPushConstants(frameInfo.CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock), &PushConstBlock);
+		vkCmdPushConstants(frameInfo.CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstBlock), &PushConstBlock);
 
 		m_Imgui->DrawFrame(frameInfo.CommandBuffer);
 
@@ -149,6 +150,9 @@ namespace voe {
 
 	void VulkanImguiRenderer::OnUpdate(float dt, FrameInfo& frameInfo)
 	{
+		// todo modify boolean
+		m_Imgui->NewImGuiFrame(frameInfo, true);
+
 		m_Imgui->UpdateBuffers();
 		// todo update mouse movement
 	}

@@ -2,7 +2,6 @@
 
 #include "Renderer/VulkanBase.h"
 #include "VulkanCore/VulkanCoreHeader.h"
-#include "Renderer/VulkanImguiRenderer.h"
 
 namespace voe {
 

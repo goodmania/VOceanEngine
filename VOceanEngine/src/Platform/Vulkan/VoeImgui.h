@@ -50,7 +50,7 @@ namespace voe {
 		VkDescriptorImageInfo* GetImguiDscInfo() const { return m_FontDescriptor; }
 
 		// Starts a new imGui frame and sets up windows and ui elements
-		void NewImGuiFrame(FrameInfo frameInfo, VulkanBase* example, bool updateFrameGraph);
+		void NewImGuiFrame(FrameInfo frameInfo, bool updateFrameGraph);
 		
 		// Update vertex and index buffer containing the imGui elements when required
 		void UpdateBuffers();

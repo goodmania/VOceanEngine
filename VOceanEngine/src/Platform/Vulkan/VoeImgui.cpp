@@ -179,7 +179,7 @@ namespace voe {
 		m_FontDescriptor->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
-	void ImGUI::NewImGuiFrame(FrameInfo frameInfo, VulkanBase* example, bool updateFrameGraph)
+	void ImGUI::NewImGuiFrame(FrameInfo frameInfo, bool updateFrameGraph)
 	{
 		ImGui::NewFrame();
 
@@ -247,7 +247,7 @@ namespace voe {
 		// Update buffers only if vertex or index count has been changed compared to current buffer size
 
 		// Vertex buffer
-		if ((m_VertexBuffer->GetBuffer() == VK_NULL_HANDLE) || (m_VertexCount != imDrawData->TotalVtxCount)) 
+		if ((m_VertexBuffer == nullptr) || (m_VertexCount != imDrawData->TotalVtxCount))
 		{
 			m_VertexBuffer.reset();
 
@@ -263,7 +263,7 @@ namespace voe {
 		}
 
 		// Index buffer
-		if ((m_IndexBuffer->GetBuffer() == VK_NULL_HANDLE) || (m_IndexCount < imDrawData->TotalIdxCount))
+		if ((m_IndexBuffer == nullptr) || (m_IndexCount < imDrawData->TotalIdxCount))
 		{
 			m_IndexBuffer.reset();
 
