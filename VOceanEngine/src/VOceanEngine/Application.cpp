@@ -60,6 +60,7 @@ namespace voe {
 			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
 			m_Camera.SetPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 2000.f);
 			m_Camera.SetCameraPos(viewerObject.m_Transform.Translation);
+			m_Camera.SetCameraRotation(viewerObject.m_Transform.Rotation);
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{

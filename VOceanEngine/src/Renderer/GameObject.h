@@ -17,6 +17,22 @@ namespace voe {
 		glm::mat3 NormalMatrix();
 	};
 
+	struct Transform2dComponent {
+		glm::vec2 Translation{};  // (position offset)
+		glm::vec2 Scale{ 1.f, 1.f };
+		float Rotation{};
+
+		glm::mat2 Mat2() 
+		{
+			const float s = glm::sin(Rotation);
+			const float c = glm::cos(Rotation);
+			glm::mat2 RotMatrix{ {c, s}, {-s, c} };
+
+			glm::mat2 ScaleMat{ {Scale.x, 0.0f}, {0.0f, Scale.y} };
+			return RotMatrix * ScaleMat;
+		}
+	};
+
 	class VOE_API GameObject
 	{
 	public:
@@ -38,6 +54,7 @@ namespace voe {
 		std::shared_ptr<Model> m_Model{};
 		glm::vec3 m_Color{};
 		TransformComponent m_Transform{};
+		Transform2dComponent m_Transform2d{};
 
 	private:
 		GameObject(id_t objId) : m_Id{objId} {}

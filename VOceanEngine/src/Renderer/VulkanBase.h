@@ -14,8 +14,6 @@ namespace voe{
 	class VOE_API VulkanBase
 	{
 	public:
-		
-
 		VulkanBase(std::shared_ptr<Window> window);
 		~VulkanBase();
 		VulkanBase(const VulkanBase&) = delete;

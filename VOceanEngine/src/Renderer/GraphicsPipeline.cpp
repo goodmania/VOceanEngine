@@ -25,7 +25,6 @@ namespace voe {
 
     std::vector<char> GraphicsPipeline::ReadFile(const std::string& filepath)
     {
-
         std::ifstream file{ filepath, std::ios::ate | std::ios::binary };
 
         if (!file.is_open())

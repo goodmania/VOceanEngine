@@ -19,14 +19,17 @@ namespace voe {
             glm::vec3 position, glm::vec3 target, glm::vec3 up = glm::vec3{ 0.f, -1.f, 0.f });
         void SetViewYXZ(glm::vec3 position, glm::vec3 rotation);
         void SetCameraPos(glm::vec3 position) { m_CameraPos = position; }
+        void SetCameraRotation(glm::vec3 rotation) { m_CameraRotation = rotation; }
 
         const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
         const glm::mat4& GetView() const { return m_ViewMatrix; }
         const glm::vec3& GetCameraPos() const { return m_CameraPos; }
+        const glm::vec3& GetCameraRotation() const { return m_CameraRotation; }
 
     private:
         glm::mat4 m_ProjectionMatrix{ 1.f };
         glm::mat4 m_ViewMatrix{ 1.f };
         glm::vec3 m_CameraPos{ 0.0f };
+        glm::vec3 m_CameraRotation{ 0.0f };
     };
 }  // namespace lve
