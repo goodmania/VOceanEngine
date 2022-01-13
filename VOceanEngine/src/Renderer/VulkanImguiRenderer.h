@@ -20,7 +20,7 @@ namespace voe {
         VulkanImguiRenderer& operator=(const VulkanImguiRenderer&) = delete;
 
         void RenderImgui(FrameInfo frameInfo/*, std::vector<GameObject>& gameObjects*/);
-        void OnUpdate(float dt, FrameInfo& frameInfo);
+        void OnUpdate(float dt, FrameInfo& frameInfo, VkExtent2D windowSize);
 
     private:
         void InitImgui();

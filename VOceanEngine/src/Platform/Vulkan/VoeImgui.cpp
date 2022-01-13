@@ -4,6 +4,11 @@
 #include "VoeImgui.h"
 #include "VulkanCore/Device.h"
 #include "Renderer/FrameInfo.h"
+#include "Renderer/Swapchain.h"
+
+#include "VOceanEngine/Input.h"
+#include "VOceanEngine/keyCodes.h"
+#include "VOceanEngine/MouseCodes.h"
 
 namespace voe {
 
@@ -17,6 +22,7 @@ namespace voe {
 		std::array<float, 50> frameTimes{};
 		float frameTimeMin = 9999.0f, frameTimeMax = 0.0f;
 		float lightTimer = 0.0f;
+
 	} uiSettings;
 
 	ImGUI::ImGUI(Device& device, PhDevice& phDevice, float width, float height) : m_Device(device), m_PhDevice(phDevice)
@@ -51,6 +57,10 @@ namespace voe {
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 		//Descriptor
 		m_FontDescriptor = new VkDescriptorImageInfo();
+
+		// init vertex, index buffer
+		m_VertexBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+		m_IndexBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 	}
 
 	void ImGUI::InitResources(VkQueue copyQueue)
@@ -179,7 +189,17 @@ namespace voe {
 		m_FontDescriptor->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
-	void ImGUI::NewImGuiFrame(FrameInfo frameInfo, bool updateFrameGraph)
+	void ImGUI::UpdateImgui(VkExtent2D windowSize)
+	{
+		// Update imGui
+		ImGuiIO& io = ImGui::GetIO();
+		io.DisplaySize = ImVec2(windowSize.width, windowSize.height);
+		io.MousePos = ImVec2(Input::GetMouseX(), Input::GetMouseY());
+		io.MouseDown[0] = Input::IsMouseButtonPressed(Mouse::ButtonLeft);
+		io.MouseDown[1] = Input::IsMouseButtonPressed(Mouse::ButtonRight);
+	}
+
+	void ImGUI::NewImGuiFrame(FrameInfo& frameInfo, bool updateFrameGraph)
 	{
 		ImGui::NewFrame();
 
@@ -209,7 +229,7 @@ namespace voe {
 		}
 
 		glm::vec3 cameraPos = frameInfo.CameraObj.GetCameraPos();
-		glm::vec3 cameraRot = frameInfo.CameraObj.GetCameraPos();
+		glm::vec3 cameraRot = frameInfo.CameraObj.GetCameraRotation();
 
 		ImGui::PlotLines("Frame Times", &uiSettings.frameTimes[0], 50, 0, "", uiSettings.frameTimeMin, uiSettings.frameTimeMax, ImVec2(0, 80));
 
@@ -233,7 +253,7 @@ namespace voe {
 		ImGui::Render();
 	}
 
-	void ImGUI::UpdateBuffers()
+	void ImGUI::UpdateBuffers(FrameInfo& frameInfo)
 	{
 		ImDrawData* imDrawData = ImGui::GetDrawData();
 
@@ -244,14 +264,16 @@ namespace voe {
 		if ((vertexBufferSize == 0) || (indexBufferSize == 0)) 
 			return;
 
+		uint32_t frameIndex = frameInfo.FrameIndex;
+
 		// Update buffers only if vertex or index count has been changed compared to current buffer size
 
 		// Vertex buffer
-		if ((m_VertexBuffer == nullptr) || (m_VertexCount != imDrawData->TotalVtxCount))
+		if ((m_VertexBuffers[frameIndex] == nullptr) || (m_VertexCount != imDrawData->TotalVtxCount))
 		{
-			m_VertexBuffer.reset();
+			m_VertexBuffers[frameIndex].reset();
 
-			m_VertexBuffer = std::make_unique<Buffer>(
+			m_VertexBuffers[frameIndex] = std::make_unique<Buffer>(
 				m_Device,
 				vertexBufferSize,
 				1,
@@ -259,15 +281,15 @@ namespace voe {
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 			m_VertexCount = imDrawData->TotalVtxCount;
-			m_VertexBuffer->Map();
+			m_VertexBuffers[frameIndex]->Map();
 		}
 
 		// Index buffer
-		if ((m_IndexBuffer == nullptr) || (m_IndexCount < imDrawData->TotalIdxCount))
+		if ((m_IndexBuffers[frameIndex] == nullptr) || (m_IndexCount < imDrawData->TotalIdxCount))
 		{
-			m_IndexBuffer.reset();
+			m_IndexBuffers[frameIndex].reset();
 
-			m_IndexBuffer = std::make_unique<Buffer>(
+			m_IndexBuffers[frameIndex] = std::make_unique<Buffer>(
 				m_Device,
 				indexBufferSize,
 				1,
@@ -275,12 +297,12 @@ namespace voe {
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 			m_IndexCount = imDrawData->TotalIdxCount;
-			m_IndexBuffer->Map();
+			m_IndexBuffers[frameIndex]->Map();
 		}
 
 		// Upload data
-		ImDrawVert* vtxDst = (ImDrawVert*)m_VertexBuffer->GetMappedMemory();
-		ImDrawIdx* idxDst = (ImDrawIdx*)m_IndexBuffer->GetMappedMemory();
+		ImDrawVert* vtxDst = (ImDrawVert*)m_VertexBuffers[frameIndex]->GetMappedMemory();
+		ImDrawIdx* idxDst = (ImDrawIdx*)m_IndexBuffers[frameIndex]->GetMappedMemory();
 
 		for (int n = 0; n < imDrawData->CmdListsCount; n++) 
 		{
@@ -292,11 +314,11 @@ namespace voe {
 		}
 
 		// Flush to make writes visible to GPU
-		m_VertexBuffer->Flush();
-		m_IndexBuffer->Flush();
+		m_VertexBuffers[frameIndex]->Flush();
+		m_IndexBuffers[frameIndex]->Flush();
 	}
 
-	void ImGUI::DrawFrame(VkCommandBuffer commandBuffer)
+	void ImGUI::DrawFrame(VkCommandBuffer commandBuffer, uint32_t frameIndex)
 	{
 		// Render commands
 		ImDrawData* imDrawData = ImGui::GetDrawData();
@@ -305,8 +327,8 @@ namespace voe {
 
 		if (imDrawData->CmdListsCount > 0) 
 		{
-			VkBuffer vertexBuffer = m_VertexBuffer->GetBuffer();
-			VkBuffer indexBuffer = m_IndexBuffer->GetBuffer();
+			VkBuffer vertexBuffer = m_VertexBuffers[frameIndex]->GetBuffer();
+			VkBuffer indexBuffer = m_IndexBuffers[frameIndex]->GetBuffer();
 
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
@@ -611,5 +633,4 @@ public:
 	}
 
 };
-
 */

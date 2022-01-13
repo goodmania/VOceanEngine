@@ -3,6 +3,7 @@
 
 #include "VOceanEngine/Input.h"
 #include "VOceanEngine/keyCodes.h"
+#include "VOceanEngine/MouseCodes.h"
 
 #include "Renderer/GameObject.h"
 #include "Renderer/Camera.h"
@@ -16,15 +17,18 @@ namespace voe {
 		m_CurrentMousePos = m_NewMousePos;
 		m_NewMousePos = glm::vec2(glm::clamp(Input::GetMouseX(), 0.0f, 1280.f), glm::clamp(Input::GetMouseY(), 0.0f, 720.f));
 		
-		if (m_NewMousePos.x > m_CurrentMousePos.x)
-			rotate.y += 0.1f;
-		else if (m_NewMousePos.x < m_CurrentMousePos.x)
-			rotate.y -= 0.1f;
+		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+		{
+			if (m_NewMousePos.x > m_CurrentMousePos.x)
+				rotate.y += 0.1f;
+			else if (m_NewMousePos.x < m_CurrentMousePos.x)
+				rotate.y -= 0.1f;
 
-		if (m_NewMousePos.y > m_CurrentMousePos.y)
-			rotate.x -= 0.1;
-		else if (m_NewMousePos.y < m_CurrentMousePos.y)
-			rotate.x += 0.1;
+			if (m_NewMousePos.y > m_CurrentMousePos.y)
+				rotate.x -= 0.1;
+			else if (m_NewMousePos.y < m_CurrentMousePos.y)
+				rotate.x += 0.1;
+		}
 
 		if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) 
 		{
