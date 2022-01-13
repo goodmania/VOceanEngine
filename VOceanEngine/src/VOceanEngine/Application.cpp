@@ -69,12 +69,15 @@ namespace voe {
 
 				// renderer update and start imgui new frame
 				m_VulkanBase->GetRenderer().OnUpdate(frameTime, frameInfo);
+
+				if(m_EnableImgui)
 				m_VulkanBase->GetImguiRenderer().OnUpdate(frameTime, frameInfo, m_Window->GetExtent());
 
 				// render
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->GetRenderer().RenderGameObjects(frameInfo, m_GameObjects);
 				// imgui render
+				if (m_EnableImgui)
 				m_VulkanBase->GetImguiRenderer().RenderImgui(frameInfo);
 				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->EndFrame();

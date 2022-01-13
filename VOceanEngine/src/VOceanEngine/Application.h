@@ -40,6 +40,12 @@ namespace voe {
 
 		std::unique_ptr<VulkanBase> m_VulkanBase;
 		std::vector<GameObject> m_GameObjects;
+
+#ifdef VOE_DEBUG
+		const bool m_EnableImgui = false;
+#else
+		const bool m_EnableImgui = false;
+#endif
 	};
 
 	Application* CreateApplication();
