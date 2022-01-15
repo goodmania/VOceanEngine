@@ -79,6 +79,7 @@ namespace voe {
 				// imgui render
 				if (m_EnableImgui)
 				m_VulkanBase->GetImguiRenderer().RenderImgui(frameInfo);
+
 				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->EndFrame();
 			}
@@ -119,7 +120,7 @@ namespace voe {
 		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f } ;
 		m_GameObjects.push_back(std::move(ocean));
 
-		/*auto ocean2 = GameObject::CreateGameObject();
+		auto ocean2 = GameObject::CreateGameObject();
 		ocean2.m_Model = model;
 		ocean2.m_Transform.Translation = { oceanSize, 0.0f, oceanSize };
 		ocean2.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
@@ -135,7 +136,7 @@ namespace voe {
 		ocean4.m_Model = model;
 		ocean4.m_Transform.Translation = { oceanSize, 0.0f, 0.0f };
 		ocean4.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
-		m_GameObjects.push_back(std::move(ocean4));*/
+		m_GameObjects.push_back(std::move(ocean4));
 	}
 
 	void Application::OnEvent(Event& e)
