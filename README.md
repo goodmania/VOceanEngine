@@ -37,7 +37,7 @@ VOceanEngine\vender
  
 * `W`, `A`, `S`, `D` horizontal movement.
 * `E`, `F` Vertical movement.
-* `Mouse Movement` Camera rotation.
+* `Mouse Right Button` + `Mouse Movement` Camera rotation.
  
 # Note
  
