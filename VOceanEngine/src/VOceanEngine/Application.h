@@ -42,7 +42,7 @@ namespace voe {
 		std::vector<GameObject> m_GameObjects;
 
 #ifdef VOE_DEBUG
-		const bool m_EnableImgui = false;
+		const bool m_EnableImgui = true;
 #else
 		const bool m_EnableImgui = false;
 #endif

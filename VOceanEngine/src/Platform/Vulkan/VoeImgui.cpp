@@ -14,9 +14,9 @@ namespace voe {
 
 	// Options and values to display/toggle from the UI
 	struct UISettings {
-		bool displayModels = true;
-		bool displayLogos = true;
-		bool displayBackground = true;
+		bool displayModels = false;
+		bool displayLogos = false;
+		bool displayBackground = false;
 		bool animateLight = false;
 		float lightSpeed = 0.25f;
 		std::array<float, 50> frameTimes{};
@@ -231,12 +231,13 @@ namespace voe {
 		glm::vec3 cameraPos = frameInfo.CameraObj.GetCameraPos();
 		glm::vec3 cameraRot = frameInfo.CameraObj.GetCameraRotation();
 
-		ImGui::PlotLines("Frame Times", &uiSettings.frameTimes[0], 50, 0, "", uiSettings.frameTimeMin, uiSettings.frameTimeMax, ImVec2(0, 80));
+		//ImGui::PlotLines("Frame Times", &uiSettings.frameTimes[0], 50, 0, "", uiSettings.frameTimeMin, uiSettings.frameTimeMax, ImVec2(0, 80));
 
 		ImGui::Text("Camera");
 		ImGui::InputFloat3("position", &cameraPos.x, 2);
 		ImGui::InputFloat3("rotation", &cameraRot.x, 2);
 
+		/*
 		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
 		ImGui::Begin("Example settings");
 		ImGui::Checkbox("Render models", &uiSettings.displayModels);
@@ -245,9 +246,10 @@ namespace voe {
 		ImGui::Checkbox("Animate light", &uiSettings.animateLight);
 		ImGui::SliderFloat("Light speed", &uiSettings.lightSpeed, 0.1f, 1.0f);
 		ImGui::End();
+		*/
 
 		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 
 		// Render to generate draw buffers
 		ImGui::Render();

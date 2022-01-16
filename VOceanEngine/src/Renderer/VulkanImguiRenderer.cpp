@@ -152,7 +152,7 @@ namespace voe {
 	{
 		m_Imgui->UpdateImgui(windowSize);
 		// todo modify boolean
-		m_Imgui->NewImGuiFrame(frameInfo, true);
+		m_Imgui->NewImGuiFrame(frameInfo, false);
 
 		m_Imgui->UpdateBuffers(frameInfo);
 		// todo update mouse movement
