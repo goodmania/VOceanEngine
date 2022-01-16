@@ -78,12 +78,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Platform\Vulkan\SetupVulkanForImGui.h">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\imgui_impl_vulkan.h">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsInput.h">
       <Filter>src\Platform\Windows</Filter>
     </ClInclude>
@@ -1469,11 +1463,11 @@
     <ClInclude Include="src\Renderer\Descriptor.h" />
     <ClInclude Include="src\Renderer\Buffer.h" />
     <ClInclude Include="src\Renderer\FrameInfo.h" />
+    <ClInclude Include="src\Renderer\VulkanImguiRenderer.h" />
+    <ClInclude Include="src\Platform\Vulkan\VoeImgui.h" />
+    <ClInclude Include="src\Renderer\ImguiPipeline.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Platform\Vulkan\imgui_impl_vulkan.cpp">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
@@ -1550,5 +1544,8 @@
     <ClCompile Include="src\Renderer\ComputePipeline.cpp" />
     <ClCompile Include="src\Renderer\Descriptor.cpp" />
     <ClCompile Include="src\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Renderer\VulkanImguiRenderer.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VoeImgui.cpp" />
+    <ClCompile Include="src\Renderer\ImguiPipeline.cpp" />
   </ItemGroup>
 </Project>

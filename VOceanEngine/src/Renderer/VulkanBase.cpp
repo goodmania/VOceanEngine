@@ -12,6 +12,7 @@ namespace voe {
 		CreateCommandBuffers();
 		CreateSyncObjects();
 		CreateVulkanRenderer();
+		CreateImguiRenderer();
 	}
 
 	VulkanBase::~VulkanBase()
@@ -151,6 +152,11 @@ namespace voe {
 	void VulkanBase::CreateVulkanRenderer()
 	{
 		m_Renderer = std::make_unique<VulkanRenderer>(*m_Device, m_Swapchain->GetRenderPass());
+	}
+
+	void VulkanBase::CreateImguiRenderer()
+	{
+		m_ImguiRenderer = std::make_unique<VulkanImguiRenderer>(*m_Device, *m_PhDevice, m_Swapchain->GetRenderPass(), m_Window->GetExtent());
 	}
 
 	void VulkanBase::RecreateSwapChain()

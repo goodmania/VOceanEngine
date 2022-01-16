@@ -3,6 +3,7 @@
 #include "Platform/Windows/WindowsWindow.h"
 #include "Renderer/Swapchain.h"
 #include "Renderer/VulkanRenderer.h"
+#include "Renderer/VulkanImguiRenderer.h"
 
 namespace voe{
 	
@@ -14,8 +15,6 @@ namespace voe{
 	class VOE_API VulkanBase
 	{
 	public:
-		
-
 		VulkanBase(std::shared_ptr<Window> window);
 		~VulkanBase();
 		VulkanBase(const VulkanBase&) = delete;
@@ -34,7 +33,9 @@ namespace voe{
 		}
 
 		const std::shared_ptr<Device> GetDevice() const { return m_Device; }
+
 		VulkanRenderer& GetRenderer() const { return *m_Renderer; }
+		VulkanImguiRenderer& GetImguiRenderer() const { return *m_ImguiRenderer; }
 		const float GetAspectRatio() const { return m_Swapchain->AspectRatio(); }
 
 		bool IsFrameInProgress() const { return m_IsFrameStarted; }
@@ -50,6 +51,7 @@ namespace voe{
 		void InitVulkanDevice();
 		void CreateSwapchain();
 		void CreateVulkanRenderer();
+		void CreateImguiRenderer();
 		void RecreateSwapChain();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
@@ -74,6 +76,7 @@ namespace voe{
 
 		std::unique_ptr<Swapchain>  m_Swapchain;
 		std::unique_ptr<VulkanRenderer> m_Renderer;
+		std::unique_ptr<VulkanImguiRenderer> m_ImguiRenderer;
 
 		// syncs
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;

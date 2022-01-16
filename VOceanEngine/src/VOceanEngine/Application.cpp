@@ -39,7 +39,8 @@ namespace voe {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
 		auto viewerObject = GameObject::CreateGameObject();
-		viewerObject.m_Transform.Translation = { 320.0f ,-200.0f, 0.0f };
+		viewerObject.m_Transform.Translation = { 0.0f ,-300.0f, 650.0f };
+		viewerObject.m_Transform.Rotation = { -0.66f , 2.33f, 0.0f };
 		CameraController cameraController{};
 
 		while (m_Running)
@@ -60,17 +61,26 @@ namespace voe {
 			m_Camera.SetViewYXZ(viewerObject.m_Transform.Translation, viewerObject.m_Transform.Rotation);
 			m_Camera.SetPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 2000.f);
 			m_Camera.SetCameraPos(viewerObject.m_Transform.Translation);
+			m_Camera.SetCameraRotation(viewerObject.m_Transform.Rotation);
 
 			if (auto commandBuffer = m_VulkanBase->BeginFrame())
 			{
 				int frameIndex = m_VulkanBase->GetFrameIndex();
 				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, m_Camera };
 
+				// renderer update and start imgui new frame
 				m_VulkanBase->GetRenderer().OnUpdate(frameTime, frameInfo);
+
+				if(m_EnableImgui)
+				m_VulkanBase->GetImguiRenderer().OnUpdate(frameTime, frameInfo, m_Window->GetExtent());
 
 				// render
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->GetRenderer().RenderGameObjects(frameInfo, m_GameObjects);
+				// imgui render
+				if (m_EnableImgui)
+				m_VulkanBase->GetImguiRenderer().RenderImgui(frameInfo);
+
 				m_VulkanBase->EndSwapchainRenderPass(commandBuffer);
 				m_VulkanBase->EndFrame();
 			}
