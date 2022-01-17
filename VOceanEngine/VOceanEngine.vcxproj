@@ -155,23 +155,24 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Renderer\ImguiPipeline.h" />
     <ClInclude Include="src\Platform\Vulkan\VoeImgui.h" />
-    <ClInclude Include="src\Renderer\Buffer.h" />
-    <ClInclude Include="src\Renderer\Descriptor.h" />
-    <ClInclude Include="src\Renderer\ComputePipeline.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\PreCompileHeader.h" />
+    <ClInclude Include="src\Renderer\Buffer.h" />
     <ClInclude Include="src\Renderer\Camera.h" />
     <ClInclude Include="src\Renderer\CameraController.h" />
+    <ClInclude Include="src\Renderer\ComputePipeline.h" />
+    <ClInclude Include="src\Renderer\Descriptor.h" />
     <ClInclude Include="src\Renderer\FrameInfo.h" />
     <ClInclude Include="src\Renderer\GameObject.h" />
     <ClInclude Include="src\Renderer\GraphicsPipeline.h" />
     <ClInclude Include="src\Renderer\HeightMap\HeightMap.h" />
     <ClInclude Include="src\Renderer\HeightMap\TessendorfOceane.h" />
+    <ClInclude Include="src\Renderer\ImguiPipeline.h" />
     <ClInclude Include="src\Renderer\Model.h" />
     <ClInclude Include="src\Renderer\Swapchain.h" />
+    <ClInclude Include="src\Renderer\Texture.h" />
     <ClInclude Include="src\Renderer\Utils.h" />
     <ClInclude Include="src\Renderer\VulkanBase.h" />
     <ClInclude Include="src\Renderer\VulkanImguiRenderer.h" />
@@ -198,7 +199,6 @@
     <ClInclude Include="src\VulkanCore\Surface.h" />
     <ClInclude Include="src\VulkanCore\Tools.h" />
     <ClInclude Include="src\VulkanCore\VulkanCoreHeader.h" />
-    <ClInclude Include="src\Renderer\Texture.h" />
     <ClInclude Include="vender\glm\glm\common.hpp" />
     <ClInclude Include="vender\glm\glm\detail\_features.hpp" />
     <ClInclude Include="vender\glm\glm\detail\_fixes.hpp" />
@@ -625,24 +625,25 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Renderer\ImguiPipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VoeImgui.cpp" />
-    <ClCompile Include="src\Renderer\Buffer.cpp" />
-    <ClCompile Include="src\Renderer\Descriptor.cpp" />
-    <ClCompile Include="src\Renderer\ComputePipeline.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\PreCompileHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Renderer\Camera.cpp" />
     <ClCompile Include="src\Renderer\CameraController.cpp" />
+    <ClCompile Include="src\Renderer\ComputePipeline.cpp" />
+    <ClCompile Include="src\Renderer\Descriptor.cpp" />
     <ClCompile Include="src\Renderer\GameObject.cpp" />
     <ClCompile Include="src\Renderer\GraphicsPipeline.cpp" />
     <ClCompile Include="src\Renderer\HeightMap\HeightMap.cpp" />
     <ClCompile Include="src\Renderer\HeightMap\TessendorfOceane.cpp" />
+    <ClCompile Include="src\Renderer\ImguiPipeline.cpp" />
     <ClCompile Include="src\Renderer\Model.cpp" />
     <ClCompile Include="src\Renderer\Swapchain.cpp" />
+    <ClCompile Include="src\Renderer\Texture.cpp" />
     <ClCompile Include="src\Renderer\VulkanBase.cpp" />
     <ClCompile Include="src\Renderer\VulkanImguiRenderer.cpp" />
     <ClCompile Include="src\Renderer\VulkanRenderer.cpp" />
@@ -657,7 +658,6 @@
     <ClCompile Include="src\VulkanCore\PhDevice.cpp" />
     <ClCompile Include="src\VulkanCore\Surface.cpp" />
     <ClCompile Include="src\VulkanCore\Tools.cpp" />
-    <ClCompile Include="src\Renderer\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="vender\GLFW\GLFW.vcxproj">
