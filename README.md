@@ -1,6 +1,6 @@
 # VOceanEngine
 
- VOceanEngine is an FFT ocean simulation APP that uses Vulkan and C++.  
+ VOceanEngine is an FFT ocean Renderer that uses Vulkan and C++.  
    
 # DEMO
  
