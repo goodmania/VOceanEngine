@@ -123,7 +123,7 @@ namespace voe {
 
 		/*auto ocean2 = GameObject::CreateGameObject();
 		ocean2.m_Model = model;
-		ocean2.m_Transform.Translation = { oceanSize, 0.0f, oceanSize };
+		ocean2.m_Transform.Translation = { oceanSize , 0.0f, oceanSize  };
 		ocean2.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
 		m_GameObjects.push_back(std::move(ocean2));
 

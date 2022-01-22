@@ -78,6 +78,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\Vulkan\VoeImgui.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsInput.h">
       <Filter>src\Platform\Windows</Filter>
     </ClInclude>
@@ -87,10 +90,22 @@
     <ClInclude Include="src\PreCompileHeader.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\Buffer.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Renderer\Camera.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\CameraController.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\ComputePipeline.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\Descriptor.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\FrameInfo.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\GameObject.h">
@@ -105,16 +120,25 @@
     <ClInclude Include="src\Renderer\HeightMap\TessendorfOceane.h">
       <Filter>src\Renderer\HeightMap</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\ImguiPipeline.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Renderer\Model.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\Swapchain.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\Texture.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Renderer\Utils.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\VulkanBase.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\VulkanImguiRenderer.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\VulkanRenderer.h">
@@ -1458,16 +1482,11 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h">
       <Filter>vender\tinyobjloader</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Texture.h" />
-    <ClInclude Include="src\Renderer\ComputePipeline.h" />
-    <ClInclude Include="src\Renderer\Descriptor.h" />
-    <ClInclude Include="src\Renderer\Buffer.h" />
-    <ClInclude Include="src\Renderer\FrameInfo.h" />
-    <ClInclude Include="src\Renderer\VulkanImguiRenderer.h" />
-    <ClInclude Include="src\Platform\Vulkan\VoeImgui.h" />
-    <ClInclude Include="src\Renderer\ImguiPipeline.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\Vulkan\VoeImgui.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
@@ -1477,10 +1496,19 @@
     <ClCompile Include="src\PreCompileHeader.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\Buffer.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Renderer\Camera.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\CameraController.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\ComputePipeline.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\Descriptor.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\GameObject.cpp">
@@ -1495,13 +1523,22 @@
     <ClCompile Include="src\Renderer\HeightMap\TessendorfOceane.cpp">
       <Filter>src\Renderer\HeightMap</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\ImguiPipeline.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Renderer\Model.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\Swapchain.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\Texture.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Renderer\VulkanBase.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\VulkanImguiRenderer.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\VulkanRenderer.cpp">
@@ -1540,12 +1577,5 @@
     <ClCompile Include="src\VulkanCore\Tools.cpp">
       <Filter>src\VulkanCore</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Texture.cpp" />
-    <ClCompile Include="src\Renderer\ComputePipeline.cpp" />
-    <ClCompile Include="src\Renderer\Descriptor.cpp" />
-    <ClCompile Include="src\Renderer\Buffer.cpp" />
-    <ClCompile Include="src\Renderer\VulkanImguiRenderer.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\VoeImgui.cpp" />
-    <ClCompile Include="src\Renderer\ImguiPipeline.cpp" />
   </ItemGroup>
 </Project>
