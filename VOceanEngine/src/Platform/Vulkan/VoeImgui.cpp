@@ -226,7 +226,6 @@ namespace voe {
 		ImGui::Text("Camera Movement	: W, A, S, D");
 		ImGui::Text("Camera UP / DOWN	: E, F");
 		ImGui::Text("Camera Rotate	: Mouse Right Button + Mouse Movement");
-		ImGui::Text("Exit	: Esc");
 		ImGui::End();
 
 		// Render to generate draw buffers
