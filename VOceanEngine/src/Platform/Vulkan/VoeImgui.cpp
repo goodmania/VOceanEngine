@@ -235,75 +235,78 @@ namespace voe {
 
 	void ImGUI::UpdateBuffers(FrameInfo& frameInfo)
 	{
+		static bool firstDraw = true;
 		ImDrawData* imDrawData = ImGui::GetDrawData();
 
 		// Note: Alignment is done inside buffer creation
 		VkDeviceSize vertexBufferSize = imDrawData->TotalVtxCount * sizeof(ImDrawVert);
 		VkDeviceSize indexBufferSize = imDrawData->TotalIdxCount * sizeof(ImDrawIdx);
 
-		if ((vertexBufferSize == 0) || (indexBufferSize == 0)) 
+		if ((vertexBufferSize == 0) || (indexBufferSize == 0))
 			return;
 
 		uint32_t frameIndex = frameInfo.FrameIndex;
 
 		// Update buffers only if vertex or index count has been changed compared to current buffer size
-
-		// Vertex buffer
-		if ((m_VertexBuffers[frameIndex] == nullptr) || (m_VertexCount != imDrawData->TotalVtxCount))
 		{
-			m_VertexBuffers[frameIndex].reset();
+			// Vertex buffer
+			if ((m_VertexBuffers[frameIndex] == nullptr) || (m_VertexCount != imDrawData->TotalVtxCount))
+			{
+				m_VertexBuffers[frameIndex].reset();
 
-			m_VertexBuffers[frameIndex] = std::make_unique<Buffer>(
-				m_Device,
-				vertexBufferSize,
-				1,
-				VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+				m_VertexBuffers[frameIndex] = std::make_unique<Buffer>(
+					m_Device,
+					vertexBufferSize,
+					imDrawData->TotalVtxCount,
+					VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-			m_VertexCount = imDrawData->TotalVtxCount;
-			m_VertexBuffers[frameIndex]->Map();
+				m_VertexCount = imDrawData->TotalVtxCount;
+				m_VertexBuffers[frameIndex]->Map();
+			}
+
+			// Index buffer
+			if ((m_IndexBuffers[frameIndex] == nullptr) || (m_IndexCount < imDrawData->TotalIdxCount))
+			{
+				m_IndexBuffers[frameIndex].reset();
+
+				m_IndexBuffers[frameIndex] = std::make_unique<Buffer>(
+					m_Device,
+					indexBufferSize,
+					imDrawData->TotalIdxCount,
+					VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+				m_IndexCount = imDrawData->TotalIdxCount;
+				m_IndexBuffers[frameIndex]->Map();
+			}
+
+			// Upload data
+			ImDrawVert* vtxDst = (ImDrawVert*)m_VertexBuffers[frameIndex]->GetMappedMemory();
+			ImDrawIdx* idxDst = (ImDrawIdx*)m_IndexBuffers[frameIndex]->GetMappedMemory();
+
+			for (int n = 0; n < imDrawData->CmdListsCount; n++)
+			{
+				const ImDrawList* cmd_list = imDrawData->CmdLists[n];
+				memcpy(vtxDst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+				memcpy(idxDst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+				vtxDst += cmd_list->VtxBuffer.Size;
+				idxDst += cmd_list->IdxBuffer.Size;
+			}
+
+			// Flush to make writes visible to GPU
+			m_VertexBuffers[frameIndex]->Flush();
+			m_IndexBuffers[frameIndex]->Flush();
 		}
-
-		// Index buffer
-		if ((m_IndexBuffers[frameIndex] == nullptr) || (m_IndexCount < imDrawData->TotalIdxCount))
-		{
-			m_IndexBuffers[frameIndex].reset();
-
-			m_IndexBuffers[frameIndex] = std::make_unique<Buffer>(
-				m_Device,
-				indexBufferSize,
-				1,
-				VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-
-			m_IndexCount = imDrawData->TotalIdxCount;
-			m_IndexBuffers[frameIndex]->Map();
-		}
-
-		// Upload data
-		ImDrawVert* vtxDst = (ImDrawVert*)m_VertexBuffers[frameIndex]->GetMappedMemory();
-		ImDrawIdx* idxDst = (ImDrawIdx*)m_IndexBuffers[frameIndex]->GetMappedMemory();
-
-		for (int n = 0; n < imDrawData->CmdListsCount; n++) 
-		{
-			const ImDrawList* cmd_list = imDrawData->CmdLists[n];
-			memcpy(vtxDst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
-			memcpy(idxDst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-			vtxDst += cmd_list->VtxBuffer.Size;
-			idxDst += cmd_list->IdxBuffer.Size;
-		}
-
-		// Flush to make writes visible to GPU
-		m_VertexBuffers[frameIndex]->Flush();
-		m_IndexBuffers[frameIndex]->Flush();
 	}
 
-	void ImGUI::DrawFrame(VkCommandBuffer commandBuffer, uint32_t frameIndex)
+	void ImGUI::DrawFrame(VkCommandBuffer commandBuffer, FrameInfo& frameInfo)
 	{
 		// Render commands
 		ImDrawData* imDrawData = ImGui::GetDrawData();
 		int32_t vertexOffset = 0;
 		int32_t indexOffset = 0;
+		uint32_t frameIndex = frameInfo.FrameIndex;
 
 		if (imDrawData->CmdListsCount > 0) 
 		{

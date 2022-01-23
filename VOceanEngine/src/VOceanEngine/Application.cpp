@@ -114,30 +114,11 @@ namespace voe {
 
 		std::shared_ptr<Model> model = Model::CreateXZPlaneModelFromProcedural(*device, width, height, oceanSize);
 		
-		// ìÆçÏämîFÇÃÇΩÇﬂ!!!!
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
 		ocean.m_Transform.Translation = { 0.0f, 0.0f, 0.0f };
 		ocean.m_Transform.Scale = { 1.0f, 1.0f, 1.0f } ;
 		m_GameObjects.push_back(std::move(ocean));
-
-		/*auto ocean2 = GameObject::CreateGameObject();
-		ocean2.m_Model = model;
-		ocean2.m_Transform.Translation = { oceanSize , 0.0f, oceanSize  };
-		ocean2.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
-		m_GameObjects.push_back(std::move(ocean2));
-
-		auto ocean3 = GameObject::CreateGameObject();
-		ocean3.m_Model = model;
-		ocean3.m_Transform.Translation = { 0.0f, 0.0f, oceanSize };
-		ocean3.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
-		m_GameObjects.push_back(std::move(ocean3));
-
-		auto ocean4 = GameObject::CreateGameObject();
-		ocean4.m_Model = model;
-		ocean4.m_Transform.Translation = { oceanSize, 0.0f, 0.0f };
-		ocean4.m_Transform.Scale = { 1.0f, 1.0f, 1.0f };
-		m_GameObjects.push_back(std::move(ocean4));*/
 	}
 
 	void Application::OnEvent(Event& e)
@@ -145,7 +126,7 @@ namespace voe {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
 
-		VOE_CORE_TRACE("{ 0 }", e);
+		//VOE_CORE_TRACE("{ 0 }", e);
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{

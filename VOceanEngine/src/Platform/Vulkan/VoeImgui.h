@@ -42,7 +42,7 @@ namespace voe {
 		void UpdateImgui(VkExtent2D windowSize);
 
 		// Draw current imGui frame into a command buffer
-		void DrawFrame(VkCommandBuffer commandBuffer, uint32_t frameIndex);
+		void DrawFrame(VkCommandBuffer commandBuffer, FrameInfo& frameInfo);
 
 	private:
 		// Vulkan resources for rendering the UI
