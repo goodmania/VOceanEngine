@@ -55,16 +55,19 @@ namespace voe {
 		vkDestroySemaphore(m_Device.GetVkDevice(), m_ComputeSemaphores.Ready, nullptr);
 		vkDestroySemaphore(m_Device.GetVkDevice(), m_ComputeSemaphores.Complete, nullptr);
 
-		vkDestroySemaphore(m_Device.GetVkDevice(), m_ImageTransitionSemaphores.Ready, nullptr);
-		vkDestroySemaphore(m_Device.GetVkDevice(), m_ImageTransitionSemaphores.Complete, nullptr);
+		//vkDestroySemaphore(m_Device.GetVkDevice(), m_ImageTransitionSemaphores.Ready, nullptr);
+		//vkDestroySemaphore(m_Device.GetVkDevice(), m_ImageTransitionSemaphores.Complete, nullptr);
 
-		for (uint32_t i = 0; i < m_DescriptorSetLayouts.size(); i++)
+		// vkDestroyDescriptorSetLayout()‚Í•K—v‚È‚µ
+		/*for (uint32_t i = 0; i < m_DescriptorSetLayouts.size(); i++)
 		{
 			vkDestroyDescriptorSetLayout(m_Device.GetVkDevice(), m_DescriptorSetLayouts[i], nullptr);
-		}
+		}*/
+
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_ComputePipelineLayout, nullptr);
 		vkDestroyCommandPool(m_Device.GetVkDevice(), m_ComputeCommandPool, nullptr);
-		vkDestroyCommandPool(m_Device.GetVkDevice(), m_ImageTransitionCommandPool, nullptr);
+
+		//vkDestroyCommandPool(m_Device.GetVkDevice(), m_ImageTransitionCommandPool, nullptr);
 
 		vkDestroyPipelineCache(m_Device.GetVkDevice(), m_PipelineCache, nullptr);
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_GraphicsPipelineLayout, nullptr);

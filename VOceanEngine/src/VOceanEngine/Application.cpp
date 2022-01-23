@@ -31,7 +31,7 @@ namespace voe {
 
 	Application::~Application()
 	{
-
+		
 	}
 
 	void Application::Run()
@@ -148,6 +148,7 @@ namespace voe {
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
+		vkDeviceWaitIdle(m_VulkanBase->GetDevice()->GetVkDevice());
 		m_Running = false;
 		return true;
 	}

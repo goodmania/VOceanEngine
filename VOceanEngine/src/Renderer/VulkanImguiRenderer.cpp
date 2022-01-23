@@ -53,10 +53,9 @@ namespace voe {
 		delete m_DescriptorAllocator;
 		delete m_DescriptorLayoutCache;
 
-		vkDestroyDescriptorSetLayout(m_Device.GetVkDevice(), m_DescriptorSetLayout, nullptr);
+		// vkDestroyDescriptorSetLayout()は必要なし
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_PipelineLayout, nullptr);
 		vkDestroyPipelineCache(m_Device.GetVkDevice(), m_PipelineCache, nullptr);
-
 	}
 
 	// todo コメントアウトを消す
