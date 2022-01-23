@@ -10,12 +10,12 @@ public:
 
 	void OnUpdate() override
 	{
-		VOE_INFO("ExampleLayer::Update");
+		//VOE_INFO("ExampleLayer::Update");
 	}
 
 	void OnEvent(voe::Event& event) override
 	{
-		VOE_TRACE("{0}", event);
+		//VOE_TRACE("{0}", event);
 	}
 };
 

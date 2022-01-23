@@ -53,10 +53,9 @@ namespace voe {
 		delete m_DescriptorAllocator;
 		delete m_DescriptorLayoutCache;
 
-		vkDestroyDescriptorSetLayout(m_Device.GetVkDevice(), m_DescriptorSetLayout, nullptr);
+		// vkDestroyDescriptorSetLayout()は必要なし
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_PipelineLayout, nullptr);
 		vkDestroyPipelineCache(m_Device.GetVkDevice(), m_PipelineCache, nullptr);
-
 	}
 
 	// todo コメントアウトを消す
@@ -80,28 +79,8 @@ namespace voe {
 		PushConstBlock.Translate = glm::vec2(-1.0f);
 		vkCmdPushConstants(frameInfo.CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstBlock), &PushConstBlock);
 
-		m_Imgui->DrawFrame(frameInfo.CommandBuffer, frameInfo.FrameIndex);
+		m_Imgui->DrawFrame(frameInfo.CommandBuffer, frameInfo);
 
-		/*for (auto& obj : gameObjects)
-		{
-			obj.m_Transform2d.Rotation = glm::mod(obj.m_Transform2d.Rotation + 0.01f, glm::two_pi<float>());
-
-			PushConstantData push = {};
-			push.Offset = obj.m_Transform2d.Translation;
-			push.Color = obj.m_Color;
-			push.Transform = obj.m_Transform2d.Mat2();
-
-			vkCmdPushConstants(
-				frameInfo.CommandBuffer,
-				m_PipelineLayout,
-				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-				0,
-				sizeof(PushConstantData),
-				&push);
-
-			obj.m_Model->Bind(frameInfo.CommandBuffer);
-			obj.m_Model->Draw(frameInfo.CommandBuffer);
-		}*/
 	}
 
 	void VulkanImguiRenderer::InitImgui()
@@ -155,7 +134,6 @@ namespace voe {
 		m_Imgui->NewImGuiFrame(frameInfo, false);
 
 		m_Imgui->UpdateBuffers(frameInfo);
-		// todo update mouse movement
 	}
 
 	void VulkanImguiRenderer::CreateDescriptorSets()

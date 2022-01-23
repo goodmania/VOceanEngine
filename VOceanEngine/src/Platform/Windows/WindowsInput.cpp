@@ -41,8 +41,6 @@ namespace voe {
 		auto [x, y] = GetMousePositionImpl();
 		return y;
 	}
-
-
 }
 
 
