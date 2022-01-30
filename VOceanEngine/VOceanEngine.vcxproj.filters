@@ -141,7 +141,7 @@
     <ClInclude Include="src\Renderer\VulkanImguiRenderer.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\VulkanRenderer.h">
+    <ClInclude Include="src\Renderer\VulkanOceanRenderer.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\VOceanEngine.h">
@@ -1482,6 +1482,7 @@
     <ClInclude Include="vender\tinyobjloader\tiny_obj_loader.h">
       <Filter>vender\tinyobjloader</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\VulkanModelRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\VoeImgui.cpp">
@@ -1541,7 +1542,7 @@
     <ClCompile Include="src\Renderer\VulkanImguiRenderer.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\VulkanRenderer.cpp">
+    <ClCompile Include="src\Renderer\VulkanOceanRenderer.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\VOceanEngine\Application.cpp">
@@ -1577,5 +1578,6 @@
     <ClCompile Include="src\VulkanCore\Tools.cpp">
       <Filter>src\VulkanCore</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\VulkanModelRenderer.cpp" />
   </ItemGroup>
 </Project>

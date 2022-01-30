@@ -176,7 +176,8 @@
     <ClInclude Include="src\Renderer\Utils.h" />
     <ClInclude Include="src\Renderer\VulkanBase.h" />
     <ClInclude Include="src\Renderer\VulkanImguiRenderer.h" />
-    <ClInclude Include="src\Renderer\VulkanRenderer.h" />
+    <ClInclude Include="src\Renderer\VulkanModelRenderer.h" />
+    <ClInclude Include="src\Renderer\VulkanOceanRenderer.h" />
     <ClInclude Include="src\VOceanEngine.h" />
     <ClInclude Include="src\VOceanEngine\Application.h" />
     <ClInclude Include="src\VOceanEngine\Core.h" />
@@ -646,7 +647,8 @@
     <ClCompile Include="src\Renderer\Texture.cpp" />
     <ClCompile Include="src\Renderer\VulkanBase.cpp" />
     <ClCompile Include="src\Renderer\VulkanImguiRenderer.cpp" />
-    <ClCompile Include="src\Renderer\VulkanRenderer.cpp" />
+    <ClCompile Include="src\Renderer\VulkanModelRenderer.cpp" />
+    <ClCompile Include="src\Renderer\VulkanOceanRenderer.cpp" />
     <ClCompile Include="src\VOceanEngine\Application.cpp" />
     <ClCompile Include="src\VOceanEngine\Imgui\ImguiLayer.cpp" />
     <ClCompile Include="src\VOceanEngine\Layer.cpp" />
