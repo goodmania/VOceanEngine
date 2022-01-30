@@ -45,6 +45,17 @@ namespace voe {
 		const VkImage GetImage() const { return m_Image; }
 		const VkImageLayout GetCurrentImageLayout() const{ return m_ImageLayout; }
 
+		void Texture2D::LoadTextureFromFile(
+			const char* filename,
+			VkFormat format,
+			Device& device,
+			PhDevice& phDevice,
+			VkQueue copyQueue,
+			VkImageUsageFlags imageUsageFlags,
+			VkImageLayout imageLayout,
+			int textureChannel,
+			bool forceLinear);
+
 		void CreateTextureFromBuffer(
 			void*				buffer,
 			VkDeviceSize		bufferSize,
