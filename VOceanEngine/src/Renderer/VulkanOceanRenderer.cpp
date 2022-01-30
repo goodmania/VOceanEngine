@@ -24,7 +24,7 @@ namespace voe {
 		glm::mat4 NormalMatrix{ 1.f };
 	};
 
-	struct GlobalUbo
+	struct OceanUbo
 	{
 		glm::mat4 ProjectionView{ 1.f };
 		glm::vec3 lightDirection = glm::vec3(-1.0f, -1.0f, 1.0f);
@@ -73,7 +73,7 @@ namespace voe {
 		vkDestroyPipelineLayout(m_Device.GetVkDevice(), m_GraphicsPipelineLayout, nullptr);
 	}
 
-	void VulkanRenderer::RenderGameObjects(FrameInfo frameInfo, std::vector<GameObject>& gameObjects)
+	void VulkanRenderer::RenderOcean(FrameInfo frameInfo, std::vector<GameObject>& gameObjects)
 	{
 		// Acquire barrier
 		AddComputeToGraphicsBarriers(frameInfo.CommandBuffer, frameInfo.FrameIndex);
@@ -133,7 +133,7 @@ namespace voe {
 		{
 			m_GlobalUboBuffers[i] = std::make_unique<Buffer>(
 				m_Device,
-				sizeof(GlobalUbo),
+				sizeof(OceanUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -149,7 +149,7 @@ namespace voe {
 	void VulkanRenderer::UpdateGlobalUboBuffers(FrameInfo& frameInfo)
 	{
 		// update
-		GlobalUbo ubo{};
+		OceanUbo ubo{};
 		ubo.ProjectionView = frameInfo.CameraObj.GetProjection() * frameInfo.CameraObj.GetView();
 		ubo.CameraPos = frameInfo.CameraObj.GetCameraPos();
 		m_GlobalUboBuffers[frameInfo.FrameIndex]->WriteToBuffer(&ubo);

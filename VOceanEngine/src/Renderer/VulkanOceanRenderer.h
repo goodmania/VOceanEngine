@@ -26,7 +26,7 @@ namespace voe {
         VulkanRenderer(const VulkanRenderer&) = delete;
         VulkanRenderer& operator=(const VulkanRenderer&) = delete;
 
-        void RenderGameObjects(FrameInfo frameInfo, std::vector<GameObject>& gameObjects);
+        void RenderOcean(FrameInfo frameInfo, std::vector<GameObject>& gameObjects);
 
         bool IsComputeQueueSpecialized() const;
         void OnUpdate(float dt, FrameInfo& frameInfo);

@@ -3,6 +3,7 @@
 #include "Platform/Windows/WindowsWindow.h"
 #include "Renderer/Swapchain.h"
 #include "Renderer/VulkanOceanRenderer.h"
+#include "Renderer/VulkanModelRenderer.h"
 #include "Renderer/VulkanImguiRenderer.h"
 
 namespace voe{
@@ -52,6 +53,7 @@ namespace voe{
 		void CreateSwapchain();
 		void CreateVulkanRenderer();
 		void CreateImguiRenderer();
+		void CreateModelRenderer();
 		void RecreateSwapChain();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
@@ -76,6 +78,7 @@ namespace voe{
 
 		std::unique_ptr<Swapchain>  m_Swapchain;
 		std::unique_ptr<VulkanRenderer> m_Renderer;
+		std::unique_ptr<VulkanModelRenderer> m_ModelRenderer;
 		std::unique_ptr<VulkanImguiRenderer> m_ImguiRenderer;
 
 		// syncs
