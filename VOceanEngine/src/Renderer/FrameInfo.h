@@ -4,8 +4,6 @@
 
 #include <vulkan/vulkan.h>
 
-
-
 namespace voe {
 	struct FrameInfo  {
 		int FrameIndex;
@@ -13,5 +11,7 @@ namespace voe {
 		VkCommandBuffer CommandBuffer;
 		Camera& CameraObj;
 	};
+
+
 
 }

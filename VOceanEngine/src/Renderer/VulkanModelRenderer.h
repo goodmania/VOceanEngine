@@ -32,9 +32,8 @@ namespace voe {
     private:
         void InitDescriptors();
         void CreateDescriptorSets();
-        void CreateGraphicsUbo();
-        void UpdateGlobalUboBuffers(FrameInfo& frameInfo);
-
+        void CreateModelUbo();
+        void UpdateModelUboBuffers(FrameInfo& frameInfo);
 
         void CreatePipelineLayout();
         void CreatePipeline(VkRenderPass renderPass);
@@ -58,8 +57,8 @@ namespace voe {
         VkDescriptorSet  m_GraphicsDescriptorSet;
         VkDescriptorSetLayout m_GraphicsDescriptorSetLayout;
         
-        std::vector<std::shared_ptr<Buffer>> m_GlobalUboBuffers;
-        VkDescriptorBufferInfo* m_GlobalUboDscInfo = VK_NULL_HANDLE;
+        std::vector<std::shared_ptr<Buffer>> m_ModelUboBuffers;
+        VkDescriptorBufferInfo* m_ModelUboDscInfo = VK_NULL_HANDLE;
 
         Semaphores m_ImageTransitionSemaphores;
 

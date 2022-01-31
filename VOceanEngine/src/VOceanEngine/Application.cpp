@@ -25,7 +25,7 @@ namespace voe {
 		m_Window = std::shared_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 		m_VulkanBase = std::make_unique<VulkanBase>(m_Window);
-		//LoadGameObjects();
+		LoadGameObjects();
 		CreateOceanFFTObjects();
 	}
 
@@ -76,8 +76,11 @@ namespace voe {
 
 				// render
 				m_VulkanBase->BeginSwapchainRenderPass(commandBuffer);
+
 				// ocean render
 				m_VulkanBase->GetRenderer().RenderOcean(frameInfo, m_GameObjects);
+				// model render
+				//m_VulkanBase->GetModelRenderer().RenderGameObjects(frameInfo, m_GameObjects);
 				// imgui render
 				if (m_EnableImgui)
 				m_VulkanBase->GetImguiRenderer().RenderImgui(frameInfo);
@@ -96,8 +99,7 @@ namespace voe {
 	void Application::LoadGameObjects() 
 	{
 		auto device = m_VulkanBase->GetDevice();
-		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/304.obj");
-		//std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/flat_vase.obj");
+		std::shared_ptr<Model> model = Model::CreateModelFromFile(*device, "Assets/Models/flat_vase.obj");
 		auto ocean = GameObject::CreateGameObject();
 		ocean.m_Model = model;
 		ocean.m_Transform.Translation = { 0.f, 2.f, 0.f };

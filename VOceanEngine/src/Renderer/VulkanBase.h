@@ -36,6 +36,7 @@ namespace voe{
 		const std::shared_ptr<Device> GetDevice() const { return m_Device; }
 
 		VulkanRenderer& GetRenderer() const { return *m_Renderer; }
+		VulkanModelRenderer& GetModelRenderer() const { return *m_ModelRenderer; }
 		VulkanImguiRenderer& GetImguiRenderer() const { return *m_ImguiRenderer; }
 		const float GetAspectRatio() const { return m_Swapchain->AspectRatio(); }
 

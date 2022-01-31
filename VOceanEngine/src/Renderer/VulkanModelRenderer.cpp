@@ -24,26 +24,27 @@ namespace voe {
 		glm::mat4 NormalMatrix{ 1.f };
 	};
 
-	struct GlobalUbo
+	struct ModelUbo
 	{
 		glm::mat4 ProjectionView{ 1.f };
-		glm::vec3 lightDirection = glm::vec3(-1.0f, -1.0f, 1.0f);
-		glm::vec3 CameraPos{ 0.0f, 0.0f, 0.0f };
+		glm::vec4 AmbientLightColor{ 1.f, 1.f, 1.f, .02f };  // w is intensity
+		glm::vec3 LightPosition{ -1.f };
+		alignas(16) glm::vec4 LightColor{ 1.f };  // w is light intensity
 	};
 
 	VulkanModelRenderer::VulkanModelRenderer(Device& device, VkRenderPass renderPass) : m_Device{ device } 
 	{
 		InitDescriptors();
-		CreateGraphicsUbo();
+		CreateModelUbo();
 		CreatePipelineCache();
-		CreatePipelineLayout();
 		CreateDescriptorSets();
+		CreatePipelineLayout();
 		CreatePipeline(renderPass);
 	}
 
 	VulkanModelRenderer::~VulkanModelRenderer() 
 	{
-		delete m_GlobalUboDscInfo;
+		delete m_ModelUboDscInfo;
 		delete m_DescriptorAllocator;
 		delete m_DescriptorLayoutCache;
 
@@ -89,48 +90,47 @@ namespace voe {
 		m_DescriptorAllocator	= new DescriptorAllocator(m_Device.GetVkDevice());
 		m_DescriptorLayoutCache = new DescriptorLayoutCache(m_Device.GetVkDevice());
 
-		m_GlobalUboDscInfo = new VkDescriptorBufferInfo();
+		m_ModelUboDscInfo = new VkDescriptorBufferInfo();
 	}
 
-	void VulkanModelRenderer::CreateGraphicsUbo()
+	void VulkanModelRenderer::CreateModelUbo()
 	{
-		m_GlobalUboBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
-		for (int i = 0; i < m_GlobalUboBuffers.size(); i++)
+		m_ModelUboBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < m_ModelUboBuffers.size(); i++)
 		{
-			m_GlobalUboBuffers[i] = std::make_unique<Buffer>(
+			m_ModelUboBuffers[i] = std::make_unique<Buffer>(
 				m_Device,
-				sizeof(GlobalUbo),
+				sizeof(ModelUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-			m_GlobalUboBuffers[i]->Map();
+			m_ModelUboBuffers[i]->Map();
 
-			m_GlobalUboDscInfo->buffer = m_GlobalUboBuffers[i]->GetBuffer();
-			m_GlobalUboDscInfo->range = VK_WHOLE_SIZE;
-			m_GlobalUboDscInfo->offset = 0;
+			m_ModelUboDscInfo->buffer = m_ModelUboBuffers[i]->GetBuffer();
+			m_ModelUboDscInfo->range = VK_WHOLE_SIZE;
+			m_ModelUboDscInfo->offset = 0;
 		}
 	}
 
-	void VulkanModelRenderer::UpdateGlobalUboBuffers(FrameInfo& frameInfo)
+	void VulkanModelRenderer::UpdateModelUboBuffers(FrameInfo& frameInfo)
 	{
 		// update
-		GlobalUbo ubo{};
+		ModelUbo ubo{};
 		ubo.ProjectionView = frameInfo.CameraObj.GetProjection() * frameInfo.CameraObj.GetView();
-		ubo.CameraPos = frameInfo.CameraObj.GetCameraPos();
-		m_GlobalUboBuffers[frameInfo.FrameIndex]->WriteToBuffer(&ubo);
-		m_GlobalUboBuffers[frameInfo.FrameIndex]->Flush();
+		m_ModelUboBuffers[frameInfo.FrameIndex]->WriteToBuffer(&ubo);
+		m_ModelUboBuffers[frameInfo.FrameIndex]->Flush();
 	}
 
 	void VulkanModelRenderer::OnUpdate(float dt, FrameInfo& frameInfo)
 	{
-		UpdateGlobalUboBuffers(frameInfo);
+		UpdateModelUboBuffers(frameInfo);
 	}
 
 	void VulkanModelRenderer::CreateDescriptorSets()
 	{
 		DescriptorBuilder::Begin(m_DescriptorLayoutCache, m_DescriptorAllocator)
-			.BindBuffer(0, m_GlobalUboDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+			.BindBuffer(0, m_ModelUboDscInfo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build(m_GraphicsDescriptorSet, m_GraphicsDescriptorSetLayout);
 	}
 
@@ -163,8 +163,8 @@ namespace voe {
 
 		m_GraphicsPipeline = std::make_unique<GraphicsPipeline>(
 			m_Device,
-			"Assets/Shaders/testVert.spv",
-			"Assets/Shaders/testFrag.spv",
+			"Assets/Shaders/modelVert.spv",
+			"Assets/Shaders/modelFrag.spv",
 			pipelineConfig);
 	}
 
